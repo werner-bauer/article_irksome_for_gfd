@@ -3,10 +3,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,stmaryrd,amsthm,MnSymbol}
 \usepackage{amsmath,amsfonts,amssymb,amsopn}
-\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
 \usepackage{color}
 \usepackage{graphicx}
-
+\usepackage{natbib}
+\bibliographystyle{elsarticle-harv}
 
 
 %opening
@@ -92,7 +93,7 @@ where $u$ is the velocity (tangential to the sphere), $\nabla$ is the
 gradient projected into the tangent plane on the sphere, $v^\perp =
 k\times v$ for vector fields $v$, $f=2\Omega \sin(\phi)$ is the
 Coriolis parameter with $\Omega$ the rotation rate of the Earth
-(1/day) and latitude $\phi$, $g$ is the acceleration due to gravity,
+(2$\pi$/(sidereal day)) and latitude $\phi$, $g$ is the acceleration due to gravity,
 $b$ is the topography field, and $D$ is the depth of the layer.
 
 In this investigation we use a compatible finite element
@@ -114,15 +115,19 @@ such that
   \quad \forall w \in V, \\
   \langle \phi, D_t \rangle - \langle \nabla_h \phi, uD \rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle & =
- 0, \qquad \forall \phi \in Q.
+ 0, \qquad \forall \phi \in Q,
 \end{align}
-upwind u and D
-
-jump
-
-$\nabla_h$
-
-llangle 
+where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner product
+defined for scalar or vector fields integrating over the domain
+$\Omega$, $\llangle\cdot,\cdot \rrangle$ is the $L^2$ inner product
+integrating over the set $\Gamma$ of mesh facets, $\nabla_h$ is the
+``broken'' cellwise gradient, $\tilde{u}$ and $\tilde{D}$ are the
+values of $D$ of $u$ evaluated on the upwind side of a facet (the side
+with $u\cdot n<0$), $n$ is the unit normal (here, bivalued so that on
+each side of the facet $n$ is oriented to point into the other side),
+and $\jump{\psi}$ indicates the sum of the values of $\psi$ over both
+sides of the facet. For more details of the derivation of this approximation,
+see \cite{gibson2019compatible}.
 
 We develop a method suitable to solve fully implicit Runga-Kutta
 methods, implicit over all stages of the RK methods. First, we recall
@@ -345,18 +350,18 @@ Note that the total runtimes depend on the number of CPU-cores!
    \item \textbf{Outlook:} the flexibility of Irksome in easily choosing different accuracy-orders for a vast variety of implicit RK methods allows us to further explore even more efficient time integrators.
    \end{itemize}
 
+\bibliography{refs}
 
+%% \begin{thebibliography}{8}
+%% \bibitem{CotterShipton12} Cotter, Colin J., Jemma Shipton. "Mixed finite elements for numerical weather prediction." Journal of Computational Physics 231, no. 21 (2012): 7076-7091.
 
-\begin{thebibliography}{8}
-\bibitem{CotterShipton12} Cotter, Colin J., Jemma Shipton. "Mixed finite elements for numerical weather prediction." Journal of Computational Physics 231, no. 21 (2012): 7076-7091.
+%% \bibitem{CotterShipton23}
+%% \checkit{ADD PAPER DETAILS}
 
-\bibitem{CotterShipton23}
-\checkit{ADD PAPER DETAILS}
+%% \bibitem{Farrell21} Farrell, Patrick E., Robert C. Kirby, Jorge Marchena-Menendez. "Irksome: Automating Runge-Kutta time-stepping for FE methods." ACM Transactions on Math. Software (TOMS) 47, no. 4 (2021): 1-26.
 
-\bibitem{Farrell21} Farrell, Patrick E., Robert C. Kirby, Jorge Marchena-Menendez. "Irksome: Automating Runge-Kutta time-stepping for FE methods." ACM Transactions on Math. Software (TOMS) 47, no. 4 (2021): 1-26.
-
-\bibitem{Giraldo13} Giraldo, Francis X., James F. Kelly, and Emil M. Constantinescu. "Implicit-explicit formulations of a three-dimensional nonhydrostatic unified model of the atmosphere (NUMA)." SIAM Journal on Scientific Computing 35, no. 5 (2013): B1162-B1194.
-\end{thebibliography}
+%% \bibitem{Giraldo13} Giraldo, Francis X., James F. Kelly, and Emil M. Constantinescu. "Implicit-explicit formulations of a three-dimensional nonhydrostatic unified model of the atmosphere (NUMA)." SIAM Journal on Scientific Computing 35, no. 5 (2013): B1162-B1194.
+%% \end{thebibliography}
 
 
 
