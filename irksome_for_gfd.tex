@@ -102,19 +102,21 @@ discretisation of these equations. We do not expect that the precise
 details are important for our conclusions, which are hopefully
 translatable to other discretisation approaches. However, to
 efficiently describe our iterative solver approach a precise
-description is useful. We select $V$ as the degree $k+1$ BDM finite
-element space on triangles, and $Q$ as the degree $k$ discontinuous
+description is useful. We select $V$ as the degree $p+1$ BDM finite
+element space on triangles, and $Q$ as the degree $p$ discontinuous
 Lagrange finite element space, here defined on a icosahedral grid
 $\Omega$ formed by recursively refining an icosahedron and then projecting
 vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
 such that
 \begin{align}
+  \label{eq:ut}
   \langle w, u_t \rangle + a(u,D;w) 
    & = 0,
   \quad \forall w \in V, \\
+  \label{eq:Dt}
   \langle \phi, D_t \rangle
-+ b(u,D; \phi) & =
- 0, \qquad \forall \phi \in Q,
++ c(u,D; \phi) & =
+ 0, \quad \forall \phi \in Q,
 \end{align}
 where
 \begin{align}
@@ -124,7 +126,7 @@ where
   - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
   + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle \nonumber  \\
 & \qquad \qquad - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle, \\
-  + b(u,D; \phi) &=
+  + c(u,D; \phi) &=
   - \langle \nabla_h \phi, uD \rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
 \end{align}
@@ -138,144 +140,102 @@ with $u\cdot n<0$), $n$ is the unit normal (here, bivalued so that on
 each side of the facet $n$ is oriented to point into the other side),
 and $\jump{\psi}$ indicates the sum of the values of $\psi$ over both
 sides of the facet. For more details of the derivation of this approximation,
-see \cite{gibson2019compatible}.
+see \cite{gibson2019compatible}. In this work we used $p=1$.
 
-We develop a method suitable to solve fully implicit Runga-Kutta
-methods, implicit over all stages of the RK methods. First, we recall
-RK methods, especially those that are fully implicit and that can be
-formulated with the Irksome library. This gives fully implicit systems
-that need a careful solver selection in order to be efficiently
-solved.
+Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
+stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
+\begin{align}
+  \label{eq:u stages}
+  R_{u,i}[w] := \langle w, k_{u,i} \rangle + a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
+  D^n + \Delta t\sum_jA_{ij}k_{D,j};w\right)
+   & = -R_{u,i}[w],
+  \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+  \label{eq:D stages}
+  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + c\left(u^n + \Delta
+  t\sum_jA_{ij}k_{u,j}, D^n + \Delta t\sum_jA_{ij}k_{D,j}; \phi\right)
+  & = -R_{D,i}[\phi], \quad \forall \phi \in Q,\mbox{ for
+  }i=1,\ldots,s,
+\end{align}
+where $A_{ij}$ are the matrix coefficients from the Butcher
+tableau for the chosen Runge Kutta scheme. This defines a coupled
+system for all of the stages in general. After solving
+(\ref{eq:u stages}-\ref{eq:D stages}) for the stages, the solution
+at the next timestep is obtained from
+\begin{equation}
+  u^{n+1} = u^n + \Delta t\sum_ib_i k_{u,i},\quad
+  D^{n+1} = D^n + \Delta t\sum_ib_i k_{D,i},
+\end{equation}
+where $b_i$ are also obtained from the Butcher tableau. Note here
+that our system has no explicit time dependence which would otherwise
+need to be incorporated into (\ref{eq:u stages}-\ref{eq:D stages}) in
+the usual way.
 
+We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
+  stages}) using Newton iteration. Given an initial guess $\{(k_{u,i},
+k_{D,i})\}_{i=1}^s$ for the stages, a Newton iteration requires solving
+the coupled linear Jacobian system
+\begin{align}
+  \label{eq:u J}
+  \langle w, k'_{u,i} \rangle + \diff a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
+  D^n + \Delta t\sum_jA_{ij}k_{D,j};(k'_{u,j}, k'_{D,j}),
+  w\right)
+   & = 0,
+  \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+  \label{eq:D J}
+  \langle \phi, k'_{D,i} \rangle
+  + \diff c\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
+  D^n + \Delta t\sum_jA_{ij}k_{D,j};(k'_{u,j}, k'_{D,j}),
+  \phi\right) & =
+ 0, \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+\end{align}
+for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
+$i=1,\ldots,s$, where $\diff a$ and $\diff b$ are the Gateaux
+derivatives of $a$ and $c$ (here taking the convention that the upwind
+switches have derivative zero when $u\cdot n=0$).
 
-\subsection{Fully implicity Runga Kutta (RK) time integration methods}
+The solution is then updated according to
+\begin{equation}
+  k_{u,i}\mapsto k_{u,i} + k'_{u,i}, \quad
+  k_{D,i}\mapsto k_{D,i} + k'_{D,i},
+\end{equation}
+and the iteration is terminated if the residuals in (\ref{eq:u
+  stages}-\ref{eq:D stages}) are sufficiently small (according
+to an appropriately chosen termination criteria).
 
-We consider the ODE $y'(t) + F(t,y)= 0$ where $y:(0,T] \rightarrow \mathbb{R}^n$ with $y(0) = y_0$
-and $F:(0,T]\times \mathbb{R}^n \rightarrow \mathbb{R}^n$.
-Given the solution
-$y(t^n)\equiv y^n$ and some $t^{n+1} = t^n + \Delta t$, Runga-Kutta (RK) methods approximate $y(t^{n+1})$ by
-$y^{n+1} = y^{n} + \Delta t \sum_{i = 1}^{s} b_i k_i,$ where for all $1\leq i \leq s$
- the stages $k_i \in \mathbb{R}^n$ satisfy
-\begin{align*}
-%  y^{n+1} = y^{n} + \Delta t \sum_{i = 1}^{s} b_i k_i, \
-%  \text{where for all $1\leq i \leq n$
-%  the stages $k_i \in \mathbb{R}^n$ satisfy} \\
- k_i + F\Big(t + c_i \Delta t, \  y + \Delta t \sum_{j = 1}^{s} A_{ij} k_j \Big) = 0 \
- \text{with $A_{ij}, b_i, c_i$ for $1\leq i,j\leq s$.}
-\end{align*}
-$A_{ij}, b_i, c_i$ are typically organized in a \emph{Butcher tableau} and determine the order of accuracy.
+The assembly of these nonlinear and linear systems can be performed in
+the usual way by looping (in parallel) over cells and constructing the
+appropriate contributions upon substituting $w$ and $\phi$ for each
+basis function from standard sparse finite element bases for $V\times
+Q$. It remains to find a scalable way to solve (\ref{eq:u J}-\ref{eq:D
+  J}). In this work, we use a monolithic Krylov solver (GMRES in this
+case) applied to the full set of stage corrections $z' = \{(k'_{u,i},
+k'_{D,i})\}_{i=1}^s \in \prod_{i=1}^s(V\times Q)$ solved all at
+once. The preconditioner for the Krylov method is an additive Schwarz
+method, built using overlapping subspaces $W_l=\{V_l\times
+Q_l\}_{l=1}^M$. For each $l$, the Jacobian system (with given right
+hand side residuals provided as input to the preconditioner) is
+restricted to $W_l$ and solved using a direct solver, producing $z_l$,
+and the result of the preconditioner is the sum $\sum_{l=1}^Mz_l$
+(hence the term additive).
 
-
-\subsection{Solver strategy of fully implicit monolithic systems}
-
-\noindent \textcolor{blue}{\textbf{Monolithic solver}}
-
-  Such solver treats the full system of coupled variables (over all stages)
-  without elimination. To solve the nonlinear algebraic system from an
-  implicit RK method we use:
-  \begin{itemize}
-  \item Nonlinear system solver: \emph{linesearch Newton},
-  \item Jacobian solver (for $J$ evaluated at current Newton state):
-    \emph{Preconditioned GMRES},
-  \item Preconditioner: \emph{monolithic geometric multigrid (V cycle)},
-  \item Multigrid smoothers: \emph{additive Schwarz method (ASM)}.
-  \end{itemize}
-
-\vspace{0.7cm}
-
-\noindent \textcolor{blue}{\textbf{Additive Schwarz method (ASM)}}
-
-The mesh is decomposed
-  into overlapping patches, and the fully coupled Jacobian is solved
-  independently (and hence parallelisably) on each patch. The result
-  of the smoother is the sum of the solutions over all of the
-  patches. In this work, a ``vertex star'' patch is used: it includes
-  all of the degrees of freedom in the cells sharing one vertex,
-  excluding those associated to the boundary (see Figure 1). For
-  3D/vertical slice models, column patches are formed from all the
-  cells sharing a vertex star patch on the horizontal base mesh (see
-  Cotter and Shipton (2023)).
-
-
-\vspace{0.7cm}
-
-
-\noindent \textcolor{blue}{\textbf{Solver performance: linearisation about current state}}
-
-  For the rotating shallow water equations on the sphere linearised
-  about a state of rest, the monolithic solver converges at a rate
-  that is robust to mesh refinement and changes in $\Delta t$. Figure
-  1 shows the average GMRES iterations per timestep to achieve a
-  residual reduction of $10^{-10}$, using the ``Williamson 5
-  mountain'' initial conditions and topography, run for 1 day. A
-  compatible finite element discretisation with BDM2-DG1 spaces on
-  triangles is used (3 pressure DOFs and 7.5 velocity DOFs per cell), with Crank-Nicholson
-  implicit timestepping.
-
-
-
-  \vspace{-5mm}
-  \begin{center}
-  \parbox{6.2cm}{
-    \vspace{1cm}
-  \includegraphics[width=4cm]{Images/patch}}
-  \begin{tabular}{ccc}
-    Cells & $\Delta t$ & its/step \\
-    \hline
-    20480 & 3600s & 8 \\
-    81920 & 3600s & 8 \\
-    327680 & 3600s & 8 \\
-    20480 & 1800s & 8 \\
-    20480 & 7200s & 8 \\
-    20480 & 14400s & 8.6 \\
-  \end{tabular} \\
-  \vspace{2mm}
-  {\bfseries Figure 1}: (LEFT) a diagram showing the ``vertex star'' patch. (RIGHT)
-  iteration counts for the monolithic solver applied to the linear
-  rotating shallow water equations on the sphere.
-  \end{center}
-
-
-
- \noindent \textcolor{blue}{\textbf{Solver performance: Nonlinear rotating shallow water equations}}
-
- For the nonlinear rotating shallow water equations, the introduction
- of advection terms degrades $\Delta t$ robustness but mesh independent
- iteration counts are achieved upon maintaining a constant Courant
- number (see Figure 2). BDM2-DG1 spaces on triangles are used
- with Crank-Nicholson implicit timestepping.
-
-\begin{figure}[h]
- \begin{tabular}{cccc}
-    Cells & $\Delta t$ & GMRES its/step & Wallclock \\
-    \hline
-    20480 & 3600s & 18.86 & 16m45s \\
-    81920 & 1800s & 18.03 & 1h26m38s \\
-    327680 & 900s & 18.00 & 9h54m50s \\
-  \end{tabular}
-   \caption{Average number of GMRES
-      iterations per timestep, and wallclock times, for nonlinear
-      rotating shallow water equations running the ``Williamson 5
-      mountain'' testcase until 15 days at various resolutions and
-      fixed $\Delta x/\Delta t$ ratio, on 16 cores.}
-\end{figure}
-
-
-
+In this work we define subspaces using ``star patches''.  Here, there
+is one subspace for each of the $M$ vertices in the mesh.  The
+subspace for a vertex $z_i$ is defined by taking the set $S$ of cells
+surrounding $z_i$, and the finite element spaces are restricted to $S$
+with zero normal boundary conditions on the boundary of $S$ for the
+components in $V$ (See Figure \ref{fig:patch}). The direct solve on
+the patch couples all of the stage corrections together. These
+solves are independent, and hence parallelisable, between patches.
+Usually, this
+type of preconditioner is used as a smoother in a multigrid
+cycle. Here, we do not use a multigrid because standard scalable
+approaches do not work very well for advective
+nonlinearities. However, it is also typical to scale $\Delta t$ to
+keep the advective Courant number constant as the mesh is refined, so
+we can hope for mesh independent Krylov iteration counts under this
+refinement scaling.
 
 \section{Numerical results}
-
-
-As an example, we applied the monolithic solver approach
-to the nonlinear shallow water equation on the sphere.
-The equations take the form
- \begin{align*}
-   \DD{u}{t} + fk\times u + g \nabla (\rho+b)    & = 0, \\
-   \pp{\rho}{t} + \nabla\cdot(u\rho) & = 0,
- \end{align*}
-where $u$ is the (horizontal) velocity, $f$ is the Coriolis parameter,
-$k$ is the local up direction, $\rho$ is the layer depth, $b$ is the
-bottom topography, and $g$ is gravitational acceleration.
 
 
 \noindent \textcolor{blue}{\textbf{Test case}}
