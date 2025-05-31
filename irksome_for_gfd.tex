@@ -177,14 +177,14 @@ the coupled linear Jacobian system
 \begin{align}
   \label{eq:u J}
   \langle w, k'_{u,i} \rangle + \diff a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
-  D^n + \Delta t\sum_jA_{ij}k_{D,j};(k'_{u,j}, k'_{D,j}),
+  D^n + \Delta t\sum_jA_{ij}k_{D,j};{(k'_{u,q}, k'_{D,q})}_{q=1}^s,
   w\right)
    & = 0,
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D J}
   \langle \phi, k'_{D,i} \rangle
   + \diff c\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
-  D^n + \Delta t\sum_jA_{ij}k_{D,j};(k'_{u,j}, k'_{D,j}),
+  D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
   \phi\right) & =
  0, \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
@@ -241,7 +241,7 @@ refinement scaling.
     star'' patch. DESCRIBE MORE!}
  \end{figure}
  
-TODO: references for Irksome, PatchPC
+TODO: references for Irksome, PatchPC, describe Firedrake implementation
 
 \section{Numerical results}
 
