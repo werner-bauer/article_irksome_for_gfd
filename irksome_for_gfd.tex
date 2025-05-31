@@ -1,6 +1,7 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage{geometry}[2cm,2cm,2cm,2cm]
 \usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,stmaryrd,amsthm,MnSymbol}
 \usepackage{amsmath,amsfonts,amssymb,amsopn}
 \usepackage[colorlinks]{hyperref}
 \usepackage{color}
@@ -59,7 +60,7 @@ Colin J. Cotter\footnote{Imperial College London, UK, Orchid: ???}  }
 \DeclareMathOperator{\qr}{\mathring{q}^\delta}
 \DeclareMathOperator{\DIV}{DIV}
 
-
+\newcommand{\jump}[1]{[\![#1]\!]}
 
 
 \begin{document}
@@ -77,9 +78,58 @@ In this study we investigate this approach applied to the rotating shallow water
 \section{Introduction}
 
 
-\section{Fully implicit Runga Kutta methods and monolithic solver strategy}
+\section{Description of methods}
 
-We develop a method suitable to solve fully implicit Runga-Kutta methods, implicit over all stages of the RK methods. First, we recall RK methods, especially those that are fully implicit and that can be formulated with the Irksome library. This gives fully implicit systems that need a careful solver selection in order to be efficiently solved.
+In this article we consider implicit time discretisations for the
+rotating shallow water equations on the sphere, which we write
+here in vector-invariant form as
+\begin{align}
+  u_t + \left(\nabla\cdot u^\perp + f\right)u^\perp
+  + \nabla\left(\frac{|u|^2}{2} + g(D-b)\right) & = 0, \\
+  D_t + \nabla\cdot(uD) & = 0,
+\end{align}
+where $u$ is the velocity (tangential to the sphere), $\nabla$ is the
+gradient projected into the tangent plane on the sphere, $v^\perp =
+k\times v$ for vector fields $v$, $f=2\Omega \sin(\phi)$ is the
+Coriolis parameter with $\Omega$ the rotation rate of the Earth
+(1/day) and latitude $\phi$, $g$ is the acceleration due to gravity,
+$b$ is the topography field, and $D$ is the depth of the layer.
+
+In this investigation we use a compatible finite element
+discretisation of these equations. We do not expect that the precise
+details are important for our conclusions, which are hopefully
+translatable to other discretisation approaches. However, to
+efficiently describe our iterative solver approach a precise
+description is useful. We select $V$ as the degree $k+1$ BDM finite
+element space on triangles, and $Q$ as the degree $k$ discontinuous
+Lagrange finite element space, here defined on a icosahedral grid
+$\Omega$ formed by recursively refining an icosahedron and then projecting
+vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
+such that
+\begin{align}
+  \langle w, u_t \rangle + \langle w, fu^\perp \rangle 
+  - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
+  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle \nonumber & \\
+  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle  & = 0,
+  \quad \forall w \in V, \\
+  \langle \phi, D_t \rangle - \langle \nabla_h \phi, uD \rangle
+  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle & =
+ 0, \qquad \forall \phi \in Q.
+\end{align}
+upwind u and D
+
+jump
+
+$\nabla_h$
+
+llangle 
+
+We develop a method suitable to solve fully implicit Runga-Kutta
+methods, implicit over all stages of the RK methods. First, we recall
+RK methods, especially those that are fully implicit and that can be
+formulated with the Irksome library. This gives fully implicit systems
+that need a careful solver selection in order to be efficiently
+solved.
 
 
 \subsection{Fully implicity Runga Kutta (RK) time integration methods}
