@@ -1,5 +1,6 @@
-\documentclass[a4paper,10pt]{article}
-\usepackage{geometry}[2cm,2cm,2cm,2cm]
+\documentclass[a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+%\usepackage{geometry}[2cm,2cm,2cm,2cm]
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,stmaryrd,amsthm,MnSymbol}
 \usepackage{amsmath,amsfonts,amssymb,amsopn}
@@ -108,16 +109,26 @@ $\Omega$ formed by recursively refining an icosahedron and then projecting
 vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
 such that
 \begin{align}
-  \langle w, u_t \rangle + \langle w, fu^\perp \rangle 
-  - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
-  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle \nonumber & \\
-  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle  & = 0,
+  \langle w, u_t \rangle + a(u,D;w) 
+   & = 0,
   \quad \forall w \in V, \\
-  \langle \phi, D_t \rangle - \langle \nabla_h \phi, uD \rangle
-  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle & =
+  \langle \phi, D_t \rangle
++ b(u,D; \phi) & =
  0, \qquad \forall \phi \in Q,
 \end{align}
-where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner product
+where
+\begin{align}
+   a(u,D;w) 
+&=
+  \langle w, fu^\perp \rangle 
+  - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
+  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle \nonumber  \\
+& \qquad \qquad - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle, \\
+  + b(u,D; \phi) &=
+  - \langle \nabla_h \phi, uD \rangle
+  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
+\end{align}
+and where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner product
 defined for scalar or vector fields integrating over the domain
 $\Omega$, $\llangle\cdot,\cdot \rrangle$ is the $L^2$ inner product
 integrating over the set $\Gamma$ of mesh facets, $\nabla_h$ is the
