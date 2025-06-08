@@ -105,7 +105,7 @@ efficiently describe our iterative solver approach a precise
 description is useful. We select $V$ as the degree $p+1$ BDM finite
 element space on triangles, and $Q$ as the degree $p$ discontinuous
 Lagrange finite element space, here defined on a icosahedral grid
-$\Omega$ formed by recursively refining an icosahedron and then projecting
+$\mathcal{X}$ formed by recursively refining an icosahedron and then projecting
 vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
 such that
 \begin{align}
@@ -131,8 +131,8 @@ where
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
 \end{align}
 and where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner product
-defined for scalar or vector fields integrating over the domain
-$\Omega$, $\llangle\cdot,\cdot \rrangle$ is the $L^2$ inner product
+defined for scalar or vector fields integrating over the domain $\mathcal{X}$,
+$\llangle\cdot,\cdot \rrangle$ is the $L^2$ inner product
 integrating over the set $\Gamma$ of mesh facets, $\nabla_h$ is the
 ``broken'' cellwise gradient, $\tilde{u}$ and $\tilde{D}$ are the
 values of $D$ of $u$ evaluated on the upwind side of a facet (the side
@@ -148,12 +148,12 @@ stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
   \label{eq:u stages}
   R_{u,i}[w] := \langle w, k_{u,i} \rangle + a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
   D^n + \Delta t\sum_jA_{ij}k_{D,j};w\right)
-   & = -R_{u,i}[w],
+   & = 0,
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
   R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + c\left(u^n + \Delta
   t\sum_jA_{ij}k_{u,j}, D^n + \Delta t\sum_jA_{ij}k_{D,j}; \phi\right)
-  & = -R_{D,i}[\phi], \quad \forall \phi \in Q,\mbox{ for
+  & = 0, \quad \forall \phi \in Q,\mbox{ for
   }i=1,\ldots,s,
 \end{align}
 where $A_{ij}$ are the matrix coefficients from the Butcher
@@ -177,16 +177,15 @@ the coupled linear Jacobian system
 \begin{align}
   \label{eq:u J}
   \langle w, k'_{u,i} \rangle + \diff a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
-  D^n + \Delta t\sum_jA_{ij}k_{D,j};{(k'_{u,q}, k'_{D,q})}_{q=1}^s,
-  w\right)
-   & = 0,
+  D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
+  w\right) = & -R_{u,i}[w],
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D J}
   \langle \phi, k'_{D,i} \rangle
   + \diff c\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
   D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
-  \phi\right) & =
- 0, \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+  \phi\right) & = -R_{D,i}[\phi],
+  \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
 for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
 $i=1,\ldots,s$, where $\diff a$ and $\diff b$ are the Gateaux
