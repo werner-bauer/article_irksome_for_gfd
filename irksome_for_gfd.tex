@@ -124,9 +124,8 @@ where
 &=
   \langle w, fu^\perp \rangle 
   - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
-  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle \nonumber  \\
-& \qquad \qquad - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle, \\
-  + c(u,D; \phi) &=
+  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle, \\
+  c(u,D; \phi) &=
   - \langle \nabla_h \phi, uD \rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
 \end{align}
@@ -139,7 +138,7 @@ values of $D$ of $u$ evaluated on the upwind side of a facet (the side
 with $u\cdot n<0$), $n$ is the unit normal (here, bivalued so that on
 each side of the facet $n$ is oriented to point into the other side),
 and $\jump{\psi}$ indicates the sum of the values of $\psi$ over both
-sides of the facet. For more details of the derivation of this approximation,
+sides of the facet. For more details, and a derivation of this approximation,
 see \cite{gibson2019compatible}. In this work we used $p=1$.
 
 Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
