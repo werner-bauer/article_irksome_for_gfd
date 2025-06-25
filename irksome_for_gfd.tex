@@ -241,43 +241,292 @@ refinement scaling.
  
 TODO: references for Irksome, PatchPC, describe Firedrake implementation
 
+\todo{
+\begin{itemize}
+ \item BDFM FE??
+ \item
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+
+\cleardoublepage
+
+
+
 \section{Numerical results}
 
 
-\noindent \textcolor{blue}{\textbf{Test case}}
-We use Williamson's testcase 6 and run it for 1 day on mesh level 5.
-We compare the solutions obtained from the studied time integrators with
-large time step size ($dt >18.5s$) with a reference solutions determined with $dt=1s$.
-We also record the total runtime of each of these simulations.
-Note that the total runtimes depend on the number of CPU-cores!
-\vspace{0.6cm}
+\begin{itemize}
+ \item Do we need description of IMEX?
+ \item Describe test case Williamson 6
+ \item Describe mesh levels somehow!!!
+\end{itemize}
 
-% \begin{minipage}{0.43\linewidth}\centering
- \begin{figure}[t]\centering
+In this section we test the monolithic solver setup with fully implicit time stepping methods introduced above concerning their performance. We will discuss different orders of accuracy for two realizations, namely the Gauss Legendre method and the Radau 2 method, both fully implicit schemes for various order, i.e. for orders 1,2, and 3 \checkit{ADD CORRECT VALUES.} We compare these methods with the frequently used, very efficient IMEX method ARK2, as introduced in CITE by CITE:Giraldo13.
+
+The aim is to test this for geophysical applications, i.e for atmosphere and ocean simulations. Hence, we select a testcase that allows us to best identify error sources of the time integrator before spacial errors dominate. To this end, we use the Williamson 6 test case where a solid wave is transported around the globe. Simulating it for a relatively short time of 1 day allows us to identify time integrator errors, mitigation inpact of small scale errors triggered by nonlinearies that might dominate the error for longer integrations.
+
+The essential quantities of interest for operational simulations are the total runtime of a simulation and the relative errors the integrators have. As such, we compare exactly those two quantities for various parameter choices for our implicit methods and for the imex schemes. As we will see, accuracy and runtime crucially depend on the selected time step sizes and hence, those are added too to the graphics we present below to have an idea how the selection of step sizes impact on accuracy and runtime for imex and irksome runs.
+
+
+\begin{figure}[t]\centering
  \begin{tabular}{cc}
  \hspace{-0em}\includegraphics[scale=0.125]{Images/vorticity_0.png} &
  \hspace{-0em}\includegraphics[scale=0.125]{Images/elevation_0.png} \\
  \hspace{-0em}\includegraphics[scale=0.125]{Images/vorticity_24.png} &
  \hspace{-0em}\includegraphics[scale=0.125]{Images/elevation_24.png} \\
  \end{tabular}\vspace{-10pt}
-  \caption*{{\bfseries Figure 3}: TOP: initial vorticity (left) and depth (right) fields
-  for Williamson test case 6. BOTTOM: fields at day 1. The shown fields are for mesh level 5.
+  \caption{Top row: initial vorticity (left column) and depth (right column) fields
+  for Williamson test case 6. Bottom row: both fields at day 1. The shown fields are for mesh level 5.
   }
-  %\label{fig1}
-  \end{figure}
+ \label{tc6_fields}
+\end{figure}
+
+
+
+\subsection{Comparison method: IMEX}
+
+Before we introduce the test case, let us quickly recall the implicit/explicit
+splitting method ARK2 of Giraldo et al (2013) that  we use as a benchmark.
+
+\todo{Shall we add the scheme here or does it distract us from the main message?}
+
+As we will see below, because it is partly explicity, the latter part underlies the CFL criterion, hence the method has a hard time step size restriction. In fact, for our setup we indeed did not achieve stable runs with a time step size larger than about $dt \approx 100s$.
+
+\subsection{Test case description}
+
+We aim to compare the time integrators for applications of geophysical relevance, especially for atmosphere and ocean simulations. Further, we want to compare errors resulting from the time integrators while eliminating as much as possible other error sources such that the difference of the performance of the time integrators gets visible. Therefore, we use the Williamson 6 test case for a simulation time of 1 day. In this test case, a solid wave is transported around the globe. Simulating it for a relatively short time of 1 day allows us to identify time integrator errors, mitigation inpact of small scale errors triggered by nonlinearies that might dominate the error for longer integrations.
+
+The test case description, initialization on parameter values can all be found in the seminar paper of \cite{WILLIAMSON1992211} (Section 6, Rossby-Haurwitz Wave). Figure~\ref{tc6_fields} shows in the top row the initial fields for vorticity (left column) and depth field (right column). The bottom row shows these fields after a simulation time of 1 day. From the figures the solid body rotation of these fields gets obvious.
+
+
+% The initial conditions reads as follows:
+% \begin{itemize}
+%  \item $R0 = 6371220$,
+%  \item $H = 5960$.
+%  \item $\Omega = 7.292e-5$  rotation rate
+%  \item $cz$ z-coordinate normal to Earth surface
+%  \item $f = 2*\Omega*cz/R0$   Coriolis parameter
+%  \item $g = 9.8$   Gravitational constant
+%  \item $b$  Topography,
+%  \item Sound speed $c = g*H$
+% \end{itemize}
+
+
+
+\subsection{Simulation results}
+
+We compare the solutions obtained from the studied time integrators with relatively
+large time step sizes (i.e. all methods including IMEX use values of $dt >18.5s$) with a reference solutions determined with a very small time step size of $dt=1s$. Because all methods converge with small
+$dt$, any of the methods can be used to compute the reference solution: we used the Gauss-Legendre method of order 1 and $dt=1$, for example.
+
+We run each simulation for 1 day and then compute the L2 errors for depth and velocity fields between the coarse time step runs and the reference run for a fixed mesh resolution. For the latter we use a relatively fine mesh resolution of Level 6 (corresponding to approx ???km edge length of the triangulation of the sphere). Besides computing these relative errors, we record for each simulation the total runtime.
+
+Figure~\ref{err_vs_runtime_gl_imex} and Figure~\ref{err_vs_runtime_rd_imex} show the results of this experiment in a concise manner. We used two different implicit Runga-Kutta methods, namely the GaussLegendre method of orders \checkit{1, 3, 5 and the RadauIIA method, or orders 1,2,3}. Points on the curves indicate the total runtime for a chosen method and the obtain accuracy. As both these values depend heavily on the selected time step size, the latter is indicated as numbers (in seconds) on the curves too.
+
+
+Let's consider first Figure~\ref{err_vs_runtime_gl_imex}, but the discussion is very similar for  Figure~\ref{err_vs_runtime_rd_imex}. We see that with GL, we can go up to a time step size of 14400s. For larger values, it get's more and more difficult for the solver to find an accurate solution, so often the solver does not converge any more if $dt$ is even bigger. Nevertheless, compared to IMEX that is partly explicit and hence underlies the CFL criteria, this time step size is huge. The total runtime for GL1 reduces for such large time step size to less then 100s, however, for a relative error at the order of around 10e-2. Note that both eta and vel have similar orders of error, so we do not distinguish between them in our discussion here and henceforth.
+
+Reducing the time step sizes leads for any of the selected method orders to an increase in accuracy, but with the cost of longer total runtimes. The kinks in the curves for large time step sizes (e.g. for 14400, 10800, 7200) might be related to jumps in the number if iterations required to obtain the desired solver tolerance but for smaller values in $dt$ the indicated relationship between $dt$ and total runtime gets clearer. Smaller $dt$ also leads to more accurate solutions in all cases while methods with higher order are generally more accurate, but because of the increased number of DoF also slower.
+
+Let us next consider the results for the Imex method (red curves in Figure~\ref{err_vs_runtime_gl_imex} and Figure~\ref{err_vs_runtime_rd_imex}). In general we can see that for the chosen second order Imex method (ARK2), the largest possible time step size for the given mesh level L6 is about 100s, restricted through the CFL condition related to the explicit part in the IMEX method. Nevertheless of this restriction, IMEX is a highly efficient scheme giving high performance of about 660s of total runtime with
+an accuracy at the order of 10e-5. Also here, reducing $dt$ leads to an increase in accuracy but to the costs of an increase in total runtime.
+
+
+
+
+
+\begin{figure}[h]\centering
+\begin{tabular}{c}
+ \hspace{-0.0em}\includegraphics[scale=0.42]{Images/gl_imex.pdf}
+\end{tabular}
+ \caption{Relative errors of Gauss-Legendre and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields.
+  }
+ \label{err_vs_runtime_gl_imex}
+\end{figure}
+
+\begin{figure}[h]\centering
+\begin{tabular}{c}
+ \hspace{-0.0em}\includegraphics[scale=0.42]{Images/rd_imex.pdf}
+\end{tabular}
+ \caption{Relative errors of Radau2 and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields.
+  }
+ \label{err_vs_runtime_rd_imex}
+\end{figure}
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c}
+dt    & ref-level &  time    & err-eta      &    err-vel \\ \hline
+18.75 & 6         &  3437.80 & 1.494801e-07 &  2.594803e-07 \\
+37.50     &     6  &  1722.50 & 6.010706e-07  &1.044124e-06 \\
+75.00   &       6  &   873.01 & 2.404467e-06 & 4.181827e-06 \\
+100.00     &     6  &   658.81 & 4.271615e-06 & 7.436415e-06
+\end{tabular}
+\caption{Numerical values for the IMEX simulations.}
+\end{table}
+
+
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level & rk-stages & time  &    err-eta      &    err-vel \\ \hline
+300    &       6  &  1    &978.850  &  0.000101 &  0.000185 \\
+600    &       6  & 1    &501.970  & 0.000384 &  0.000739\\
+1200   &        6 &  1    &258.890 &  0.001193 &  0.002536\\
+2400    &       6 &  1    &203.150 &  0.002290 &  0.005305\\
+3600   &        6 &  1    &198.420 &  0.001944 &  0.008068\\
+7200    &       6  & 1    &108.260 &  0.002910 &  0.006148\\
+10800    &       6 & 1    & 118.050 &  0.002580 &  0.006506\\
+14400    &       6  & 1    & 98.331 &  0.002766 &  0.005868\\
+\end{tabular}
+\caption{Numerical values for the Gauss Legendre rk-stages 1 simulations.}
+\end{table}
+
+
+
+
+
+
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &      6    &      2 & 2665.00 & 1.119265e-07 & 2.295523e-07 \\
+600    &      6   &       2 & 1357.90 & 9.724745e-07 & 1.827295e-06\\
+1200   &       6   &       2  & 765.88 & 1.424818e-05 & 2.644705e-05\\
+2400    &      6   &       2 &  614.82 & 1.881205e-04 & 3.679311e-04\\
+3600    &      6   &       2 &  430.65 & 6.534951e-04 & 1.375421e-03\\
+7200    &      6    &      2  & 263.50 & 1.988320e-03 & 4.106426e-03\\
+10800    &      6   &       2 &  237.78 & 2.275762e-03 & 7.882027e-03\\
+14400    &      6   &       2 &  212.17 & 2.679312e-03 & 5.744365e-03\\
+\end{tabular}
+\caption{Numerical values for the Gauss Legendre rk-stages 2 simulations.}
+\end{table}
+
+
+
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &       6   &        3  & 5468.80  & 8.134017e-09  & 1.719576e-08 \\
+600     &      6    &       3  & 2752.70  & 8.364238e-08  & 1.753401e-07\\
+1200     &      6    &       3  & 2109.30  & 5.666891e-07  & 1.199175e-06\\
+2400     &      6    &       3  & 1184.60  & 5.082739e-06  & 9.872072e-06\\
+3600      &     6     &      3  &  795.64  & 4.065958e-05  & 7.928632e-05\\
+7200      &     6      &     3   & 424.55  & 7.089932e-04  & 1.551004e-03\\
+10800     &      6     &      3  &  452.88  & 1.301794e-03  & 3.055263e-03\\
+14400      &     6     &      3   & 363.06   &1.851840e-03  & 4.796533e-03\\
+\end{tabular}
+\caption{Numerical values for the Gauss Legendre rk-stages 3 simulations.}
+\end{table}
+
+
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &      6   &       1 & 973.78 & 0.001200 & 0.003610 \\
+600    &      6   &       1 & 501.30 & 0.001468 & 0.004560\\
+1200   &       6   &       1 & 455.43 & 0.001685 & 0.005498\\
+2400   &       6   &       1 & 294.77 & 0.001952 & 0.007593\\
+3600    &      6    &      1 & 206.78 & 0.002244 & 0.010134\\
+7200   &       6    &      1 & 183.77 & 0.003285 & 0.018488\\
+10800   &       6   &       1 & 150.23 & 0.004418 & 0.026992\\
+14400   &       6   &       1 &-666.00 & nan & nan
+\end{tabular}
+\caption{Numerical values for the Radau2 rk-stages 1 simulations.
+Note that the time -666 indicates a blow up of the run, hence not error values can be computed.}
+\end{table}
+
+
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300   &        6   &        2 &  2661.20 &  0.000003 &  0.000006\\
+600    &       6   &        2 &  1995.20 &  0.000020 &  0.000049\\
+1200  &         6   &        2 &  1151.00 &  0.000130 &  0.000336\\
+2400   &        6   &        2 &   622.44 &  0.000533 &  0.001421\\
+3600   &        6   &        2 &   447.14 &  0.000893 &  0.002546\\
+7200    &       6   &        2 &   287.81 &  0.001444 &  0.004587\\
+10800   &        6  &         2 &   291.70 &  0.001627 &  0.004711\\
+14400    &       6  &         2 &   242.43 &  0.001564 &  0.004848\\
+\end{tabular}
+\caption{Numerical values for the Radau2 rk-stages 2 simulations.}
+\end{table}
+
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &       6   &        3  & 6227.40 &  2.214081e-08 &  4.711117e-08\\
+600    &       6   &        3 &  4147.20 &  9.890813e-08 &  2.136634e-07\\
+1200    &       6  &         3&   2295.40 &  1.120790e-06 &  2.632214e-06\\
+2400    &       6  &         3 &  1181.60 &  2.802082e-05 &  6.698549e-05\\
+3600    &       6  &         3 &   851.04 &  1.406876e-04 &  3.477579e-04\\
+7200    &       6  &         3  &  550.43 &  7.251949e-04 &  1.890284e-03\\
+10800   &        6  &         3 &   507.18 &  1.125798e-03 &  3.585997e-03\\
+14400     &      6  &         3 &   413.00 &  1.390544e-03 &  4.723006e-03\\
+\end{tabular}
+\caption{Numerical values for the Radau2 rk-stages 3 simulations.}
+\end{table}
+
+
+
+
+
+\cleardoublepage
+
+
+
+\subsection{Dependency of runtimes on computer resources}
+
+
+So far, we used for all simulations the same amount of cores, i.e. 16 (no hyperthreading). To have a better understanding of the impact of HPC architectures on our result we next study the impact of using different numbers of cores on the total runtimes.
+
+
+
+
+\vspace{10em}
+
+
 %  \end{minipage}\hfill
 % \begin{minipage}{0.55\linewidth}
-\begin{figure}[t]\centering
+\begin{figure}[h]\centering
 \begin{tabular}{c}
  \hspace{-0.4em}\includegraphics[scale=0.66]{Images/Figure_1_new1-crop.pdf}
   \end{tabular}
-\caption*{{\bfseries Figure 4}: dependency of total runtimes
+\caption{{\bfseries Figure 4}: dependency of total runtimes
     of IMEX scheme on the number of available CPU-cores.
   }
-  %\label{fig1}
+  \label{tc6_???}
   \end{figure}
-  \vspace{2cm}
  % \end{minipage}
+
+
+Note that the total runtimes depend on the number of CPU-cores!
+
+
+\cleardoublepage
+
+
+
+\vspace{0.6cm}
 
 
 \noindent \textcolor{blue}{\textbf{Total runtimes vs. relative errors}}
