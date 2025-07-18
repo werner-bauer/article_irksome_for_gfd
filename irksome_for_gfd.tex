@@ -1,5 +1,5 @@
-\documentclass[a4paper]{article}
-\usepackage[margin=2cm]{geometry}
+\documentclass[a4paper, 12pt]{article}
+\usepackage[margin=2.5cm]{geometry}
 %\usepackage{geometry}[2cm,2cm,2cm,2cm]
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,stmaryrd,amsthm,MnSymbol}
@@ -104,7 +104,7 @@ translatable to other discretisation approaches. However, to
 efficiently describe our iterative solver approach a precise
 description is useful. We select $V$ as the degree $p+1$ BDM finite
 element space on triangles, and $Q$ as the degree $p$ discontinuous
-Lagrange finite element space, here defined on a icosahedral grid
+Lagrange finite element space, here defined on an icosahedral grid
 $\mathcal{X}$ formed by recursively refining an icosahedron and then projecting
 vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
 such that
@@ -155,6 +155,7 @@ stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
   & = 0, \quad \forall \phi \in Q,\mbox{ for
   }i=1,\ldots,s,
 \end{align}
+\werner{do we need to specify $j$?}
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge Kutta scheme. This defines a coupled
 system for all of the stages in general. After solving
@@ -164,7 +165,9 @@ at the next timestep is obtained from
   u^{n+1} = u^n + \Delta t\sum_ib_i k_{u,i},\quad
   D^{n+1} = D^n + \Delta t\sum_ib_i k_{D,i},
 \end{equation}
-where $b_i$ are also obtained from the Butcher tableau. Note here
+where $b_i$ are also obtained from the Butcher tableau.
+\werner{Cite Farrell for an example of such tableau with concrete values?}
+Note here
 that our system has no explicit time dependence which would otherwise
 need to be incorporated into (\ref{eq:u stages}-\ref{eq:D stages}) in
 the usual way.
@@ -294,11 +297,50 @@ The essential quantities of interest for operational simulations are the total r
 \subsection{Comparison method: IMEX}
 
 Before we introduce the test case, let us quickly recall the implicit/explicit
-splitting method ARK2 of Giraldo et al (2013) that  we use as a benchmark.
+splitting method ARK2 of Giraldo et al (2013) that we use as a benchmark.
 
 \todo{Shall we add the scheme here or does it distract us from the main message?}
 
+
+
+
 As we will see below, because it is partly explicity, the latter part underlies the CFL criterion, hence the method has a hard time step size restriction. In fact, for our setup we indeed did not achieve stable runs with a time step size larger than about $dt \approx 100s$.
+
+\begin{itemize}
+ \item Add solver strategy for IMEX:
+ \item EAch of these stages you solve only one hybridized mixed helmholz problem, we store the LU decomposition, it's always the same way equation because the implicit (I) part is the linear wave equation
+ \item here the expensive part is forming the LU decomposition, only once, this is why it is hard to beat imex.
+\end{itemize}
+
+
+
+
+\subsection{WORK OUT WHAT THE SPACIAL ERROR IS!!!}
+
+\begin{itemize}
+ \item velocity field has to be interpolated from one mesh to another, might be worrying, meshes are quite different.
+ \item compare 1s l5 vs l6:
+ \begin{itemize}
+  \item before making comparisons
+  \item move back the l6 mesh to l5: i.e. add the coordinate field to that!!!
+  \item Colin will help me (during next week)!
+  \item Write a paragraph about how this is done!!!
+  \item for h it will be sufficient to interpolate from l6 to l5! Go via DG
+  \item Let's start first with the h field and then check if we need velocity field!
+ \end{itemize}
+
+The results from what we have used so far for the plots!
+\begin{itemize}
+ \item Spacial error in the eta field: 0.0006720142783732659
+\item Spacial error in the vel field: 0.007984353352145751
+\end{itemize}
+
+
+\end{itemize}
+
+
+
+
 
 \subsection{Test case description}
 
@@ -343,11 +385,13 @@ an accuracy at the order of 10e-5. Also here, reducing $dt$ leads to an increase
 
 
 
+
+
 \begin{figure}[h]\centering
 \begin{tabular}{c}
  \hspace{-0.0em}\includegraphics[scale=0.42]{Images/gl_imex.pdf}
 \end{tabular}
- \caption{Relative errors of Gauss-Legendre and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields.
+ \caption{Relative errors of Gauss-Legendre and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields $ u$.
   }
  \label{err_vs_runtime_gl_imex}
 \end{figure}
@@ -356,7 +400,7 @@ an accuracy at the order of 10e-5. Also here, reducing $dt$ leads to an increase
 \begin{tabular}{c}
  \hspace{-0.0em}\includegraphics[scale=0.42]{Images/rd_imex.pdf}
 \end{tabular}
- \caption{Relative errors of Radau2 and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields.
+ \caption{Relative errors of Radau2 and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields $ u$.
   }
  \label{err_vs_runtime_rd_imex}
 \end{figure}
@@ -494,62 +538,163 @@ dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
 
 
 
-\subsection{Dependency of runtimes on computer resources}
+\subsection{Dependency of runtimes on number of used CPU cores}
 
 
 So far, we used for all simulations the same amount of cores, i.e. 16 (no hyperthreading). To have a better understanding of the impact of HPC architectures on our result we next study the impact of using different numbers of cores on the total runtimes.
 
+Table~\ref{tab_imex_cores} shows the dependency of the total runtimes for the above studied Williamson test case 6 for 1 day simulation on mesh level 6. The total runtime, shown in the second column for 16 cores, in the third for 8 cores, and in the fourth for 4 cores depend on the time step size $dt$. The last two columns illustrate the speedup, in all cases of about 1.4 when doubling the number of cores from 8 to 16, and about 1.65 when doubling from 4 to 8 cores.
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
+18.75 & 3437.80 & 4953.10 & 8323.2 & 1.440776 & 1.680402\\
+37.50 & 1722.50 & 2475.70 & 4192.0 & 1.437271 & 1.693258\\
+75.00  & 873.01 & 1251.10  &2086.8 & 1.433088 & 1.667972\\
+100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.679234
+\end{tabular}
+\caption{Total runtime of IMEX simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
+\label{tab_imex_cores}
+\end{table}
+
+Similarly, Table~\ref{tab_irksgl1_cores} illustrates the speedup of the
+Irksome GaussLegendre order 1 simulations when using different numbers of
+cores for various time step sizes.Here, the speedup when doubling the numbers of cores is about 1.45 in average when doubling the number of cores from 8 to 16, and about 1.65 when doubling from 4 to 8 cores, hence quite similar to the imex scheme. Note that for smaller dt, the speedup is slightly bigger, but it decreases with larger time step sizes.
+
+
+Tables~\ref{tab_irksgl2_cores} and \ref{tab_irksgl3_cores} show the same information but for Gauss-Legendre 2 and Gauss-Legendre 3, respectively. Given the increasing numbers of DOF for higher order methods, the total runtimes increase here, but we realize that the speedup for the higher order versions are comparable to GL1, although a tiny bit higher then for less Dofs indicating that the HO version seem to better benefit from more CPU cores.
+
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
+ 300 & 978.850 & 1479.10 & 2485.40 & 1.511059 & 1.680346\\
+    600 & 501.970  & 746.76 & 1264.30 & 1.487659 & 1.693047\\
+   1200 & 258.890  & 386.97  & 644.79 & 1.494727 & 1.666253\\
+   2400 & 203.150  & 299.47  & 491.16 & 1.474132 & 1.640098\\
+   3600 & 198.420 &  289.11 &  472.88 & 1.457061 & 1.635640\\
+   7200 & 108.260  & 158.95  & 249.78 & 1.468225 & 1.571438\\
+  10800 & 118.050 &  168.39  & 273.80 & 1.426429 & 1.625987\\
+  14400 &  98.331 &  137.50 &  219.78 & 1.398338 & 1.598400\\
+\end{tabular}
+\caption{Total runtime of GaussLegendre 1 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
+\label{tab_irksgl1_cores}
+\end{table}
 
 
 
-\vspace{10em}
 
-
-%  \end{minipage}\hfill
-% \begin{minipage}{0.55\linewidth}
-\begin{figure}[h]\centering
-\begin{tabular}{c}
- \hspace{-0.4em}\includegraphics[scale=0.66]{Images/Figure_1_new1-crop.pdf}
-  \end{tabular}
-\caption{{\bfseries Figure 4}: dependency of total runtimes
-    of IMEX scheme on the number of available CPU-cores.
-  }
-  \label{tc6_???}
-  \end{figure}
- % \end{minipage}
-
-
-Note that the total runtimes depend on the number of CPU-cores!
-
-
-\cleardoublepage
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
+     300  & 2665.00  & 4158.80  & 7192.90  & 1.560525  & 1.729561 \\
+     600  & 1357.90  & 2112.60  & 3621.10  & 1.555785  & 1.714049\\
+    1200  &  765.88  & 1177.30  & 2065.20  & 1.537186  & 1.754183\\
+    2400  &  614.82   & 903.21  & 1537.40  & 1.469064  & 1.702151\\
+   3600   & 430.65   & 644.89   &1086.70  & 1.497481  & 1.685094\\
+   7200  &  263.50   & 384.85   & 649.56   &1.460531  & 1.687826\\
+  10800   & 237.78   & 347.62   & 557.78  & 1.461940  & 1.604568\\
+  14400   & 212.17   & 312.52   & 508.26  & 1.472970  & 1.626328
+\end{tabular}
+\caption{Total runtime of GaussLegendre 2 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
+\label{tab_irksgl2_cores}
+\end{table}
 
 
 
-\vspace{0.6cm}
+
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
+    300  &  5468.80  &  8759.00  &  15414.0  &  1.601631  &  1.759790\\
+    600  &  2752.70  &  4403.80   &  7693.1  &  1.599811  &  1.746923\\
+   1200  &  2109.30  &  3337.00   &  5775.2  &  1.582041  &  1.730656\\
+   2400  &  1184.60  &  1846.70   &  3203.8  &  1.558923  &  1.734878\\
+   3600  &   795.64  &  1244.30   &  2150.0  &  1.563898  &  1.727879\\
+   7200   &  424.55   &  647.44   &  1124.2  &  1.525003  &  1.736377\\
+  10800   &  452.88   &  691.13   &  1157.9  &  1.526078  &  1.675372\\
+  14400   &  363.06   &  573.04    &  929.3   & 1.578362   & 1.621702
+\end{tabular}
+\caption{Total runtime of GaussLegendre 3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
+\label{tab_irksgl3_cores}
+\end{table}
 
 
-\noindent \textcolor{blue}{\textbf{Total runtimes vs. relative errors}}
 
-  Figure 5 summarized the numerical results, i.e. total runtimes vs
-  relative errors of depth $\rho$ and velocity $ u$ fields for ARK2 IMEX
-  scheme, and for Gauss-Legendre (GL) schemes of order 1 (GL1), order 3 (GL2) and order 5 (GL3).
+Finally, in Table~\ref{tab_irksrd123_cores} we show only speedups for the Radau 1 (RD1),
+Radau 2 (RD2) and Radau 3 RD3) methods when doubling the number of course (similarly to above).
+See see that the speedup rates are comparable to the ones obtained for any of the GaussLegendre methods.
 
- \begin{figure}[t]\centering
- \begin{tabular}{cc}
- \hspace{-0.2em}\includegraphics[scale=0.52]{Images/Figure_2_new3-crop.pdf} &
- %\hspace{-0.95em}\includegraphics[scale=1.19]{Images/Figure_1_new.pdf}
-  \end{tabular}\vspace{-10pt}
-  \caption*{{\bfseries Figure 5}: relative errors (y-axis)
-  of depth (eta) and velocity (vel) fields against the
-  total runtimes of the simulations depending on the chosen schemes
-  (IMEX, GL1, GL2, GL3). The total runtimes depend on the schemes,
-  the time step sizes (colored figures) and on the number of available CPU-cores
-  (cf. Figure 4).
 
-  }
-  \label{fig2}
-  \end{figure}
+\begin{table}[h]\centering
+\begin{tabular}{c|c|c|c|c|c|c|c}
+ dt & RD1 16vs8   & RD1  8vs4  & RD2 16vs8   & RD2  8vs4   & RD3 16vs8   & RD3  8vs4 \\ \hline
+   300  &   1.539362 & 1.654903 &  1.559409 & 1.734572 & 1.584337 &  1.746450 \\
+   600  &   1.489607 & 1.688540 &  1.537340 & 1.713950 & 1.586299 & 1.745938 \\
+  1200  &   1.477944 & 1.664983 &  1.530582 & 1.709031 & 1.573103 & 1.737185\\
+  2400  &  1.468772 & 1.645109  &  1.520339 & 1.694670 & 1.567282 & 1.733409\\
+  3600  &  1.452123 & 1.638958  &  1.489243 & 1.691695 & 1.565379 & 1.727143\\
+  7200  & 1.408500 & 1.614395-  &   1.489768&  1.652774 & 1.591538 & 1.650058\\
+ 10800 &   1.396592 & 1.819265  &  1.452383 & 1.653543 & 1.540597 & 1.619612\\
+ 14400 &  NaN      &  1.259854 &   1.472219 & 1.619568 &  1.570823 & 1.619422
+\end{tabular}
+\caption{Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
+The 2nd, 4th, 6th column shows speed up when using 16 rather than 8 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3.}
+\label{tab_irksrd123_cores}
+\end{table}
+\color{red}
+
+
+
+
+
+
+
+
+%
+%
+% \vspace{10em}
+%
+%
+% %  \end{minipage}\hfill
+% % \begin{minipage}{0.55\linewidth}
+% \begin{figure}[h]\centering
+% \begin{tabular}{cc}
+%  \hspace{-0.4em}\includegraphics[scale=0.56]{Images/Figure_1_new1-crop.pdf}
+%   \hspace{-0.7em}\includegraphics[scale=0.26]{Images/gd_imex_16vs8cores.pdf}
+%    \end{tabular}
+% \caption{dependency of total runtimes of IMEX scheme (left) and
+% IRKs GL scheme (right) on the number of available CPU-cores.
+%   }
+%   \label{tc6_???}
+%   \end{figure}
+%  % \end{minipage}
+
+
+
+%
+%
+% \noindent \textcolor{blue}{\textbf{Total runtimes vs. relative errors}}
+%
+%   Figure 5 summarized the numerical results, i.e. total runtimes vs
+%   relative errors of depth $\rho$ and velocity $ u$ fields for ARK2 IMEX
+%   scheme, and for Gauss-Legendre (GL) schemes of order 1 (GL1), order 3 (GL2) and order 5 (GL3).
+%
+%  \begin{figure}[t]\centering
+%  \begin{tabular}{cc}
+%  \hspace{-0.2em}\includegraphics[scale=0.52]{Images/Figure_2_new3-crop.pdf} &
+%  %\hspace{-0.95em}\includegraphics[scale=1.19]{Images/Figure_1_new.pdf}
+%   \end{tabular}\vspace{-10pt}
+%   \caption*{{\bfseries Figure 5}: relative errors (y-axis)
+%   of depth (eta) and velocity (vel) fields against the
+%   total runtimes of the simulations depending on the chosen schemes
+%   (IMEX, GL1, GL2, GL3). The total runtimes depend on the schemes,
+%   the time step sizes (colored figures) and on the number of available CPU-cores
+%   (cf. Figure 4).
+%
+%   }
+%   \label{fig2}
+%   \end{figure}
 
 
 
