@@ -267,7 +267,6 @@ TODO: references for Irksome, PatchPC, describe Firedrake implementation
 
 
 \begin{itemize}
- \item Do we need description of IMEX?
  \item Describe test case Williamson 6
  \item Describe mesh levels somehow!!!
 \end{itemize}
@@ -294,14 +293,79 @@ The essential quantities of interest for operational simulations are the total r
 
 
 
-\subsection{Comparison method: IMEX}
+\subsection{Comparison with Runga-Kutta IMEX schemes}
+
+\newcommand{\ybf}{\mathbf{y}}
+\newcommand{\sbf}{\mathbf{s}}
+\newcommand{\fbf}{\mathbf{f}}
 
 Before we introduce the test case, let us quickly recall the implicit/explicit
 splitting method ARK2 of Giraldo et al (2013) that we use as a benchmark.
+To this end, let us consider the following ordinary differential equation (ODE)
+\begin{equation}
+\frac{d}{dt} \mathbf{y} = \mathbf{s}(\mathbf{y}, t) + \mathbf{f} (\mathbf {y}, t).
+\end{equation}
+The vectors $\mathbf{y}, \mathbf{s} , \mathbf{f}$ can include various state variables.
+The time scale associated with $ \mathbf{s}(\mathbf{y}, t)$ is relatively long
+and can be solved explicitly while those associated with $\mathbf {y}$
+can be very short so $ \mathbf{f} (\mathbf {y}, t)$ must be solved implicitly.
 
-\todo{Shall we add the scheme here or does it distract us from the main message?}
+In general, a Runga-Kutta IMEX scheme is defined by $\nu$ sub-stages (indexed with $j$ and first equation below) and one final stage (second equation below) to advance the time from time level $t^n$ to $t^{n+1}$ with time step size $\Delta t$ such that
+$t^{n+1} = t^n + \Delta t$, namely:
+\begin{align}
+&  \ybf^{(j)}  = \ybf^n + \Delta t \sum_{l=1}^{j-1} \tilde a_{jl} \,  \sbf(\ybf^{(l)}, t^n + \tilde c_{l}\Delta t) + \Delta t \sum_{l=1}^{j} a_{jl} \,  \fbf(\ybf^{(l)}, t^n + c_{l}\Delta t) \, ,  \quad j = 1,...\nu \, , \\
+&  \ybf^{n+1}  = \ybf^n + \Delta t \sum_{j=1}^{\nu} \tilde w_{j} \,  \sbf(\ybf^{(j)}, t^n + \tilde c_{j}\Delta t) + \Delta t \sum_{j=1}^{\nu} w_{j} \,  \fbf(\ybf^{(j)}, t^n + c_{j}\Delta t) \, .
+\end{align}
+The concrete RK-IMEX schemes are then defined by a double Butcher tableau. Here we present the Butcher tableau for the ARK2 (2,3,2) method that we used for our study. That is, for $\nu = 3$, we have, respectively for the explicit (using tilde) and the implicit parts:
 
+%\begin{table}[h]\centering
+\begin{tabular}{c|c}
+ $\mathbf{\tilde c}$ & $\tilde A$ \\ \hline
+    & $\mathbf {\tilde w}^T$
+\end{tabular} \ =
+\begin{tabular}{c|ccc}
+0         &  0             &   0       & 0  \\
+$2\gamma$ &  $2\gamma$     &  0        & 0  \\
+$1$       & $1 - \alpha$   & $\alpha$  & 0  \\ \hline
+          & $\delta$       & $\delta$  & $\gamma$
+\end{tabular}  , \qquad
+\begin{tabular}{c|c}
+ $\mathbf{c}$ & $A$ \\ \hline
+    & $\mathbf {w}^T$
+\end{tabular} \ =
+\begin{tabular}{c|ccc}
+0         &  0             &   0       & 0  \\
+$2\gamma$ &  $\gamma$     &  $\gamma$        & 0  \\
+$1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
+          & $\delta$       & $\delta$  & $\gamma$
+\end{tabular}  , \\
+%\end{table}
+where $\gamma = 1 - \frac{1}{\sqrt{2}}$, $\alpha = \frac{1}{6} (3 + 2\sqrt{2})$ and
+$\delta =  \frac{1}{ 2 \sqrt{2}}$. For $j,l =1,...\nu$, we use the following notation: for explicit part we write
+$\mathbf{\tilde c} = \{\tilde c_j\}$,
+$\mathbf{\tilde w} = \{\tilde w_j\}$, and
+$\tilde A = \{\tilde a_{jl}\}$ where the coefficients must have $\tilde a_{jl} = 0$ for $j \geq l$. For the implicit part, we use
+$\mathbf{c} = \{c_j\}$,
+$\mathbf{w} = \{w_j\}$, and $A = \{a_{jl}\}$ with $\tilde a_{jl} = 0$ for $j > l$ to obtain a diagonally implicit RK scheme. Depending on the choice of these Butcher tableaus, various RK IMEX schemes can be formulated. For such general formulation and an explicit presentation of the corresponding Butcher tableau, \checkit{see Hillary Weller.}
 
+\todo{
+\werner{Stuff from poster: do we need something here?}
+We consider the ODE $y'(t) + F(t,y)= 0$ where $y:(0,T] \rightarrow \mathbb{R}^n$ with $y(0) = y_0$
+and $F:(0,T]\times \mathbb{R}^n \rightarrow \mathbb{R}^n$.
+Given the solution
+$y(t^n)\equiv y^n$ and some $t^{n+1} = t^n + \Delta t$, Runga-Kutta (RK) methods approximate $y(t^{n+1})$ by
+$y^{n+1} = y^{n} + \Delta t \sum_{i = 1}^{s} b_i k_i,$ where for all $1\leq i \leq s$
+ the stages $k_i \in \mathbb{R}^n$ satisfy
+\begin{align*}
+%  y^{n+1} = y^{n} + \Delta t \sum_{i = 1}^{s} b_i k_i, \
+%  \text{where for all $1\leq i \leq n$
+%  the stages $k_i \in \mathbb{R}^n$ satisfy} \\
+ k_i + F\Big(t + c_i \Delta t, \  y + \Delta t \sum_{j = 1}^{s} A_{ij} k_j \Big) = 0 \
+ \text{with $A_{ij}, b_i, c_i$ for $1\leq i,j\leq s$.}
+\end{align*}
+$A_{ij}, b_i, c_i$ are typically organized in a \emph{Butcher tableau} and determine the order of accuracy.
+}
+\vspace{0.7cm}
 
 
 As we will see below, because it is partly explicity, the latter part underlies the CFL criterion, hence the method has a hard time step size restriction. In fact, for our setup we indeed did not achieve stable runs with a time step size larger than about $dt \approx 100s$.
@@ -331,12 +395,20 @@ As we will see below, because it is partly explicity, the latter part underlies 
 
 The results from what we have used so far for the plots!
 \begin{itemize}
- \item Spacial error in the eta field: 0.0006720142783732659
-\item Spacial error in the vel field: 0.007984353352145751
+\item Spacial error in the eta field:  6.720143e-04
+\item Spacial error in the vel field:  7.984353e-03
 \end{itemize}
+We compute the solution for L5 and project it onto the mesh of L6 and then compared this interpolated solutions with the ones directly computed on L6. We compute the relative error by determine the following:
+\begin{equation}
+err(f, fh) =  \frac{||f_{l6} - f_{l5}||}{||f_{l6}||}
+\end{equation}
+i.e. relative to the L2 value of $f$ on mesh level L6. Note that usually, $f_{l5}$ has been interpolated
+already to the mesh level L6 in order to have a well defined error norm.
 
 
 \end{itemize}
+
+\newpage
 
 
 
