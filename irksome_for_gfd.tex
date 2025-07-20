@@ -618,12 +618,12 @@ So far, we used for all simulations the same amount of cores, i.e. 16 (no hypert
 Table~\ref{tab_imex_cores} shows the dependency of the total runtimes for the above studied Williamson test case 6 for 1 day simulation on mesh level 6. The total runtime, shown in the second column for 16 cores, in the third for 8 cores, and in the fourth for 4 cores depend on the time step size $dt$. The last two columns illustrate the speedup, in all cases of about 1.4 when doubling the number of cores from 8 to 16, and about 1.65 when doubling from 4 to 8 cores.
 
 \begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
-18.75 & 3437.80 & 4953.10 & 8323.2 & 1.440776 & 1.680402\\
-37.50 & 1722.50 & 2475.70 & 4192.0 & 1.437271 & 1.693258\\
-75.00  & 873.01 & 1251.10  &2086.8 & 1.433088 & 1.667972\\
-100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.679234
+\begin{tabular}{c|c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4     & 16vs4     \\\hline
+18.75 & 3437.80 & 4953.10 & 8323.2 & 1.440776 & 1.680402  & 2.421083\\
+37.50 & 1722.50 & 2475.70 & 4192.0 & 1.437271 & 1.693258  & 2.433672\\
+75.00  & 873.01 & 1251.10  &2086.8 & 1.433088 & 1.667972  & 2.390351\\
+100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.67923 4& 2.406764
 \end{tabular}
 \caption{Total runtime of IMEX simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
 \label{tab_imex_cores}
@@ -638,16 +638,16 @@ Tables~\ref{tab_irksgl2_cores} and \ref{tab_irksgl3_cores} show the same informa
 
 
 \begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
- 300 & 978.850 & 1479.10 & 2485.40 & 1.511059 & 1.680346\\
-    600 & 501.970  & 746.76 & 1264.30 & 1.487659 & 1.693047\\
-   1200 & 258.890  & 386.97  & 644.79 & 1.494727 & 1.666253\\
-   2400 & 203.150  & 299.47  & 491.16 & 1.474132 & 1.640098\\
-   3600 & 198.420 &  289.11 &  472.88 & 1.457061 & 1.635640\\
-   7200 & 108.260  & 158.95  & 249.78 & 1.468225 & 1.571438\\
-  10800 & 118.050 &  168.39  & 273.80 & 1.426429 & 1.625987\\
-  14400 &  98.331 &  137.50 &  219.78 & 1.398338 & 1.598400\\
+\begin{tabular}{c|c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8       &   8vs4   & 16vs4 \\\hline
+ 300 & 978.850 & 1479.10 & 2485.40 & 1.511059    & 1.680346 & 2.539102\\
+    600 & 501.970  & 746.76 & 1264.30 & 1.487659 & 1.693047 & 2.518676\\
+   1200 & 258.890  & 386.97  & 644.79 & 1.494727 & 1.666253 & 2.490594\\
+   2400 & 203.150  & 299.47  & 491.16 & 1.474132 & 1.640098 & 2.417721\\
+   3600 & 198.420 &  289.11 &  472.88 & 1.457061 & 1.635640 & 2.383227\\
+   7200 & 108.260  & 158.95  & 249.78 & 1.468225 & 1.571438 & 2.307223\\
+  10800 & 118.050 &  168.39  & 273.80 & 1.426429 & 1.625987 & 2.319356\\
+  14400 &  98.331 &  137.50 &  219.78 & 1.398338 & 1.598400 & 2.235104\\
 \end{tabular}
 \caption{Total runtime of GaussLegendre 1 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
 \label{tab_irksgl1_cores}
@@ -657,16 +657,16 @@ dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
 
 
 \begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
-     300  & 2665.00  & 4158.80  & 7192.90  & 1.560525  & 1.729561 \\
-     600  & 1357.90  & 2112.60  & 3621.10  & 1.555785  & 1.714049\\
-    1200  &  765.88  & 1177.30  & 2065.20  & 1.537186  & 1.754183\\
-    2400  &  614.82   & 903.21  & 1537.40  & 1.469064  & 1.702151\\
-   3600   & 430.65   & 644.89   &1086.70  & 1.497481  & 1.685094\\
-   7200  &  263.50   & 384.85   & 649.56   &1.460531  & 1.687826\\
-  10800   & 237.78   & 347.62   & 557.78  & 1.461940  & 1.604568\\
-  14400   & 212.17   & 312.52   & 508.26  & 1.472970  & 1.626328
+\begin{tabular}{c|c|c|c|c|c|c}
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4  & 16vs4    \\\hline
+     300  & 2665.00  & 4158.80  & 7192.90  & 1.560525  & 1.729561 & 2.699024\\
+     600  & 1357.90  & 2112.60  & 3621.10  & 1.555785  & 1.714049  & 2.666691 \\
+    1200  &  765.88  & 1177.30  & 2065.20  & 1.537186  & 1.754183  & 2.696506\\
+    2400  &  614.82   & 903.21  & 1537.40  & 1.469064  & 1.702151  & 2.500569\\
+   3600   & 430.65   & 644.89   &1086.70  & 1.497481  & 1.685094  & 2.523395\\
+   7200  &  263.50   & 384.85   & 649.56   &1.460531  & 1.687826  & 2.465123\\
+  10800   & 237.78   & 347.62   & 557.78  & 1.461940  & 1.604568  & 2.345782 \\
+  14400   & 212.17   & 312.52   & 508.26  & 1.472970  & 1.626328  & 2.395532
 \end{tabular}
 \caption{Total runtime of GaussLegendre 2 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
 \label{tab_irksgl2_cores}
@@ -676,16 +676,16 @@ dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
 
 
 \begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4 \\\hline
-    300  &  5468.80  &  8759.00  &  15414.0  &  1.601631  &  1.759790\\
-    600  &  2752.70  &  4403.80   &  7693.1  &  1.599811  &  1.746923\\
-   1200  &  2109.30  &  3337.00   &  5775.2  &  1.582041  &  1.730656\\
-   2400  &  1184.60  &  1846.70   &  3203.8  &  1.558923  &  1.734878\\
-   3600  &   795.64  &  1244.30   &  2150.0  &  1.563898  &  1.727879\\
-   7200   &  424.55   &  647.44   &  1124.2  &  1.525003  &  1.736377\\
-  10800   &  452.88   &  691.13   &  1157.9  &  1.526078  &  1.675372\\
-  14400   &  363.06   &  573.04    &  929.3   & 1.578362   & 1.621702
+\begin{tabular}{c|c|c|c|c|c|c }
+dt &  time16  &  time8  & time4  &   16vs8   &   8vs4                 & 16vs4 \\\hline
+    300  &  5468.80  &  8759.00  &  15414.0  &  1.601631  &  1.759790  &  2.818534\\
+    600  &  2752.70  &  4403.80   &  7693.1  &  1.599811  &  1.746923  & 2.794747 \\
+   1200  &  2109.30  &  3337.00   &  5775.2  &  1.582041  &  1.730656  & 2.737970 \\
+   2400  &  1184.60  &  1846.70   &  3203.8  &  1.558923  &  1.734878  &  2.704542\\
+   3600  &   795.64  &  1244.30   &  2150.0  &  1.563898  &  1.727879  &  2.702227\\
+   7200   &  424.55   &  647.44   &  1124.2  &  1.525003  &  1.736377  &  2.647980\\
+  10800   &  452.88   &  691.13   &  1157.9  &  1.526078  &  1.675372  &  2.556748\\
+  14400   &  363.06   &  573.04    &  929.3   & 1.578362   & 1.621702  &  2.559632
 \end{tabular}
 \caption{Total runtime of GaussLegendre 3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
 \label{tab_irksgl3_cores}
@@ -697,24 +697,53 @@ Finally, in Table~\ref{tab_irksrd123_cores} we show only speedups for the Radau 
 Radau 2 (RD2) and Radau 3 RD3) methods when doubling the number of course (similarly to above).
 See see that the speedup rates are comparable to the ones obtained for any of the GaussLegendre methods.
 
-
 \begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c|c|c}
- dt & RD1 16vs8   & RD1  8vs4  & RD2 16vs8   & RD2  8vs4   & RD3 16vs8   & RD3  8vs4 \\ \hline
-   300  &   1.539362 & 1.654903 &  1.559409 & 1.734572 & 1.584337 &  1.746450 \\
-   600  &   1.489607 & 1.688540 &  1.537340 & 1.713950 & 1.586299 & 1.745938 \\
-  1200  &   1.477944 & 1.664983 &  1.530582 & 1.709031 & 1.573103 & 1.737185\\
-  2400  &  1.468772 & 1.645109  &  1.520339 & 1.694670 & 1.567282 & 1.733409\\
-  3600  &  1.452123 & 1.638958  &  1.489243 & 1.691695 & 1.565379 & 1.727143\\
-  7200  & 1.408500 & 1.614395-  &   1.489768&  1.652774 & 1.591538 & 1.650058\\
- 10800 &   1.396592 & 1.819265  &  1.452383 & 1.653543 & 1.540597 & 1.619612\\
- 14400 &  NaN      &  1.259854 &   1.472219 & 1.619568 &  1.570823 & 1.619422
+\begin{scriptsize}
+\begin{tabular}{c|c|c|c||c|c|c||c|c|c}
+ dt & RD1 16vs8   & RD1  8vs4  & RD1 16vs4 & RD2 16vs8   & RD2  8vs4 & RD2 16vs4 &   RD3 16vs8
+ & RD3  8vs4  & RD3 16vs4\\ \hline
+   300  &   1.539362 & 1.654903 &2.547495 &  1.559409 & 1.734572 & 2.704908 & 1.584337 &  1.746450  & 2.766965\\
+   600  &   1.489607 & 1.688540 & 2.515260& 1.537340 & 1.713950 & 2.634924 &   1.586299 & 1.745938  &2.769579 \\
+  1200  &   1.477944 & 1.664983 & 2.460751& 1.530582 & 1.709031 & 2.615812 & 1.573103 & 1.737185 &2.732770 \\
+  2400  &  1.468772 & 1.645109  & 2.416291& 1.520339 & 1.694670 & 2.576473 & 1.567282 & 1.733409 & 2.716740\\
+  3600  &  1.452123 & 1.638958  & 2.379969& 1.489243 & 1.691695 & 2.519345 & 1.565379 & 1.727143 & 2.703633\\
+  7200  & 1.408500 & 1.614395-  & 2.273875&  1.489768&  1.652774 & 2.462249 & 1.591538 & 1.650058 & 2.626129\\
+ 10800 &   1.396592 & 1.819265  & 2.540771& 1.452383 & 1.653543 & 2.401577 & 1.540597 & 1.619612 &2.495169 \\
+ 14400 &  NaN      &  1.259854 & NaN & 1.472219 & 1.619568 & 2.384358 &  1.570823 & 1.619422  &2.543826
 \end{tabular}
 \caption{Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
-The 2nd, 4th, 6th column shows speed up when using 16 rather than 8 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3.}
+\checkit{The 2nd, 4th, 6th column shows speed up when using 16 rather than 4 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3. NaN in the table indicates that for the given time step size and method, the solver did not converge, hence there is not total runtime available (here for Radau 3 with dt of 14400).}}
 \label{tab_irksrd123_cores}
+\end{scriptsize}
 \end{table}
-\color{red}
+
+
+
+
+%
+%
+%
+%
+% \begin{table}[h]\centering
+% \color{red}
+% \begin{tabular}{c|c|c|c|c|c|c|c}
+%  dt & RD1 16vs8   & RD1  8vs4  & RD2 16vs8   & RD2  8vs4   & RD3 16vs8   & RD3  8vs4 \\ \hline
+%    300  &   1.539362 & 1.654903 &  1.559409 & 1.734572 & 1.584337 &  1.746450 \\
+%    600  &   1.489607 & 1.688540 &  1.537340 & 1.713950 & 1.586299 & 1.745938 \\
+%   1200  &   1.477944 & 1.664983 &  1.530582 & 1.709031 & 1.573103 & 1.737185\\
+%   2400  &  1.468772 & 1.645109  &  1.520339 & 1.694670 & 1.567282 & 1.733409\\
+%   3600  &  1.452123 & 1.638958  &  1.489243 & 1.691695 & 1.565379 & 1.727143\\
+%   7200  & 1.408500 & 1.614395-  &   1.489768&  1.652774 & 1.591538 & 1.650058\\
+%  10800 &   1.396592 & 1.819265  &  1.452383 & 1.653543 & 1.540597 & 1.619612\\
+%  14400 &  NaN      &  1.259854 &   1.472219 & 1.619568 &  1.570823 & 1.619422
+% \end{tabular}
+% \caption{Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
+% The 2nd, 4th, 6th column shows speed up when using 16 rather than 8 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3.}
+% \label{tab_irksrd123_cores_old}
+% \end{table}
+
+
+
 
 
 
