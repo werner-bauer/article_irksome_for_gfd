@@ -96,6 +96,7 @@ k\times v$ for vector fields $v$, $f=2\Omega \sin(\phi)$ is the
 Coriolis parameter with $\Omega$ the rotation rate of the Earth
 (2$\pi$/(sidereal day)) and latitude $\phi$, $g$ is the acceleration due to gravity,
 $b$ is the topography field, and $D$ is the depth of the layer.
+\werner{$k$?, vectors in bold face?}
 
 In this investigation we use a compatible finite element
 discretisation of these equations. We do not expect that the precise
@@ -166,6 +167,7 @@ at the next timestep is obtained from
   D^{n+1} = D^n + \Delta t\sum_ib_i k_{D,i},
 \end{equation}
 where $b_i$ are also obtained from the Butcher tableau.
+\werner{$i = 1,...s?$}
 \werner{Cite Farrell for an example of such tableau with concrete values?}
 Note here
 that our system has no explicit time dependence which would otherwise
@@ -176,23 +178,32 @@ We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
   stages}) using Newton iteration. Given an initial guess $\{(k_{u,i},
 k_{D,i})\}_{i=1}^s$ for the stages, a Newton iteration requires solving
 the coupled linear Jacobian system
+\begin{small}
 \begin{align}
   \label{eq:u J}
-  \langle w, k'_{u,i} \rangle + \diff a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
+&  \langle w, k'_{u,i} \rangle + \diff a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
   D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
-  w\right) = & -R_{u,i}[w],
-  \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+  w\right) =  -R_{u,i}[w],
+  \  \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D J}
-  \langle \phi, k'_{D,i} \rangle
+ & \langle \phi, k'_{D,i} \rangle
   + \diff c\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
   D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
-  \phi\right) & = -R_{D,i}[\phi],
-  \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+  \phi\right)  = -R_{D,i}[\phi],
+  \ \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
+\end{small}
+
+\werner{Shouldn't be the derivative of the Jacobi with respect to ku and kD while the term itself depends on ku' and kD', so the other way round as you have written it?}
+
+\noindent
 for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
 $i=1,\ldots,s$, where $\diff a$ and $\diff b$ are the Gateaux
 derivatives of $a$ and $c$ (here taking the convention that the upwind
 switches have derivative zero when $u\cdot n=0$).
+\werner{(Define da, dc with 4th entry, i.e derivative of forms a, c
+with respect to current stage k'?). Maybe explain only notation, i.e.
+what does the new notation mean?}
 
 The solution is then updated according to
 \begin{equation}
@@ -214,14 +225,18 @@ k'_{D,i})\}_{i=1}^s \in \prod_{i=1}^s(V\times Q)$ solved all at
 once. The preconditioner for the Krylov method is an additive Schwarz
 method, built using overlapping subspaces $W_l=\{V_l\times
 Q_l\}_{l=1}^M$. For each $l$, the Jacobian system (with given right
-hand side residuals provided as input to the preconditioner) is
+hand side residuals provided as input to the preconditioner)
+\werner{could we be more explicit here? i.e. in term of the formulas given above? What does 'input for the preconditioner' mean?}
+is
 restricted to $W_l$ and solved using a direct solver, producing $z_l$,
+\werner{is $z_l$ the correction of the full solution per patch?}
 and the result of the preconditioner is the sum $\sum_{l=1}^Mz_l$
 (hence the term additive).
+\werner{Why does summation work if the patches are overlapping?}
 
-In this work we define subspaces using ``star patches''.  Here, there
+In this work we define \werner{the subspaces $W_l$} using ``star patches''.  Here, there
 is one subspace for each of the $M$ vertices in the mesh.  The
-subspace for a vertex $z_i$ is defined by taking the set $S$ of cells
+subspace for a vertex $z_i$ \werner{why do we use $i$ and not $l$ as index?} is defined by taking the set $S$ of cells
 surrounding $z_i$, and the finite element spaces are restricted to $S$
 with zero normal boundary conditions on the boundary of $S$ for the
 components in $V$ (See Figure \ref{fig:patch}). The direct solve on
@@ -229,12 +244,13 @@ the patch couples all of the stage corrections together. These
 solves are independent, and hence parallelisable, between patches.
 Usually, this
 type of preconditioner is used as a smoother in a multigrid
-cycle. Here, we do not use a multigrid because standard scalable
+cycle. Here, we do not use a multigrid \werner{Is this still true, I though you switched it on again!} because standard scalable
 approaches do not work very well for advective
 nonlinearities. However, it is also typical to scale $\Delta t$ to
 keep the advective Courant number constant as the mesh is refined, so
 we can hope for mesh independent Krylov iteration counts under this
 refinement scaling.
+\werner{do we see this somewhere in the numerical result section?}
 
  \begin{figure}
   \includegraphics[width=8cm]{Images/patch}
