@@ -2,8 +2,9 @@
 \usepackage[margin=2.5cm]{geometry}
 %\usepackage{geometry}[2cm,2cm,2cm,2cm]
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath,amssymb,stmaryrd,amsthm,MnSymbol}
-\usepackage{amsmath,amsfonts,amssymb,amsopn}
+\usepackage[nosumlimits]{amsmath}
+\usepackage{amssymb,stmaryrd,amsthm,MnSymbol}
+\usepackage{amsfonts,amssymb,amsopn}
 \usepackage{hyperref}
 \usepackage{color}
 \usepackage{graphicx}
@@ -22,6 +23,7 @@ Colin J. Cotter\footnote{Imperial College London, UK, Orchid: ???}  }
 			\tt #1 \end{minipage}}\vspace{5 mm}\par}
 \newcommand{\checkit}[1]{{\color{red}#1}}
 \newcommand{\werner}[1]{{\color{magenta}WB says: #1}}
+\newcommand{\colin}[1]{{\color{blue}CC says: #1}}
 \newcommand{\incl}[1]{{\color{red}#1}}
 
 
@@ -96,7 +98,10 @@ k\times v$ for vector fields $v$, $f=2\Omega \sin(\phi)$ is the
 Coriolis parameter with $\Omega$ the rotation rate of the Earth
 (2$\pi$/(sidereal day)) and latitude $\phi$, $g$ is the acceleration due to gravity,
 $b$ is the topography field, and $D$ is the depth of the layer.
-\werner{$k$?, vectors in bold face?}
+
+\werner{$k$?, vectors in bold face?} \colin{I prefer not to, it should
+  be inferrable from the context. There are plenty of other objects
+  around so it seems odd that vectors should get a special typeface.}
 
 In this investigation we use a compatible finite element
 discretisation of these equations. We do not expect that the precise
@@ -145,34 +150,38 @@ see \cite{gibson2019compatible}. In this work we used $p=1$.
 Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
 stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
 \begin{align}
-  \label{eq:u stages}
-  R_{u,i}[w] := \langle w, k_{u,i} \rangle + a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
-  D^n + \Delta t\sum_jA_{ij}k_{D,j};w\right)
-   & = 0,
+    \label{eq:u stages}
+    R_{u,i}[w] := \langle w, k_{u,i} \rangle + a\left(
+    u^n_i,D^n_i;w\right)
+  & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
-  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + c\left(u^n + \Delta
-  t\sum_jA_{ij}k_{u,j}, D^n + \Delta t\sum_jA_{ij}k_{D,j}; \phi\right)
-  & = 0, \quad \forall \phi \in Q,\mbox{ for
-  }i=1,\ldots,s,
+  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + c\left(u^n_i,D^n_i; \phi\right)
+  & = 0, \quad \forall \phi \in Q, \mbox{ for }i=1,\ldots,s,\\
+  u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
+  D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
 \end{align}
-\werner{do we need to specify $j$?}
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge Kutta scheme. This defines a coupled
 system for all of the stages in general. After solving
 (\ref{eq:u stages}-\ref{eq:D stages}) for the stages, the solution
 at the next timestep is obtained from
 \begin{equation}
-  u^{n+1} = u^n + \Delta t\sum_ib_i k_{u,i},\quad
-  D^{n+1} = D^n + \Delta t\sum_ib_i k_{D,i},
+  u^{n+1} = u^n + \Delta t\sum_{i=1}^sb_i k_{u,i},\quad
+  D^{n+1} = D^n + \Delta t\sum_{i=1}^sb_i k_{D,i},
 \end{equation}
-where $b_i$ are also obtained from the Butcher tableau.
-\werner{$i = 1,...s?$}
-\werner{Cite Farrell for an example of such tableau with concrete values?}
-Note here
-that our system has no explicit time dependence which would otherwise
-need to be incorporated into (\ref{eq:u stages}-\ref{eq:D stages}) in
-the usual way.
+where $b_i$ are also obtained from the Butcher tableau. In this work
+we consider collocation Runge-Kutta methods, in particular the
+Gauss-Legendre methods that extend the implicit midpoint rule to
+higher orders, and the Radau IIA methods the extend the backward Euler
+method to higher orders. The Gauss-Legendre methods are energy
+preserving for wave equations but slow down high frequency
+oscillations, whilst the Radau IIA methods damp high frequency
+oscillations.  See \citet{wanner1996solving} for a comprehensive
+derivation and analysis of these methods, along with their Butcher
+tableau. Note here that our system has no explicit time dependence
+which would otherwise need to be incorporated into (\ref{eq:u
+  stages}-\ref{eq:D stages}) in the usual way.
 
 We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
   stages}) using Newton iteration. Given an initial guess $\{(k_{u,i},
