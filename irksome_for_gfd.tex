@@ -734,6 +734,64 @@ See see that the speedup rates are comparable to the ones obtained for any of th
 \end{table}
 
 
+\cleardoublepage
+
+\subsection{Iteration counts tables}
+
+\begin{table}[h]\centering
+\begin{scriptsize}
+ \begin{tabular}{c||c|c|c||c|c|c||c|c|c}
+   dt & rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter\\ \hline
+  300  &          1    &     4.000000  &  1152.0    &    2   &    4.000000  &  1152.0   &      3   &      4.000000  &  1152.0 \\
+   600  &         1     &    4.000000  &   576.0    &    2    &   4.055556  &   584.0    &     3    &     4.000000   &  576.0 \\
+  1200   &         1   &      4.000000   &  288.0   &    2   &      4.722222  &   340.0    &        3    &     6.833333  &   492.0\\
+  2400    &        1    &     7.250000   &  261.0   &    2   &       8.194444   &  295.0    &        3    &     8.000000   &  288.0\\
+  3600     &       1    &    11.708333  &   281.0   &    2   &    8.958333   &  215.0     &       3    &     8.000000  &   192.0 \\
+  7200     &       1   &     11.916667  &   143.0    &   2   &     11.416667  &   137.0    &        3   &      8.500000  &   102.0\\
+  10800    &        1   &     22.375000 &    179.0   &   2   &     16.750000   &  134.0    &        3     &   16.250000   &  130.0 \\
+  14400    &        1   &     24.166667  &   145.0   &   2   &     20.500000   &  123.0     &       3     &   17.666667   &  106.0
+\end{tabular}
+\caption{Iteration per step (its-per-step) and total iteration count (niter) vs $dt$ for the Gauss-Legendre 1, 2, 3 methods.}
+\label{tab_niter_vs_dt}
+\end{scriptsize}
+\end{table}
+
+
+\begin{table}[h]\centering
+\begin{scriptsize}
+\begin{tabular}{c||c|c|c||c|c|c||c|c|c}
+ dt & rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter\\ \hline
+300  &        1 &      4.000000 & 1152.0 &         2 &      4.000000 & 1152.0 &         3&       5.000000 & 1440.0\\
+600  &        1  &     4.000000 &  576.0 &         2  &     6.777778 &  976.0  &        3 &      6.770833 &  975.0\\
+1200  &        1  &     8.750000&   630.0 &         2  &     8.000000 &  576.0  &        3 &      7.736111 &  557.0\\
+2400   &       1   &   12.027778 &  433.0  &        2   &    8.777778 &  316.0   &       3  &     8.000000  & 288.0\\
+3600    &      1    &  12.250000 &  294.0   &       2    &   9.500000 &  228.0    &      3   &    9.000000  & 216.0\\
+7200     &     1   &   24.333333  & 292.0    &      2     & 13.083333 &  157.0     &     3    &  12.166667  & 146.0\\
+10800     &     1   &   30.375000 &  243.0    &      2  &    21.875000 &  175.0     &     3    &  19.000000 &  152.0\\
+14400      &    1   & -666.000000 & -3996.0    &      2 &     24.333333 &  146.0     &     3    &  20.833333 &  125.0
+\end{tabular}
+\caption{Iteration per step (its-per-step) and total iteration count (niter) vs $dt$ for the RADAUII2 1,2,3 methods.
+\checkit{Substitute -666 by a star and mention that there is no result because the simulation crashed for these values}}
+\label{tab_niter_vs_dt}
+\end{scriptsize}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 %
