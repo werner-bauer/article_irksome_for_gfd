@@ -150,12 +150,12 @@ Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
 stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
 \begin{align}
     \label{eq:u stages}
-    R_{u,i}[w] := \langle w, k_{u,i} \rangle + \sum_{j=1}^sA_{ij}a\left(
+    R_{u,i}[w] := \langle w, k_{u,i} \rangle + \Delta ta\left(
     u^n_i,D^n_i;w\right)
   & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
-  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + c\left(u^n_i,D^n_i; \phi\right)
+  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + \sum_{j=1}^sA_{ij}c\left(u^n_i,D^n_i; \phi\right)
   & = 0, \quad \forall \phi \in Q, \mbox{ for }i=1,\ldots,s,\\
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
@@ -190,12 +190,12 @@ the coupled linear Jacobian system
 \begin{align}
   \label{eq:u J}
     \langle w, k'_{u,i} \rangle +
-   \gat a\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
+   \Delta t \sum_{j=1}^sA_{ij}\gat a\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
   w\right) &=  -R_{u,i}[w],
   \  \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D J}
   \langle \phi, k'_{D,i} \rangle
-  + \Delta t\sum_{j=1}^s\gat c\left(u^n_i,D^n_i;\{(k'_{u,j}, k'_{D,j}),
+  + \Delta t\sum_{j=1}^sA_{ij}\gat c\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
   \phi\right)  &= -R_{D,i}[\phi],
   \ \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
@@ -223,15 +223,15 @@ The solution is then updated according to
   k_{D,i}\mapsto k_{D,i} + k'_{D,i},
 \end{equation}
 and the iteration is terminated if the residuals in (\ref{eq:u
-  stages}-\ref{eq:D stages}) are sufficiently small (according
-to an appropriately chosen termination criteria).
+  stages}-\ref{eq:D stages}) are sufficiently small (according to an
+appropriately chosen termination criteria).  The assembly of these
+nonlinear and linear systems can be performed in the usual way by
+looping (in parallel) over cells and constructing the appropriate
+contributions upon substituting $w$ and $\phi$ for each basis function
+from standard sparse finite element bases for $V\times Q$. It remains
+to find a scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
-The assembly of these nonlinear and linear systems can be performed in
-the usual way by looping (in parallel) over cells and constructing the
-appropriate contributions upon substituting $w$ and $\phi$ for each
-basis function from standard sparse finite element bases for $V\times
-Q$. It remains to find a scalable way to solve (\ref{eq:u J}-\ref{eq:D
-  J}). In this work, we use a monolithic Krylov solver (GMRES in this
+In this work, we solve (\ref{eq:u J}-\ref{eq:D J})  a monolithic Krylov solver (GMRES in this
 case) applied to the full set of stage corrections $z' = \{(k'_{u,i},
 k'_{D,i})\}_{i=1}^s \in \prod_{i=1}^s(V\times Q)$ solved all at
 once. The preconditioner for the Krylov method is an additive Schwarz
