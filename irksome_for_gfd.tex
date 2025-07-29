@@ -56,6 +56,7 @@ Colin J. Cotter\footnote{Imperial College London, UK, Orchid: ???}  }
 \newcommand{\dt}[1]{\diff\!#1}
 \def\MM#1{\boldsymbol{#1}}
 \DeclareMathOperator{\diff}{d}
+\DeclareMathOperator{\gat}{\diff\!}
 \DeclareMathOperator{\Tr}{Tr}
 \DeclareMathOperator{\uu}{\MM{u}^\delta}
 \DeclareMathOperator{\F}{\MM{F}^\delta}
@@ -95,15 +96,11 @@ here in vector-invariant form as
 \end{align}
 where $u$ is the velocity (tangential to the sphere), $\nabla$ is the
 gradient projected into the tangent plane on the sphere, $v^\perp =
-k\times v$ for vector fields $v$, $f=2\Omega \sin(\phi)$ is the
-Coriolis parameter with $\Omega$ the rotation rate of the Earth
-(2$\pi$/(sidereal day)) and latitude $\phi$, $g$ is the acceleration due to gravity,
-$b$ is the topography field, and $D$ is the depth of the layer.
-
-\werner{$k$?, vectors in bold face?} \colin{I prefer not to, it should
-  be inferrable from the context. There are plenty of other objects
-  around so it seems odd that vectors should get a special typeface.}
-\werner{Ok, but what about $k$???}
+k\times v$ for vector fields $v$, $k$ is the unit outward pointing
+normal to the sphere, $f=2\Omega \sin(\phi)$ is the Coriolis parameter
+with $\Omega$ the rotation rate of the Earth (2$\pi$/(sidereal day))
+and latitude $\phi$, $g$ is the acceleration due to gravity, $b$ is
+the topography field, and $D$ is the depth of the layer.
 
 In this investigation we use a compatible finite element
 discretisation of these equations. We do not expect that the precise
@@ -153,7 +150,7 @@ Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
 stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
 \begin{align}
     \label{eq:u stages}
-    R_{u,i}[w] := \langle w, k_{u,i} \rangle + a\left(
+    R_{u,i}[w] := \langle w, k_{u,i} \rangle + \sum_{j=1}^sA_{ij}a\left(
     u^n_i,D^n_i;w\right)
   & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
@@ -192,29 +189,33 @@ the coupled linear Jacobian system
 \begin{small}
 \begin{align}
   \label{eq:u J}
-&  \langle w, k'_{u,i} \rangle + \diff a\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
-  D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
-  w\right) =  -R_{u,i}[w],
+    \langle w, k'_{u,i} \rangle +
+  \Delta t\sum_{j=1}^sA_{ij}\gat a\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
+  w\right) &=  -R_{u,i}[w],
   \  \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D J}
- & \langle \phi, k'_{D,i} \rangle
-  + \diff c\left(u^n + \Delta t\sum_jA_{ij}k_{u,j},
-  D^n + \Delta t\sum_jA_{ij}k_{D,j};\{(k'_{u,q}, k'_{D,q})\}_{q=1}^s,
-  \phi\right)  = -R_{D,i}[\phi],
+  \langle \phi, k'_{D,i} \rangle
+  + \Delta t\sum_{j=1}^s\gat c\left(u^n_i,D^n_i;\{(k'_{u,j}, k'_{D,j}),
+  \phi\right)  &= -R_{D,i}[\phi],
   \ \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
 \end{small}
-
-\werner{Shouldn't be the derivative of the Jacobi with respect to ku and kD while the term itself depends on ku' and kD', so the other way round as you have written it?}
-
-\noindent
 for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
-$i=1,\ldots,s$, where $\diff a$ and $\diff b$ are the Gateaux
-derivatives of $a$ and $c$ (here taking the convention that the upwind
-switches have derivative zero when $u\cdot n=0$).
-\werner{(Define da, dc with 4th entry, i.e derivative of forms a, c
-with respect to current stage k'?). Maybe explain only notation, i.e.
-what does the new notation mean?}
+$i=1,\ldots,s$. Here, $\gat a$ and $\gat b$ are the Gateaux
+derivatives of $a$ and $c$ defined by
+\begin{align}
+  \gat a(u,D;(v,\phi),w) & = \lim_{\epsilon\to 0}
+  \frac{1}{\epsilon}(a(u+\epsilon v,D+\epsilon \phi; w)
+  - a(u,D;w)),  \, \forall u,v,w \in V, \, D,\phi \in Q, \\
+  \gat c(u,D;(v,\phi),\psi) & = \lim_{\epsilon\to 0}
+  \frac{1}{\epsilon}(c(u+\epsilon v,D+\epsilon \phi; \psi)
+  - c(u,D;\psi)), \, \forall u,v \in V,\, D,\phi,\psi \in Q,
+\end{align}
+taking the convention that the upwind switches have derivative
+zero\footnote{This treatment means that we are in effect using a
+quasi-Newton method; using a semi-smooth Newton method might be
+more elegant, but we do not observe any issues with our approach.}
+when $u\cdot n=0$.
 
 The solution is then updated according to
 \begin{equation}
