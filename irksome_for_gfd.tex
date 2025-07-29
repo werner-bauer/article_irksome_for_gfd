@@ -839,7 +839,7 @@ ref-level &   its per step &   niter & its per step &   niter & its per step &  
      3    &   4.000000  & 96.0 & 4.000000 &  48.0&  8.166667 &  49.0\\
      4   &     4.000000 &  96.0 &8.000000 &  96.0 &8.500000  & 51.0\\
      5   &    7.541667 & 181.0 & 10.833333 & 130.0&12.333333 &  74.0 \\
-     6   &   11.708333 & 281.0 & 11.916667 & 143.0&  24.166667 & 145.0\\
+     6   &   11.708333 & 281.0 & 11.916667 & 143.0&  24.166667 & 145.0
 %     ref_level    dt  its per step  niter
 % 48          3  3600      4.000000   96.0
 % 56          4  3600      4.000000   96.0
@@ -863,7 +863,44 @@ ref-level &   its per step &   niter & its per step &   niter & its per step &  
 
 
 
+\begin{table}[h]\centering
+\begin{scriptsize}
+\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+\multicolumn{0}{c|}{dt} &
+\multicolumn{2}{c|}{300} &
+\multicolumn{2}{c|}{600} &
+\multicolumn{2}{c|}{1200} &
+\multicolumn{2}{c|}{2400}
+\\ \hline\hline
+ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
+        3 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
+        4 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
+        5 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       6.611111 &   238.0\\
+        6 &      4.0  &      1152.0 &            4.0 &   576.0 &       6.833333 &   492.0 &       8.000000 &   288.0
+\end{tabular}
+\bigskip
 
+\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+\multicolumn{0}{c|}{dt} &
+\multicolumn{2}{c|}{3600} &
+\multicolumn{2}{c|}{7200} &
+\multicolumn{2}{c|}{14400}
+\\ \hline\hline
+ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
+       3 &      4.000000  & 96.0 &       7.916667  & 95.0 &    7.333333 &  44.0\\
+       4 &      7.208333  & 173.0 &      7.916667  & 95.0 &    8.166667 &  49.0\\
+       5 &      8.000000  & 192.0 &      8.000000  & 96.0 &    8.500000 &  51.0\\
+       6 &      8.000000  & 192.0 &      8.500000  &102.0 &   17.666667 & 106.0
+\end{tabular}
+\caption{GaussLegendre, rk-stages 3}
+\label{tab_niter_vs_spatial}
+\end{scriptsize}
+\end{table}
+
+
+Note: Radau II behaves very similarly with respect to the iteration count: i.e.
+its per step increases with dt, but this effect is also less pronounced for higher
+order methods (not shown).
 
 
 
