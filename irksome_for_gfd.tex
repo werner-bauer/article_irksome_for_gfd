@@ -112,6 +112,7 @@ element space on triangles, and $Q$ as the degree $p$ discontinuous
 Lagrange finite element space, here defined on an icosahedral grid
 $\mathcal{X}$ formed by recursively refining an icosahedron and then projecting
 vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
+\werner{bracket()?}
 such that
 \begin{align}
   \label{eq:ut}
@@ -160,10 +161,11 @@ stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
 \end{align}
+\werner{sum should also be in (7)?}
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge Kutta scheme. This defines a coupled
 system for all of the stages in general. After solving
-(\ref{eq:u stages}-\ref{eq:D stages}) for the stages, the solution
+(\ref{eq:u stages}-\ref{eq:D stages}) for the stages\werner{solving 7-10?}, the solution
 at the next timestep is obtained from
 \begin{equation}
   u^{n+1} = u^n + \Delta t\sum_{i=1}^sb_i k_{u,i},\quad
@@ -172,7 +174,7 @@ at the next timestep is obtained from
 where $b_i$ are also obtained from the Butcher tableau. In this work
 we consider collocation Runge-Kutta methods, in particular the
 Gauss-Legendre methods that extend the implicit midpoint rule to
-higher orders, and the Radau IIA methods the extend the backward Euler
+higher orders, and the Radau IIA methods \incl{that} extend the backward Euler
 method to higher orders. The Gauss-Legendre methods are energy
 preserving for wave equations but slow down high frequency
 oscillations, whilst the Radau IIA methods damp high frequency
