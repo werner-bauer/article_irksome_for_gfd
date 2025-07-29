@@ -10,11 +10,12 @@
 \usepackage{graphicx}
 \usepackage{natbib}
 \bibliographystyle{elsarticle-harv}
+\usepackage{multirow}
 
 
 %opening
 \title{Fully implicit timestepping methods for the rotating shallow water equations}
-\author{Werner Bauer\footnote{University of Surrey, UK (w.bauer@surrey.ac.uk), Ochid: ???} \ and
+\author{Werner Bauer\footnote{University of Surrey, UK (w.bauer@surrey.ac.uk), Ochid: \url{https://orcid.org/0000-0002-5040-4287}} \ and
 Colin J. Cotter\footnote{Imperial College London, UK, Orchid: ???}  }
 
 
@@ -102,6 +103,7 @@ $b$ is the topography field, and $D$ is the depth of the layer.
 \werner{$k$?, vectors in bold face?} \colin{I prefer not to, it should
   be inferrable from the context. There are plenty of other objects
   around so it seems odd that vectors should get a special typeface.}
+\werner{Ok, but what about $k$???}
 
 In this investigation we use a compatible finite element
 discretisation of these equations. We do not expect that the precise
@@ -781,7 +783,7 @@ See see that the speedup rates are comparable to the ones obtained for any of th
 \end{tabular}
 \caption{Iteration per step (its-per-step) and total iteration count (niter) vs $dt$ for the RADAUII2 1,2,3 methods.
 \checkit{Substitute -666 by a star and mention that there is no result because the simulation crashed for these values}}
-\label{tab_niter_vs_dt}
+\label{tab1_niter_vs_dt}
 \end{scriptsize}
 \end{table}
 
@@ -791,7 +793,73 @@ See see that the speedup rates are comparable to the ones obtained for any of th
 
 
 
+% \multirow{3}{*}{} & \multicolumn{2}{c|}{User B} & \multirow{3}{*}{X} & %
+%     \multicolumn{2}{c|}{User C} & \multirow{3}{*}{D}\\
 
+
+\begin{table}[h]\centering
+\begin{scriptsize}
+\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+\multicolumn{0}{c|}{dt} &
+\multicolumn{2}{c|}{300} &
+\multicolumn{2}{c|}{600} &
+\multicolumn{2}{c|}{1200} &
+\multicolumn{2}{c|}{2400}
+\\ \hline\hline
+ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
+     3    &      4.000000  & 1152.0 & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
+     4   &      4.000000  & 1152.0  & 4.006944 & 577.0 & 4.0 & 288.0 & 4.00 & 144.0\\
+     5   &      4.017361  & 1157.0  & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
+     6   &      4.000000  & 1152.0 & 4.000000 & 576.0  & 4.0 & 288.0 & 7.25 & 261.0\\
+%     ref_level   dt  its per step  niter
+% 22          3  600      4.000000  576.0
+% 21          4  600      4.006944  577.0
+% 23          5  600      4.000000  576.0
+% 20          6  600      4.000000  576.0
+%     ref_level    dt  its per step  niter
+% 32          3  1200           4.0  288.0
+% 28          4  1200           4.0  288.0
+% 29          5  1200           4.0  288.0
+% 35          6  1200           4.0  288.0
+%     ref_level    dt  its per step  niter
+% 36          3  2400          4.00  144.0
+% 38          4  2400          4.00  144.0
+% 37          5  2400          4.00  144.0
+% 46          6  2400          7.25  261.0
+\end{tabular}
+\bigskip
+
+\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+\multicolumn{0}{c|}{dt} &
+\multicolumn{2}{c|}{3600} &
+\multicolumn{2}{c|}{7200} &
+\multicolumn{2}{c|}{14400}
+\\ \hline\hline
+ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
+     3    &   4.000000  & 96.0 & 4.000000 &  48.0&  8.166667 &  49.0\\
+     4   &     4.000000 &  96.0 &8.000000 &  96.0 &8.500000  & 51.0\\
+     5   &    7.541667 & 181.0 & 10.833333 & 130.0&12.333333 &  74.0 \\
+     6   &   11.708333 & 281.0 & 11.916667 & 143.0&  24.166667 & 145.0\\
+%     ref_level    dt  its per step  niter
+% 48          3  3600      4.000000   96.0
+% 56          4  3600      4.000000   96.0
+% 51          5  3600      7.541667  181.0
+% 58          6  3600     11.708333  281.0
+%     ref_level    dt  its per step  niter
+% 64          3  7200      4.000000   48.0
+% 66          4  7200      8.000000   96.0
+% 69          5  7200     10.833333  130.0
+% 70          6  7200     11.916667  143.0
+%     ref_level     dt  its per step  niter
+% 88          3  14400      8.166667   49.0
+% 92          4  14400      8.500000   51.0
+% 89          5  14400     12.333333   74.0
+% 93          6  14400     24.166667  145.0
+\end{tabular}
+\caption{GaussLegendre, rk-stages 1}
+\label{tab_niter_vs_spatial}
+\end{scriptsize}
+\end{table}
 
 
 
