@@ -85,7 +85,7 @@ In this study we investigate this approach applied to the rotating shallow water
 
 
 \section{Description of methods}
-
+\subsection{Spatial discretisation}
 In this article we consider implicit time discretisations for the
 rotating shallow water equations on the sphere, which we write
 here in vector-invariant form as
@@ -135,28 +135,32 @@ where
   - \langle \nabla_h \phi, uD \rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
 \end{align}
-and where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner product
-defined for scalar or vector fields integrating over the domain $\mathcal{X}$,
-$\llangle\cdot,\cdot \rrangle$ is the $L^2$ inner product
-integrating over the set $\Gamma$ of mesh facets, $\nabla_h$ is the
-``broken'' cellwise gradient, $\tilde{u}$ and $\tilde{D}$ are the
-values of $D$ of $u$ evaluated on the upwind side of a facet (the side
-with $u\cdot n<0$), $n$ is the unit normal (here, bivalued so that on
-each side of the facet $n$ is oriented to point into the other side),
-and $\jump{\psi}$ indicates the sum of the values of $\psi$ over both
-sides of the facet. For more details, and a derivation of this approximation,
-see \cite{gibson2019compatible}. In this work we used $p=1$.
+and where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner
+product defined for scalar or vector fields integrating over the
+domain $\mathcal{X}$, $\llangle\cdot,\cdot \rrangle$ is the $L^2$
+inner product integrating over the set $\Gamma$ of mesh facets,
+$\nabla_h$ is the ``broken'' cellwise gradient, $\tilde{u}$ and
+$\tilde{D}$ are the values of $D$ of $u$ evaluated on the upwind side
+of a facet (the side with $u\cdot n<0$), $n$ is the unit normal (here,
+bivalued so that on each side of the facet $n$ is oriented to point
+into the other side), and $\jump{\psi}$ indicates the sum of the
+values of $\psi$ over both sides of the facet. For more details, and a
+derivation of the finite element spaces and this finite element
+approximation, see \cite{gibson2019compatible}. In this work we used
+$p=1$.
+
+\subsection{Implicit Runge Kutta time discretisation}
 
 Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
 stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
 \begin{align}
     \label{eq:u stages}
-    R_{u,i}[w] := \langle w, k_{u,i} \rangle + \Delta ta\left(
-    u^n_i,D^n_i;w\right)
+    R_{u,i}[w] := \langle w, k_{u,i} \rangle + \Delta t a\left(
+    u^n_j,D^n_j;w\right)
   & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
-  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + \sum_{j=1}^sA_{ij}c\left(u^n_i,D^n_i; \phi\right)
+  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + \Delta tc\left(u^n_j,D^n_j; \phi\right)
   & = 0, \quad \forall \phi \in Q, \mbox{ for }i=1,\ldots,s,\\
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
@@ -233,53 +237,101 @@ contributions upon substituting $w$ and $\phi$ for each basis function
 from standard sparse finite element bases for $V\times Q$. It remains
 to find a scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
-In this work, we solve (\ref{eq:u J}-\ref{eq:D J})  a monolithic Krylov solver (GMRES in this
-case) applied to the full set of stage corrections $z' = \{(k'_{u,i},
-k'_{D,i})\}_{i=1}^s \in \prod_{i=1}^s(V\times Q)$ solved all at
-once. The preconditioner for the Krylov method is an additive Schwarz
-method, built using overlapping subspaces $W_l=\{V_l\times
-Q_l\}_{l=1}^M$. For each $l$, the Jacobian system (with given right
-hand side residuals provided as input to the preconditioner)
-\werner{could we be more explicit here? i.e. in term of the formulas given above? What does 'input for the preconditioner' mean?}
-is
-restricted to $W_l$ and solved using a direct solver, producing $z_l$,
-\werner{is $z_l$ the correction of the full solution per patch?}
-and the result of the preconditioner is the sum $\sum_{l=1}^Mz_l$
-(hence the term additive).
-\werner{Why does summation work if the patches are overlapping?}
+We observe that the iterative corrections $w=\{(k'_{u,i},
+k'_{D,i})\}_{i=1}^s$ are coupled in (\ref{eq:u J}-\ref{eq:D J}) both
+between $u$ and $D$ components for the same stage $i$ (where the
+coupling is global but sparse), as well as between all of the stages
+from $i=1$ to $s$. This presents challenges for the solver. In this
+work, we solve (\ref{eq:u J}-\ref{eq:D J}) using a monolithic
+approach, meaning that we apply a preconditioned Krylov solver to the
+full set of basis coefficients for the iterative corrections $w=\{(k'_{u,i},
+k'_{D,i})\}_{i=1}^s$, treated as a single vector. In our experiments
+we used FGMRES (Flexible generalised minimum residual method) for the
+chosen Krylov method, because we used GMRES in some inner iterations in
+the preconditioner which we shall describe next.
 
-In this work we define \werner{the subspaces $W_l$} using ``star patches''.  Here, there
-is one subspace for each of the $M$ vertices in the mesh.  The
-subspace for a vertex $z_i$ \werner{why do we use $i$ and not $l$ as index?} is defined by taking the set $S$ of cells
-surrounding $z_i$, and the finite element spaces are restricted to $S$
-with zero normal boundary conditions on the boundary of $S$ for the
-components in $V$ (See Figure \ref{fig:patch}). The direct solve on
-the patch couples all of the stage corrections together. These
-solves are independent, and hence parallelisable, between patches.
-Usually, this
-type of preconditioner is used as a smoother in a multigrid
-cycle. Here, we do not use a multigrid \werner{Is this still true, I though you switched it on again!} because standard scalable
-approaches do not work very well for advective
-nonlinearities. However, it is also typical to scale $\Delta t$ to
+\begin{figure}
+  \center
+  \includegraphics[width=5cm]{Images/patch}
+  \caption{\label{fig:patch} A diagram showing the ``vertex
+    star'' patch associated with the vertex at the middle of the
+    diagram. Dots indicate $D$ degrees of freedom and thin lines
+    indicate $u$ degrees of freedom. Of the latter, lines crossing
+    cell edges indicate normal components of $u$, which are continuous
+    across cell edges for our choice of finite element space.  Lines
+    parallel to cell edges indicate tangential components of $u$,
+    which are discontinuous across cell edges.  The shaded region
+    indicates the patch.  All degrees of freedom outside the shaded
+    region (including normal but not tangential components on the
+    patch boundary).
+  }
+ \end{figure}
+
+As a preconditioner, we used geometric multigrid with a sequence of
+nested meshes of the spherical domain,\footnote{In fact our meshes are
+not strictly nested, because our cells are flat triangles (higher
+order polynomial representations are also possible). Starting from the
+coarsest icosahedral mesh, each triangle is refined by replacing it
+with four smaller triangles, created by adding vertices at the
+midpoint of each edge. The new vertices are then moved to the surface
+of the sphere being approximated. Transfer operators are defined by
+moving the extra vertices of the finer mesh to the edges of the coarse
+mesh before prolongation/restriction.} with prolongation operators
+consisting of the inclusion operator, \emph{i.e.} reinterpretation of
+the same function in the larger space on the finer mesh; restriction
+is taken as $L_2$ the dual of prolongation.
+
+For smoothers on each level, we used an additive Schwarz method that
+is built using overlapping subspaces $W_l=V_l\times Q_l \subset W = V
+\times Q$, $l=1,\ldots,N_l$. In this work we define the subspaces
+$W_l$ using ``star patches''.  Here, there is one subspace for each of
+the $M$ vertices in the mesh.  The subspace for a vertex $z_l$ is
+defined by taking the set $S_l$ of cells surrounding $z_l$. $W_l$ is
+the subspace of $W$ consisting of functions that are equal to zero
+when restricted to any cell not in $S_l$. For our choice of spaces,
+this entails zeroing any degrees of freedom on the boundary of $S_l$
+and beyond (See Figure \ref{fig:patch}). In the multigrid algorithm,
+the goal of the smoother is to approximately solve a problem of the
+form (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$
+replaced by residuals provided from the next finest grid.  For the
+additive Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with
+solutions $w_l$ and test functions restricted to $W_l$, using a direct
+solve. These ``patch problems'' can be solved independently and in
+parallel using a dense direct solver.  Then, the additive Schwarz
+approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
+$w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
+W$).
+
+To avoid having to tune scaling parameters whose optimal values might
+depend on the system state, our smoothers consist of two iterations of
+GMRES preconditioned by the additive Schwarz method above. This has
+the effect of selecting the scaling parameter adaptively.  This
+necessitates the use of a flexible Krylov method (FGMRES, in our
+case), since the use of GMRES means that the smoother is residual
+dependent and hence is not a stationary iterative method (which is a
+requirement for standard Krylov methods such as GMRES).
+
+In our multigrid setup, we also used the above smoothing approach for
+the correction on the coarsest grid. This avoids having to use a
+parallel direct solve. We experimented with a direct solve on the coarse
+grid but found that it did not alter the overall convergence of the
+solver strategy.
+
+As will become apparent from the results, we do not observe perfect
+multigrid behaviour in that the number of iterations is not robust in
+$\Delta t$: more iterations are required at larger $\Delta t$.
+For this type of problem, it is also typical to scale $\Delta t$ to
 keep the advective Courant number constant as the mesh is refined, so
 we can hope for mesh independent Krylov iteration counts under this
-refinement scaling.
-\werner{do we see this somewhere in the numerical result section?}
+refinement scaling without multigrid. However, we found that using the
+multigrid produced faster wallclock times. 
 
- \begin{figure}
-  \includegraphics[width=8cm]{Images/patch}
-  \caption{\label{fig:patch} (LEFT) a diagram showing the ``vertex
-    star'' patch. DESCRIBE MORE!}
- \end{figure}
+In this work we implemented this approach using Irksome
+
+
+\subsection{Implicit-explicit time discretisation}
  
 TODO: references for Irksome, PatchPC, describe Firedrake implementation
-
-\todo{
-\begin{itemize}
- \item BDFM FE??
- \item
-\end{itemize}
-}
 
 
 
