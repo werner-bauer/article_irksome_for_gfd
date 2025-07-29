@@ -405,18 +405,51 @@ where
 \end{align}
 
 In our setting, IMEX schemes take the form,
+\begin{align}
+    \label{eq:u stages IMEX}
+    \langle w, Y_{u,i}-u^n \rangle + \Delta t \sum_{j=1}^{i-1} A_{ij} a_N\left(
+    Y_{u,j}, Y_{D,j}; w\right)
+    + \Delta t \sum_{j=1}^i \tilde{A}_{ij} a_L(Y_{u,j}, Y_{D,j}; w)
+  & = 0,  
+  \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+  \label{eq:D stages IMEX}
+    \langle \phi, Y_{D,i}-D^n \rangle + \Delta t \sum_{j=1}^{i-1} A_{ij} c_N\left(
+    Y_{u,j}, Y_{D,j}; \phi\right)
+    + \Delta t \sum_{j=1}^i \tilde{A}_{ij} c_L(Y_{u,j}, Y_{D,j}; w)
+  & = 0, 
+\end{align}
+where $A$ and $\tilde{A}$ are the IMEX Butcher matrices,
+before reconstructing the solution from
+\begin{align}
+  \langle w, u^{n+1} - u^n\rangle + \Delta t\sum_{i=1}^s b_i
+  a_N(Y_{u,j}, Y_{D,j}; w)
+  + \Delta t \sum_{i=1}^s \tilde{b}_i
+  a_L(Y_{u,j}, Y_{D,j}; w)\, \forall w \in V, \\
+    \langle \phi, D^{n+1} - D^n\rangle + \Delta t\sum_{i=1}^s b_i
+  c_N(Y_{u,j}, Y_{D,j}; \phi)
+  + \Delta t \sum_{i=1}^s \tilde{b}_i
+    c_L(Y_{u,j}, Y_{D,j}; \phi)\, \forall \phi \in Q, \\
+\end{align}
+where $b$ and $\tilde{b}$ are the corresponding IMEX Butcher
+reconstruction vectors. Due to the lower triangular structure
+expressed in the sum limits, (\ref{eq:u stages IMEX}-\ref{eq:D stages
+  IMEX}) can be solved as single coupled mixed problems for
+$(Y_{u,i},Y_{D,i})$ at stage $i$. Further, these problems can be
+reduced to a sparse ``modified Helmholtz'' type problem for a single
+variable using the hybridisation technique for mixed finite elements
+\citep{boffi2013mixed,cockburn2004characterization}; similar sparse
+reduction techniques exist for finite volume and discontinuous
+Galerkin methods. The resulting sparse system can be solved using a
+sparse parallel direct solver, or for larger problems, multigrid
+methods. In this work we found that sparse direct solvers were quicker
+for the 2D problems under consideration. Unlike the patch problems
+used for the IRK methods which depend on the system state, the
+implicit IMEX linear systems can be assembled and factorised once,
+which makes their solution very fast.
 
-
-implementation
-
-
-
-
-
-
-\cleardoublepage
-
-
+The ARK2 IMEX scheme is a 3 stage scheme involving two implicit solves
+per timestep. It was implemented using Firedrake again, using the
+hybridization solver package SLATE \citep{gibson2020slate}.
 
 \section{Numerical results}
 
