@@ -191,20 +191,22 @@ We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
   stages}) using Newton iteration. Given an initial guess $\{(k_{u,i},
 k_{D,i})\}_{i=1}^s$ for the stages, a Newton iteration requires solving
 the coupled linear Jacobian system
-\begin{small}
+%\begin{small}
 \begin{align}
-  \label{eq:u J}
+  \nonumber
     \langle w, k'_{u,i} \rangle +
    \Delta t \sum_{j=1}^sA_{ij}\gat a\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
-  w\right) &=  -R_{u,i}[w],
-  \  \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
-  \label{eq:D J}
+   w\right) &=  -R_{u,i}[w], \\
+   \label{eq:u J}
+   & \qquad\qquad    \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+   \nonumber
   \langle \phi, k'_{D,i} \rangle
   + \Delta t\sum_{j=1}^sA_{ij}\gat c\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
-  \phi\right)  &= -R_{D,i}[\phi],
-  \ \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+  \phi\right)  &= -R_{D,i}[\phi], \\
+  & \qquad \qquad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+    \label{eq:D J}
 \end{align}
-\end{small}
+%\end{small}
 for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
 $i=1,\ldots,s$. Here, $\gat a$ and $\gat b$ are the Gateaux
 derivatives of $a$ and $c$ defined by
@@ -370,10 +372,42 @@ implicit-explicit (IMEX) time discretisation. This serves as a
 benchmark in terms of timing since IMEX methods are well known in the
 community developing numerical methods for geophysical fluid dynamics.
 We choose one specific second-order IMEX scheme, the ARK2 scheme
-of \citet{giraldo2013implicit}, which wa s
+of \citet{giraldo2013implicit}, which they demonstrated to be optimal
+for geophysical fluid problems amongst second order IMEX schemes and has
+been widely adopted in the field.
+
+To produce an IMEX scheme, we rewrite our spatial discretisation
+(\ref{eq:ut}-\ref{eq:Dt}) in the form
+\begin{align}
+  \label{eq:ut IMEX}
+  \langle w, u_t \rangle + a_L(u,D;w) 
+  + a_N(u,D;w) 
+   & = 0,
+  \quad \forall w \in V, \\
+  \label{eq:Dt IMEX}
+  \langle \phi, D_t \rangle
++ c_L(u,D; \phi) + c_N(u,D; \phi)  & =
+ 0, \quad \forall \phi \in Q,
+\end{align}
+where
+\begin{align}
+  a_L(u,D;w) & = \langle w, fu^\perp \rangle - \langle \nabla\cdot w,
+  gD \rangle, \\
+   a_N(u,D;w) 
+&=
+  - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
+  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + gb \right\rangle, \\
+  c_L(u,D;\phi) & = \langle \phi, H\nabla\cdot u\rangle \\
+  c(u,D; \phi) &=
+  - \langle \nabla_h \phi, uD \rangle
+  - \langle \phi, H\nabla\cdot u\rangle
+  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle.
+\end{align}
+
+In our setting, IMEX schemes take the form,
+
 
 implementation
-
 
 
 
