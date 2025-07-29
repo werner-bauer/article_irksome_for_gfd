@@ -345,8 +345,15 @@ under this refinement scaling without multigrid. However, we found
 that using the multigrid produced faster wallclock times.
 
 In this work we implemented this approach using Irksome
-
-TODO: references for Irksome, PatchPC, describe Firedrake implementation
+\citep{farrell2021irksome,kirby2024extending}, a Python library
+that wraps time discretisations on top of finite element discretisations
+implemented using Firedrake \citep{FiredrakeUserManual}, an automated
+system for the solution of partial differential equatoins using the
+finite element method.
+This combination in turn makes significant use
+of PETSc \citep{dalcin2011parallel,balay2019petsc}. In particular,
+PETSc's and Firedrake's PCPatch implementation
+of Additive Schwarz methods is used \citep{farrell2021pcpatch}.
 
 \subsection{Implicit-explicit time discretisation}
 
@@ -370,6 +377,8 @@ implementation
  \item Describe test case Williamson 6
  \item Describe mesh levels somehow!!!
 \end{itemize}
+
+Some details of solver options
 
 In this section we test the monolithic solver setup with fully implicit time stepping methods introduced above concerning their performance. We will discuss different orders of accuracy for two realizations, namely the Gauss Legendre method and the Radau 2 method, both fully implicit schemes for various order, i.e. for orders 1,2, and 3 \checkit{ADD CORRECT VALUES.} We compare these methods with the frequently used, very efficient IMEX method ARK2, as introduced in CITE by CITE:Giraldo13.
 
