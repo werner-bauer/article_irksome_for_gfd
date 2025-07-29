@@ -78,7 +78,7 @@ Fully implicit timestepping methods have several potential advantages for atmosp
 
 Fully implicit timestepping methods have had limited application in geophysical fluid dynamics due to challenges of finding suitable iterative solvers, since the coupled treatment of advection prevents the standard elimination techniques. However, overlapping Additive Schwarz methods, as introduced for geophysical fluid dynamics by Cotter and Shipton (2023), provide a robust, scalable iterative approach for solving the monolithic coupled system for all fields and Runge-Kutta stages.
 
-In this study we investigate this approach applied to the rotating shallow water equations, facilitated by the Irksome package (Farrell et al, 2021) which provides automated code generation for implicit Runge-Kutta methods. We compare various schemes in terms of accuracy and efficiency using an implicit/explicit splitting method, namely the ARK2 scheme of Giraldo et al (2013), as a benchmark. This provides an initial look at whether implicit Runge Kutta methods can be viable for atmosphere and ocean simulation.
+In this study we investigate this approach applied to the rotating shallow water equations, facilitated by the Irksome package (Farrell et al, 2021) which provides automated code generation for implicit Runge-Kutta methods. We compare various schemes in terms of accuracy and efficiency using an implicit/explicit splitting method, namely the ARK2 scheme of Giraldo et al (2013), as a benchmark. This provides an initial look at whether implicit Runge-Kutta methods can be viable for atmosphere and ocean simulation.
 \end{abstract}
 
 \section{Introduction}
@@ -151,7 +151,7 @@ $p=1$.
 
 \subsection{Implicit Runge Kutta time discretisation}
 
-Implicit Runge Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
+Implicit Runge-Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
 stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
 \begin{align}
     \label{eq:u stages}
@@ -165,12 +165,15 @@ stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
 \end{align}
+<<<<<<< HEAD
 \werner{index in 7-8 now over $i$ and also $j$, but latter not specified! Maybe use other
 indices in 9-10?}
+=======
+>>>>>>> dc5d003455f17f046bad31c9cb094a140db71bef
 where $A_{ij}$ are the matrix coefficients from the Butcher
-tableau for the chosen Runge Kutta scheme. This defines a coupled
+tableau for the chosen Runge-Kutta scheme. This defines a coupled
 system for all of the stages in general. After solving
-(\ref{eq:u stages}-\ref{eq:D stages}) for the stages\werner{solving 7-10?}, the solution
+(\ref{eq:u stages}-\ref{eq:D stages}) for the stages\werner{solving 7-10?} \colin{I think not, because 9-10 are just definitions which should be substituted into 7-8}, the solution
 at the next timestep is obtained from
 \begin{equation}
   u^{n+1} = u^n + \Delta t\sum_{i=1}^sb_i k_{u,i},\quad
@@ -179,7 +182,7 @@ at the next timestep is obtained from
 where $b_i$ are also obtained from the Butcher tableau. In this work
 we consider collocation Runge-Kutta methods, in particular the
 Gauss-Legendre methods that extend the implicit midpoint rule to
-higher orders, and the Radau IIA methods \incl{that} extend the backward Euler
+higher orders, and the Radau IIA methods that extend the backward Euler
 method to higher orders. The Gauss-Legendre methods are energy
 preserving for wave equations but slow down high frequency
 oscillations, whilst the Radau IIA methods damp high frequency
@@ -193,20 +196,22 @@ We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
   stages}) using Newton iteration. Given an initial guess $\{(k_{u,i},
 k_{D,i})\}_{i=1}^s$ for the stages, a Newton iteration requires solving
 the coupled linear Jacobian system
-\begin{small}
+%\begin{small}
 \begin{align}
-  \label{eq:u J}
+  \nonumber
     \langle w, k'_{u,i} \rangle +
    \Delta t \sum_{j=1}^sA_{ij}\gat a\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
-  w\right) &=  -R_{u,i}[w],
-  \  \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
-  \label{eq:D J}
+   w\right) &=  -R_{u,i}[w], \\
+   \label{eq:u J}
+   & \qquad\qquad    \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+   \nonumber
   \langle \phi, k'_{D,i} \rangle
   + \Delta t\sum_{j=1}^sA_{ij}\gat c\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
-  \phi\right)  &= -R_{D,i}[\phi],
-  \ \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+  \phi\right)  &= -R_{D,i}[\phi], \\
+  & \qquad \qquad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+    \label{eq:D J}
 \end{align}
-\end{small}
+%\end{small}
 for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
 $i=1,\ldots,s$. Here, $\gat a$ and $\gat b$ are the Gateaux
 derivatives of $a$ and $c$ defined by
@@ -316,7 +321,7 @@ vertex star patches for Hdiv problems \citep{arnold2000multigrid} but
 there is no analysis for monolithic multigrid applied to mixed
 elliptic problems at present \citep{sm}. The reason for choosing patches
 that couple between all stages is that we aim to obtain robust
-convergence in the number of Runge Kutta stages, as analysed in
+convergence in the number of Runge-Kutta stages, as analysed in
 \citep{kirby2024convergence}.
 
 To avoid having to tune scaling parameters whose optimal values might
@@ -345,6 +350,15 @@ refined, so we can hope for mesh independent Krylov iteration counts
 under this refinement scaling without multigrid. However, we found
 that using the multigrid produced faster wallclock times.
 
+As a final optimisation, we used the Eisenstat-Walker (version 2)
+inexact Newton approach \citep{eisenstat1996choosing} which adaptively
+controls the number of Krylov iterations for the Jacobian system
+during the Newton algorithm, since it is not useful to solve the
+Jacobian system accurately when the nonlinear solution is only going
+to be iteratively updated again anyway. This reduces the overall
+number of Krylov iterations per timestep, and hence reduces the overall
+number of multigrid cycles which dominate the cost of the method.
+
 In this work we implemented this approach using Irksome
 \citep{farrell2021irksome,kirby2024extending}, a Python library
 that wraps time discretisations on top of finite element discretisations
@@ -354,13 +368,51 @@ finite element method.
 This combination in turn makes significant use
 of PETSc \citep{dalcin2011parallel,balay2019petsc}. In particular,
 PETSc's and Firedrake's PCPatch implementation
-of Additive Schwarz methods is used \citep{farrell2021pcpatch}.
+of additive Schwarz methods is used \citep{farrell2021pcpatch}.
 
 \subsection{Implicit-explicit time discretisation}
 
+We compared our implicit Runge-Kutta approach with an
+implicit-explicit (IMEX) time discretisation. This serves as a
+benchmark in terms of timing since IMEX methods are well known in the
+community developing numerical methods for geophysical fluid dynamics.
+We choose one specific second-order IMEX scheme, the ARK2 scheme
+of \citet{giraldo2013implicit}, which they demonstrated to be optimal
+for geophysical fluid problems amongst second order IMEX schemes and has
+been widely adopted in the field.
+
+To produce an IMEX scheme, we rewrite our spatial discretisation
+(\ref{eq:ut}-\ref{eq:Dt}) in the form
+\begin{align}
+  \label{eq:ut IMEX}
+  \langle w, u_t \rangle + a_L(u,D;w) 
+  + a_N(u,D;w) 
+   & = 0,
+  \quad \forall w \in V, \\
+  \label{eq:Dt IMEX}
+  \langle \phi, D_t \rangle
++ c_L(u,D; \phi) + c_N(u,D; \phi)  & =
+ 0, \quad \forall \phi \in Q,
+\end{align}
+where
+\begin{align}
+  a_L(u,D;w) & = \langle w, fu^\perp \rangle - \langle \nabla\cdot w,
+  gD \rangle, \\
+   a_N(u,D;w) 
+&=
+  - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
+  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + gb \right\rangle, \\
+  c_L(u,D;\phi) & = \langle \phi, H\nabla\cdot u\rangle \\
+  c(u,D; \phi) &=
+  - \langle \nabla_h \phi, uD \rangle
+  - \langle \phi, H\nabla\cdot u\rangle
+  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle.
+\end{align}
+
+In our setting, IMEX schemes take the form,
+
 
 implementation
-
 
 
 
