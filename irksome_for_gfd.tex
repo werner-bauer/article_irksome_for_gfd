@@ -242,11 +242,12 @@ coupling is global but sparse), as well as between all of the stages
 from $i=1$ to $s$. This presents challenges for the solver. In this
 work, we solve (\ref{eq:u J}-\ref{eq:D J}) using a monolithic
 approach, meaning that we apply a preconditioned Krylov solver to the
-full set of basis coefficients for the iterative corrections $w=\{(k'_{u,i},
-k'_{D,i})\}_{i=1}^s$, treated as a single vector. In our experiments
-we used FGMRES (Flexible generalised minimum residual method) for the
-chosen Krylov method, because we used GMRES in some inner iterations in
-the preconditioner which we shall describe next.
+full set of basis coefficients for the iterative corrections
+$w=\{(k'_{u,i}, k'_{D,i})\}_{i=1}^s$, treated as a single vector. In
+our experiments we used FGMRES (the flexible generalised minimum
+residual method) for the chosen Krylov method, because we used GMRES
+(the generalised minimum residual method) in some inner iterations in the
+preconditioner, which we shall describe next.
 
 \begin{figure}
   \center
@@ -280,25 +281,40 @@ the same function in the larger space on the finer mesh; restriction
 is taken as $L_2$ the dual of prolongation.
 
 For smoothers on each level, we used an additive Schwarz method that
-is built using overlapping subspaces $W_l=V_l\times Q_l \subset W = V
-\times Q$, $l=1,\ldots,N_l$. In this work we define the subspaces
-$W_l$ using ``star patches''.  Here, there is one subspace for each of
-the $M$ vertices in the mesh.  The subspace for a vertex $z_l$ is
-defined by taking the set $S_l$ of cells surrounding $z_l$. $W_l$ is
-the subspace of $W$ consisting of functions that are equal to zero
-when restricted to any cell not in $S_l$. For our choice of spaces,
-this entails zeroing any degrees of freedom on the boundary of $S_l$
-and beyond (See Figure \ref{fig:patch}). In the multigrid algorithm,
-the goal of the smoother is to approximately solve a problem of the
-form (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$
-replaced by residuals provided from the next finest grid.  For the
-additive Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with
-solutions $w_l$ and test functions restricted to $W_l$, using a direct
+is built using overlapping subspaces $W_l=V_l\times Q_l \subset W =
+\prod_{i=1}^s\left(V \times Q\right)$, $l=1,\ldots,N_l$, where $W$ is
+the mixed finite element space comprising all of the stages.
+In this work we define the subspaces $W_l$ using ``vertex
+star patches''.  Here, there is one subspace for each of the $M$
+vertices in the mesh.  The subspace for a vertex $z_l$ is defined by
+taking the set $S_l$ of cells surrounding $z_l$. $W_l$ is the subspace
+of $W$ consisting of functions that are equal to zero when restricted
+to any cell not in $S_l$. For our choice of spaces, this entails
+zeroing any degrees of freedom on the boundary of $S_l$ and beyond
+(See Figure \ref{fig:patch}). In the multigrid algorithm, the goal of
+the smoother is to approximately solve a problem of the form
+(\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$ replaced
+by residuals provided from the next finest grid.  For the additive
+Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with solutions
+$w_l$ and test functions restricted to $W_l$, using a direct
 solve. These ``patch problems'' can be solved independently and in
 parallel using a dense direct solver.  Then, the additive Schwarz
 approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
+
+The reason for choosing vertex star patches is that they deal well
+with the oscillatory wave coupling in the linear system. When this
+form of multigrid is applied to the rotating shallow water equations
+linearised about a state of rest (referred to as the linear rotating
+shallow water equations), we observe mesh- and $\Delta t$-robust
+convergence rates. This is believed to be related to the efficacy of
+vertex star patches for Hdiv problems \citep{arnold2000multigrid} but
+there is no analysis for monolithic multigrid applied to mixed
+elliptic problems at present \citep{sm}. The reason for choosing patches
+that couple between all stages is that we aim to obtain robust
+convergence in the number of Runge Kutta stages, as analysed in
+\citep{kirby2024convergence}.
 
 To avoid having to tune scaling parameters whose optimal values might
 depend on the system state, our smoothers consist of two iterations of
@@ -317,21 +333,23 @@ solver strategy.
 
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in
-$\Delta t$: more iterations are required at larger $\Delta t$.
-For this type of problem, it is also typical to scale $\Delta t$ to
-keep the advective Courant number constant as the mesh is refined, so
-we can hope for mesh independent Krylov iteration counts under this
-refinement scaling without multigrid. However, we found that using the
-multigrid produced faster wallclock times. 
+$\Delta t$: more iterations are required at larger $\Delta t$ due to
+the presence of the advective terms.  For this type of problem, it is
+also typical to scale $\Delta t$ to keep the advective Courant number
+($U\Delta t/\Delta x$ where $U$ is a typical velocity scale and
+$\Delta x$ is a typical cell diameter) constant as the mesh is
+refined, so we can hope for mesh independent Krylov iteration counts
+under this refinement scaling without multigrid. However, we found
+that using the multigrid produced faster wallclock times.
 
 In this work we implemented this approach using Irksome
 
-
-\subsection{Implicit-explicit time discretisation}
- 
 TODO: references for Irksome, PatchPC, describe Firedrake implementation
 
+\subsection{Implicit-explicit time discretisation}
 
+
+implementation
 
 
 
