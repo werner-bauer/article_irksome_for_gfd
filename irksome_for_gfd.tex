@@ -175,7 +175,7 @@ updating the solution according to
 where $b=(b_1,\ldots, b_s)$ are coefficients specific to the
 particular chosen Runge-Kutta method. Our spatially discrete rotating
 shallow water system (\ref{eq:ut}-\ref{eq:Dt}) is a ``mixed'' coupled
-system for two variables, so we write $U=(u,D)\in V\times Q$\st{,} and $k_i
+system for two variables, so we write $U=(u,D)\in V\times Q$ and $k_i
 = (k_{u,i},k_{D,i})\in V\times Q$ for $i=1,\ldots,s$. Further,
 implicit Runge-Kutta methods couple all of these stages together, so it
 is useful to define a single variable for all of the stage components,
@@ -183,7 +183,6 @@ is useful to define a single variable for all of the stage components,
 k = (k_{u,1},k_{D,1},\ldots,k_{u,s},k_{D,s}) \in
 \prod_{i=1}^s V\times Q := W.
 \]
-\werner{double brackets?}
 Implicit Runge-Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) then 
 seek $k\in W$ such that
 \begin{align}
@@ -223,7 +222,6 @@ Jacobian system for corrections
 \[
 k' = (k'_{u,1},k'_{D,1},\ldots, k'_{u,s},k'_{D,s}) \in W,
 \]
-\werner{double brackets?}
 such that
 \begin{align}
   \nonumber
@@ -320,19 +318,16 @@ For smoothers on each level, we used an additive Schwarz method that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W =
 \prod_{i=1}^s\left(V \times Q\right)$, $l=1,\ldots,N_l$, where $W$ is
 the mixed finite element space comprising all of the stages.
-\werner{could we say 'all of the RK stages.' just to be more clear?}
 In this work we define the subspaces $W_l$ using ``vertex
 star patches''.
-\werner{Here, there is one subspace $W_l$ for each of the $M$
-vertices $z_l$ in the mesh.}
-\st{Here, there is one subspace for each of the $M$
-vertices in the mesh.}
+Here, there is one subspace $W_l$ for each of the $M$
+vertices $z_l$ in the mesh.
 The subspace for a vertex $z_l$ is defined by
 taking the set $S_l$ of cells surrounding $z_l$. $W_l$ is the subspace
 of $W$ consisting of functions that are equal to zero when restricted
 to any cell not in $S_l$. For our choice of spaces, this entails
 zeroing any degrees of freedom on the boundary of $S_l$ and beyond
-(\checkit{see} \st{See} Figure \ref{fig:patch}). In the multigrid algorithm, the goal of
+(see Figure \ref{fig:patch}). In the multigrid algorithm, the goal of
 the smoother is to approximately solve a problem of the form
 (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$ replaced
 by residuals provided from the next finest grid.
@@ -345,9 +340,7 @@ parallel using a dense direct solver.  Then, the additive Schwarz
 approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
-\werner{What is with the overlaps? Why do they not matter?
-Should we mention why we do not use non-overlapping methods?
-}
+
 
 The reason for choosing vertex star patches is that they deal well
 with the oscillatory wave coupling in the linear system. When this
@@ -355,7 +348,6 @@ form of multigrid is applied to the rotating shallow water equations
 linearised about a state of rest (referred to as the linear rotating
 shallow water equations), we observe mesh- and $\Delta t$-robust
 convergence rates.
-\werner{is this true for both, whether you use multigrid for preconditioner or for the solver?}
 This is believed to be related to the efficacy of
 vertex star patches for Hdiv problems \citep{arnold2000multigrid} but
 there is no analysis for monolithic multigrid applied to mixed
@@ -364,7 +356,7 @@ that couple between all stages is that we aim to obtain robust
 convergence in the number of Runge-Kutta stages, as analysed in
 \citep{kirby2024convergence}.
 
-To avoid having to tune scaling parameters \werner{where do we need those parameters?} whose optimal values might
+To avoid having to tune scaling parameters whose optimal values might
 depend on the system state, our smoothers consist of two iterations of
 GMRES preconditioned by the additive Schwarz method above. This has
 the effect of selecting the scaling parameter adaptively.  This
@@ -394,7 +386,7 @@ As a final optimisation, we used the Eisenstat-Walker (version 2)
 inexact Newton approach \citep{eisenstat1996choosing} which adaptively
 controls the number of Krylov iterations for the Jacobian system
 during the Newton algorithm, since it is not useful to solve the
-Jacobian system \werner{should we add equation numbers 12-13?} accurately when the nonlinear solution is only going
+Jacobian system (\ref{eq:u J}-\ref{eq:D J}) accurately when the nonlinear solution is only going
 to be updated again in the next Newton iteration anyway. This reduces the overall
 number of Krylov iterations per timestep, and hence reduces the overall
 number of multigrid cycles which dominate the cost of the method.
@@ -414,7 +406,6 @@ the Unified Form Language (UFL) \citep{alnaes2012ufl} to obtain the
 formulae for (\ref{eq:u J}-\ref{eq:D J}) from which code assembling
 the matrix-vector action and the patch linear systems is automatically
 generated.
-\werner{Details of the implementation can be found in the supplementary material???}
 
 \subsection{Implicit-explicit time discretisation}
 
@@ -477,20 +468,19 @@ In our setting, IMEX schemes take the form,
     & = 0, \label{eq:D stages IMEX}
       \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
-\werner{for stages $(Y_{u,i},Y_{D,i})$,}
+for stages $(Y_{u,i},Y_{D,i}) \in V \times Q$,
 where $A$ and $\tilde{A}$ are the explicit and implicit IMEX Butcher
 matrices respectively. Then, we reconstruct the solution from
 \begin{align}
   \langle w, u^{n+1} - u^n\rangle + \Delta t\sum_{i=1}^s b_i
-  a_N(Y_{u,j}, Y_{D,j}; w)
+  a_N(Y_{u,i}, Y_{D,i}; w)
   + \Delta t \sum_{i=1}^s \tilde{b}_i
-  a_L(Y_{u,j}, Y_{D,j}; w)=0,\, \forall w \in V, \\
+  a_L(Y_{u,i}, Y_{D,i}; w)=0,\, \forall w \in V, \\
     \langle \phi, D^{n+1} - D^n\rangle + \Delta t\sum_{i=1}^s b_i
-  c_N(Y_{u,j}, Y_{D,j}; \phi)
+  c_N(Y_{u,i}, Y_{D,i}; \phi)
   + \Delta t \sum_{i=1}^s \tilde{b}_i
-    c_L(Y_{u,j}, Y_{D,j}; \phi)=0,\, \forall \phi \in Q,
+    c_L(Y_{u,i}, Y_{D,i}; \phi)=0,\, \forall \phi \in Q,
 \end{align}
-\werner{indices for $Y$ should all be $i$, not $j$, right?}
 where $b$ and $\tilde{b}$ are the corresponding IMEX Butcher
 reconstruction vectors. Due to the lower triangular structure
 expressed in the sum limits, (\ref{eq:u stages IMEX}-\ref{eq:D stages
@@ -538,6 +528,9 @@ $1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
 \end{table}
 
 \section{Numerical results}
+
+
+\werner{Maybe here:::: Details of the implementation can be found in the supplementary material???}
 
 \begin{itemize}
  \item Describe test case Williamson 6
