@@ -276,9 +276,7 @@ sparse), as well as between all of the stages from $i=1$ to $s$. This
 presents challenges for the solver. In this work, we solve (\ref{eq:u
   J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
 a preconditioned Krylov solver to the full set of basis coefficients
-for the iterative corrections $w=\{(k'_{u,i}, k'_{D,i})\}_{i=1}^s$,
-\werner{This should be $k'$ now, right?}
-\werner{w could be confused with the test function from above! maybe use $\omega$?}
+for the iterative corrections $k'$,
 treated as a single vector. In our experiments we used FGMRES (the
 flexible generalised minimum residual method \citep{saad1993flexible})
 for the chosen Krylov method, because we used GMRES (the generalised
@@ -514,26 +512,70 @@ be refactorised for each Jacobian solve.
 The ARK2 IMEX scheme is a 3 stage scheme involving two implicit solves
 per timestep. It was implemented using Firedrake again, using the
 hybridization solver package SLATE \citep{gibson2020slate} for the
-implicit linear systems.
+implicit linear systems. The Butcher tableau for ARK2 are shown in Table
+\ref{tab:ARK2}.
+
+\begin{table}\centering
+\begin{tabular}{c|ccc}
+0         &  0             &   0       & 0  \\
+$2\gamma$ &  $2\gamma$     &  0        & 0  \\
+$1$       & $1 - \alpha$   & $\alpha$  & 0  \\ \hline
+          & $\delta$       & $\delta$  & $\gamma$
+\end{tabular}
+\hspace{4mm}
+\begin{tabular}{c|ccc}
+0         &  0             &   0       & 0  \\
+$2\gamma$ &  $\gamma$     &  $\gamma$        & 0  \\
+$1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
+          & $\delta$       & $\delta$  & $\gamma$
+\end{tabular}
+\caption{\label{tab:ARK2}Butcher tableaus for the ARK2 IMEX scheme of
+  \citet{giraldo2013implicit}. Left: the tableau for the explicit component.
+  Right: the tableau for the implicit component.
+   Here, $\gamma = 1 -
+  \frac{1}{\sqrt{2}}$, $\alpha = \frac{1}{6} (3 + 2\sqrt{2})$ and
+  $\delta = \frac{1}{ 2 \sqrt{2}}$.}
+\end{table}
 
 \section{Numerical results}
-
 
 \begin{itemize}
  \item Describe test case Williamson 6
  \item Describe mesh levels somehow!!!
 \end{itemize}
 
-Some details of solver options
+\colin{Some details of solver options}
 
-In this section we test the monolithic solver setup with fully implicit time stepping methods introduced above concerning their performance. We will discuss different orders of accuracy for two realizations, namely the Gauss Legendre method and the Radau 2 method, both fully implicit schemes for various order, i.e. for orders 1,2, and 3 \checkit{ADD CORRECT VALUES.} We compare these methods with the frequently used, very efficient IMEX method ARK2, as introduced in CITE by CITE:Giraldo13.
+In this section, we present numerical experiments to investigate the
+monolithic solver setup with fully implicit time stepping methods
+introduced above. We will consider Gauss Legendre and Radau IIA
+timestepping methods in their versions with 1, 2 and 3 stages,
+combined with the finite element spaces discussed above in the case of
+$p=1$. We compare these methods with the frequently used, very
+efficient IMEX method ARK2.
 
-The aim is to test this for geophysical applications, i.e for atmosphere and ocean simulations. Hence, we select a testcase that allows us to best identify error sources of the time integrator before spacial errors dominate. To this end, we use the Williamson 6 test case where a solid wave is transported around the globe. Simulating it for a relatively short time of 1 day allows us to identify time integrator errors, mitigation inpact of small scale errors triggered by nonlinearies that might dominate the error for longer integrations.
+The aim is to test this for geophysical applications, i.e for
+atmosphere and ocean simulations, in the balanced regime where the
+solution is dominated by the slow evolving component without
+significant fast oscillations. To this end, we use the Williamson 6
+test case which is a nonlinear travelling Rossby wave solution that is
+supported over the whole globe. Simulating it for a relatively short
+time of 1 day allows us to identify time integrator errors separately
+from spatial errors, by comparing with a numerical solution using the
+same spatial discretisation scheme and mesh resolution. 
 
-The essential quantities of interest for operational simulations are the total runtime of a simulation and the relative errors the integrators have. As such, we compare exactly those two quantities for various parameter choices for our implicit methods and for the imex schemes. As we will see, accuracy and runtime crucially depend on the selected time step sizes and hence, those are added too to the graphics we present below to have an idea how the selection of step sizes impact on accuracy and runtime for imex and irksome runs.
+The essential quantities of interest are the total runtime of a
+simulation and the time errors the integrators have, up to
+the point where they are of the same order of magnitude as the spatial
+errors. As such, we compare these quantities for various
+parameter choices for our implicit methods and for the IMEX
+schemes. As expected, accuracy and runtime crucially depend on the
+selected time step sizes and hence, those are added too to the
+graphics we present below to have an idea how the selection of step
+sizes impact on accuracy and runtime for imex and irksome runs.
 
-
-\begin{figure}[t]\centering
+\begin{figure}
+  \centering
  \begin{tabular}{cc}
  \hspace{-0em}\includegraphics[scale=0.125]{Images/vorticity_0.png} &
  \hspace{-0em}\includegraphics[scale=0.125]{Images/elevation_0.png} \\
@@ -572,36 +614,6 @@ $t^{n+1} = t^n + \Delta t$, namely:
 &  \ybf^{n+1}  = \ybf^n + \Delta t \sum_{j=1}^{\nu} \tilde w_{j} \,  \sbf(\ybf^{(j)}, t^n + \tilde c_{j}\Delta t) + \Delta t \sum_{j=1}^{\nu} w_{j} \,  \fbf(\ybf^{(j)}, t^n + c_{j}\Delta t) \, .
 \end{align}
 The concrete RK-IMEX schemes are then defined by a double Butcher tableau. Here we present the Butcher tableau for the ARK2 (2,3,2) method that we used for our study. That is, for $\nu = 3$, we have, respectively for the explicit (using tilde) and the implicit parts:
-
-%\begin{table}[h]\centering
-\begin{tabular}{c|c}
- $\mathbf{\tilde c}$ & $\tilde A$ \\ \hline
-    & $\mathbf {\tilde w}^T$
-\end{tabular} \ =
-\begin{tabular}{c|ccc}
-0         &  0             &   0       & 0  \\
-$2\gamma$ &  $2\gamma$     &  0        & 0  \\
-$1$       & $1 - \alpha$   & $\alpha$  & 0  \\ \hline
-          & $\delta$       & $\delta$  & $\gamma$
-\end{tabular}  , \qquad
-\begin{tabular}{c|c}
- $\mathbf{c}$ & $A$ \\ \hline
-    & $\mathbf {w}^T$
-\end{tabular} \ =
-\begin{tabular}{c|ccc}
-0         &  0             &   0       & 0  \\
-$2\gamma$ &  $\gamma$     &  $\gamma$        & 0  \\
-$1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
-          & $\delta$       & $\delta$  & $\gamma$
-\end{tabular}  , \\
-%\end{table}
-where $\gamma = 1 - \frac{1}{\sqrt{2}}$, $\alpha = \frac{1}{6} (3 + 2\sqrt{2})$ and
-$\delta =  \frac{1}{ 2 \sqrt{2}}$. For $j,l =1,...\nu$, we use the following notation: for explicit part we write
-$\mathbf{\tilde c} = \{\tilde c_j\}$,
-$\mathbf{\tilde w} = \{\tilde w_j\}$, and
-$\tilde A = \{\tilde a_{jl}\}$ where the coefficients must have $\tilde a_{jl} = 0$ for $j \geq l$. For the implicit part, we use
-$\mathbf{c} = \{c_j\}$,
-$\mathbf{w} = \{w_j\}$, and $A = \{a_{jl}\}$ with $\tilde a_{jl} = 0$ for $j > l$ to obtain a diagonally implicit RK scheme. Depending on the choice of these Butcher tableaus, various RK IMEX schemes can be formulated. For such general formulation and an explicit presentation of the corresponding Butcher tableau, \checkit{see Hillary Weller.}
 
 \todo{
 \werner{Stuff from poster: do we need something here?}
