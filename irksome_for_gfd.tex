@@ -111,8 +111,7 @@ description is useful. We select $V$ as the degree $p+1$ BDM finite
 element space on triangles, and $Q$ as the degree $p$ discontinuous
 Lagrange finite element space, here defined on an icosahedral grid
 $\mathcal{X}$ formed by recursively refining an icosahedron and then projecting
-vertices radially out to the sphere. Then we seek $u,D\in V\times Q$
-\werner{bracket()?}
+vertices radially out to the sphere. Then we seek $(u,D)\in V\times Q$
 such that
 \begin{align}
   \label{eq:ut}
@@ -151,26 +150,43 @@ $p=1$.
 
 \subsection{Implicit Runge Kutta time discretisation}
 
-Implicit Runge-Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) define
-stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
+\colin{Define the big space and use big space variables in R}
+
+Runge-Kutta methods advance the solution $U$ from one step $U^n$ to
+the next $U^{n+1}$ by computing $s$ stages $(k_1,\ldots,k_s)$ and then
+updating the solution according to
+\begin{equation}
+  U^{n+1} = U^n + \Delta t\sum_{i=1}^s b_i k_i,
+\end{equation}
+where $b=(b_1,\ldots, b_s)$ are coefficients specific to the
+particular chosen Runge-Kutta method. Our spatially discrete rotating
+shallow water system (\ref{eq:ut}-\ref{eq:Dt}) is a ``mixed'' coupled
+system for two variables, so we write $U=(u,D)\in V\times Q$, and $k_i
+= (k_{u,i},k_{D,i})\in V\times Q$ for $i=1,\ldots,s$. Further,
+implicit Runge-Kutta methods couple all of these stages together, so it
+is useful to define a single variable for all of the stage components,
+\[
+k = (k_{u,1},k_{D,1},\ldots,k_{u,s},k_{D,s}) \in
+\prod_{i=1}^s V\times Q := W.
+\]
+Implicit Runge-Kutta methods for (\ref{eq:ut}-\ref{eq:Dt}) then 
+seek $k\in W$ such that
 \begin{align}
     \label{eq:u stages}
-    R_{u,i}[w] := \langle w, k_{u,i} \rangle + \Delta t a\left(
+    R_{u,i}[k;w] := \langle w, k_{u,i} \rangle + \Delta t a\left(
     u^n_i,D^n_i;w\right)
   & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
-  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + \Delta tc\left(u^n_i,D^n_i; \phi\right)
+  R_{D,i}[k;\phi] := \langle \phi, k_{D,i} \rangle + \Delta tc\left(u^n_i,D^n_i; \phi\right)
   & = 0, \quad \forall \phi \in Q, \mbox{ for }i=1,\ldots,s,\\
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
 \end{align}
-\werner{index in 7-8 now over $i$ and also $j$, but latter not specified! Maybe use other
-indices in 9-10?}
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge-Kutta scheme. This defines a coupled
 system for all of the stages in general. After solving
-(\ref{eq:u stages}-\ref{eq:D stages}) for the stages\werner{solving 7-10?} \colin{I think not, because 9-10 are just definitions which should be substituted into 7-8}, the solution
+(\ref{eq:u stages}-\ref{eq:D stages}) for the stages, the solution
 at the next timestep is obtained from
 \begin{equation}
   u^{n+1} = u^n + \Delta t\sum_{i=1}^sb_i k_{u,i},\quad
@@ -190,27 +206,28 @@ which would otherwise need to be incorporated into (\ref{eq:u
   stages}-\ref{eq:D stages}) in the usual way.
 
 We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
-  stages}) using Newton iteration. Given an initial guess $\{(k_{u,i},
-k_{D,i})\}_{i=1}^s$ for the stages, a Newton iteration requires solving
-the coupled linear Jacobian system
-%\begin{small}
+  stages}) using Newton iteration. Given an initial guess $k\in W$ for
+the stages, a Newton iteration requires solving the coupled linear
+Jacobian system for corrections
+\[
+k' = (k'_{u,1},k'_{D,1},\ldots, k'_{u,s},k'_{D,s}) \in W,
+\]
+such that
 \begin{align}
   \nonumber
     \langle w, k'_{u,i} \rangle +
    \Delta t \sum_{j=1}^sA_{ij}\gat a\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
-   w\right) &=  -R_{u,i}[w], \\
+   w\right) &=  -R_{u,i}[k;w], \\
    \label{eq:u J}
    & \qquad\qquad    \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
    \nonumber
   \langle \phi, k'_{D,i} \rangle
   + \Delta t\sum_{j=1}^sA_{ij}\gat c\left(u^n_i,D^n_i;(k'_{u,j}, k'_{D,j}),
-  \phi\right)  &= -R_{D,i}[\phi], \\
-  & \qquad \qquad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+  \phi\right)  &= -R_{D,i}[k;\phi], \\
+  & \qquad \qquad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s.
     \label{eq:D J}
 \end{align}
-%\end{small}
-for iterative corrections $(k'_{u,i}, k'_{D,i})\in (V\times Q)$,
-$i=1,\ldots,s$. Here, $\gat a$ and $\gat b$ are the Gateaux
+Here, $\gat a$ and $\gat b$ are the Gateaux
 derivatives of $a$ and $c$ defined by
 \begin{align}
   \gat a(u,D;(v,\phi),w) & = \lim_{\epsilon\to 0}
@@ -231,7 +248,7 @@ The solution is then updated according to
   k_{u,i}\mapsto k_{u,i} + k'_{u,i}, \quad
   k_{D,i}\mapsto k_{D,i} + k'_{D,i},
 \end{equation}
-and the iteration is terminated if the residuals in (\ref{eq:u
+and the iteration is repeated until the residuals in (\ref{eq:u
   stages}-\ref{eq:D stages}) are sufficiently small (according to an
 appropriately chosen termination criteria).  The assembly of these
 nonlinear and linear systems can be performed in the usual way by
@@ -240,19 +257,21 @@ contributions upon substituting $w$ and $\phi$ for each basis function
 from standard sparse finite element bases for $V\times Q$. It remains
 to find a scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
-We observe that the iterative corrections $w=\{(k'_{u,i},
-k'_{D,i})\}_{i=1}^s$ are coupled in (\ref{eq:u J}-\ref{eq:D J}) both
-between $u$ and $D$ components for the same stage $i$ (where the
-coupling is global but sparse), as well as between all of the stages
-from $i=1$ to $s$. This presents challenges for the solver. In this
-work, we solve (\ref{eq:u J}-\ref{eq:D J}) using a monolithic
-approach, meaning that we apply a preconditioned Krylov solver to the
-full set of basis coefficients for the iterative corrections
-$w=\{(k'_{u,i}, k'_{D,i})\}_{i=1}^s$, treated as a single vector. In
-our experiments we used FGMRES (the flexible generalised minimum
-residual method) for the chosen Krylov method, because we used GMRES
-(the generalised minimum residual method) in some inner iterations in the
-preconditioner, which we shall describe next.
+We observe that the stage components of the iterative corrections $k'$
+are coupled in (\ref{eq:u J}-\ref{eq:D J}) both between $u$ and $D$
+components for the same stage $i$ (where the coupling is global but
+sparse), as well as between all of the stages from $i=1$ to $s$. This
+presents challenges for the solver. In this work, we solve (\ref{eq:u
+  J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
+a preconditioned Krylov solver to the full set of basis coefficients
+for the iterative corrections $w=\{(k'_{u,i}, k'_{D,i})\}_{i=1}^s$,
+treated as a single vector. In our experiments we used FGMRES (the
+flexible generalised minimum residual method \citep{saad1993flexible})
+for the chosen Krylov method, because we used GMRES (the generalised
+minimum residual method \citep{saad1986gmres}) in some inner
+iterations in the preconditioner, which we shall describe next.
+
+\colin{FGMRES and GMRES in MG citations}
 
 \begin{figure}
   \center
@@ -406,12 +425,13 @@ defined by
 &=
   - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
   + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + gb \right\rangle, \\
-  c_L(u,D;\phi) & = \langle \phi, H\nabla\cdot u\rangle \\
+  c_L(u,D;\phi) & = \langle \phi, H\nabla\cdot u\rangle, \\
   c(u,D; \phi) &=
   - \langle \nabla_h \phi, uD \rangle
   - \langle \phi, H\nabla\cdot u\rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle.
 \end{align}
+\colin{explain $L$ is linearisation about state of rest; slow-fast}
 
 In our setting, IMEX schemes take the form,
 \begin{align}
