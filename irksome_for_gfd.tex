@@ -156,20 +156,17 @@ stages $(k_{u,i}, k_{D,i})\in V\times Q$ for $i=1,\ldots,s$ such that
 \begin{align}
     \label{eq:u stages}
     R_{u,i}[w] := \langle w, k_{u,i} \rangle + \Delta t a\left(
-    u^n_j,D^n_j;w\right)
+    u^n_i,D^n_i;w\right)
   & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
-  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + \Delta tc\left(u^n_j,D^n_j; \phi\right)
+  R_{D,i}[\phi] := \langle \phi, k_{D,i} \rangle + \Delta tc\left(u^n_i,D^n_i; \phi\right)
   & = 0, \quad \forall \phi \in Q, \mbox{ for }i=1,\ldots,s,\\
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
 \end{align}
-<<<<<<< HEAD
 \werner{index in 7-8 now over $i$ and also $j$, but latter not specified! Maybe use other
 indices in 9-10?}
-=======
->>>>>>> dc5d003455f17f046bad31c9cb094a140db71bef
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge-Kutta scheme. This defines a coupled
 system for all of the stages in general. After solving
@@ -360,15 +357,20 @@ number of Krylov iterations per timestep, and hence reduces the overall
 number of multigrid cycles which dominate the cost of the method.
 
 In this work we implemented this approach using Irksome
-\citep{farrell2021irksome,kirby2024extending}, a Python library
-that wraps time discretisations on top of finite element discretisations
-implemented using Firedrake \citep{FiredrakeUserManual}, an automated
-system for the solution of partial differential equatoins using the
-finite element method.
-This combination in turn makes significant use
-of PETSc \citep{dalcin2011parallel,balay2019petsc}. In particular,
-PETSc's and Firedrake's PCPatch implementation
-of additive Schwarz methods is used \citep{farrell2021pcpatch}.
+\citep{farrell2021irksome,kirby2024extending}, a Python library that
+wraps time discretisations on top of finite element spatial
+discretisations implemented using Firedrake
+\citep{FiredrakeUserManual}, an automated system for the solution of
+partial differential equatoins using the finite element method.  This
+combination in turn makes significant use of PETSc
+\citep{dalcin2011parallel,balay2019petsc}. In particular, PETSc's and
+Firedrake's PCPatch implementation of additive Schwarz methods is used
+\citep{farrell2021pcpatch}.  Amongst the benefits of this approach to
+implementation, Firedrake uses automated differentiation provided by
+the Unified Form Language (UFL) \citep{alnaes2012ufl} to obtain the
+formulae for (\ref{eq:u J}-\ref{eq:D J}) from which code assembling
+the matrix-vector action and the patch linear systems is automatically
+generated.
 
 \subsection{Implicit-explicit time discretisation}
 
@@ -394,7 +396,9 @@ To produce an IMEX scheme, we rewrite our spatial discretisation
 + c_L(u,D; \phi) + c_N(u,D; \phi)  & =
  0, \quad \forall \phi \in Q,
 \end{align}
-where
+where $a_L$, $a_N$ are the linear and nonlinear operators for $u$,
+and $c_L$, $c_N$ are the linear and nonlinear operators for $D$,
+defined by
 \begin{align}
   a_L(u,D;w) & = \langle w, fu^\perp \rangle - \langle \nabla\cdot w,
   gD \rangle, \\
@@ -410,18 +414,54 @@ where
 \end{align}
 
 In our setting, IMEX schemes take the form,
+\begin{align}
+    \nonumber
+    \langle w, Y_{u,i}-u^n \rangle + \Delta t \sum_{j=1}^{i-1} A_{ij} a_N\left(
+    Y_{u,j}, Y_{D,j}; w\right) & \\
+\qquad    + \Delta t \sum_{j=1}^i \tilde{A}_{ij} a_L(Y_{u,j}, Y_{D,j}; w)
+    & = 0, \label{eq:u stages IMEX}
+  \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
+  \nonumber
+    \langle \phi, Y_{D,i}-D^n \rangle + \Delta t \sum_{j=1}^{i-1} A_{ij} c_N\left(
+    Y_{u,j}, Y_{D,j}; \phi\right) & \\
+    + \Delta t \sum_{j=1}^i \tilde{A}_{ij} c_L(Y_{u,j}, Y_{D,j}; w)
+    & = 0, \label{eq:D stages IMEX}
+      \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
+\end{align}
+where $A$ and $\tilde{A}$ are the explicit and implicit IMEX Butcher
+matrices respectively. Then, we reconstruct the solution from
+\begin{align}
+  \langle w, u^{n+1} - u^n\rangle + \Delta t\sum_{i=1}^s b_i
+  a_N(Y_{u,j}, Y_{D,j}; w)
+  + \Delta t \sum_{i=1}^s \tilde{b}_i
+  a_L(Y_{u,j}, Y_{D,j}; w)=0,\, \forall w \in V, \\
+    \langle \phi, D^{n+1} - D^n\rangle + \Delta t\sum_{i=1}^s b_i
+  c_N(Y_{u,j}, Y_{D,j}; \phi)
+  + \Delta t \sum_{i=1}^s \tilde{b}_i
+    c_L(Y_{u,j}, Y_{D,j}; \phi)=0,\, \forall \phi \in Q,
+\end{align}
+where $b$ and $\tilde{b}$ are the corresponding IMEX Butcher
+reconstruction vectors. Due to the lower triangular structure
+expressed in the sum limits, (\ref{eq:u stages IMEX}-\ref{eq:D stages
+  IMEX}) can be solved as single coupled mixed problems for
+$(Y_{u,i},Y_{D,i})$ at stage $i$. Further, these problems can be
+reduced to a sparse ``modified Helmholtz'' type problem for a single
+variable using the hybridisation technique for mixed finite elements
+\citep{boffi2013mixed,cockburn2004characterization}; similar sparse
+reduction techniques exist for finite volume and discontinuous
+Galerkin methods. The resulting sparse system can be solved using a
+sparse parallel direct solver, or for larger problems, multigrid
+methods. In this work we found that sparse direct solvers were quicker
+for the 2D problems under consideration. The implicit IMEX linear
+systems are state independent, and so can be assembled and factorised
+once, which makes their solution very fast. In contrast, the patch
+problems used for the IRK methods depend on the system state, and must
+be refactorised for each Jacobian solve.
 
-
-implementation
-
-
-
-
-
-
-\cleardoublepage
-
-
+The ARK2 IMEX scheme is a 3 stage scheme involving two implicit solves
+per timestep. It was implemented using Firedrake again, using the
+hybridization solver package SLATE \citep{gibson2020slate} for the
+implicit linear systems.
 
 \section{Numerical results}
 
