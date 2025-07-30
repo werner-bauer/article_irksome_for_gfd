@@ -12,6 +12,9 @@
 \bibliographystyle{elsarticle-harv}
 \usepackage{multirow}
 
+\usepackage{soul}
+\setstcolor{red}
+
 
 %opening
 \title{Fully implicit timestepping methods for the rotating shallow water equations}
@@ -271,6 +274,7 @@ presents challenges for the solver. In this work, we solve (\ref{eq:u
   J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
 a preconditioned Krylov solver to the full set of basis coefficients
 for the iterative corrections $w=\{(k'_{u,i}, k'_{D,i})\}_{i=1}^s$,
+\werner{w could be confused with the test function from above! maybe use $\omega$?}
 treated as a single vector. In our experiments we used FGMRES (the
 flexible generalised minimum residual method \citep{saad1993flexible})
 for the chosen Krylov method, because we used GMRES (the generalised
@@ -294,6 +298,8 @@ iterations in the preconditioner, which we shall describe next.
   }
  \end{figure}
 
+
+
 As a preconditioner, we used geometric multigrid with a sequence of
 nested meshes of the spherical domain,\footnote{In fact our meshes are
 not strictly nested, because our cells are flat triangles (higher
@@ -312,17 +318,24 @@ For smoothers on each level, we used an additive Schwarz method that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W =
 \prod_{i=1}^s\left(V \times Q\right)$, $l=1,\ldots,N_l$, where $W$ is
 the mixed finite element space comprising all of the stages.
+\werner{could we say 'all of the RK stages.' just to be more clear?}
 In this work we define the subspaces $W_l$ using ``vertex
-star patches''.  Here, there is one subspace for each of the $M$
-vertices in the mesh.  The subspace for a vertex $z_l$ is defined by
+star patches''.
+\werner{Here, there is one subspace $W_l$ for each of the $M$
+vertices $z_l$ in the mesh.}
+\st{Here, there is one subspace for each of the $M$
+vertices in the mesh.}
+The subspace for a vertex $z_l$ is defined by
 taking the set $S_l$ of cells surrounding $z_l$. $W_l$ is the subspace
 of $W$ consisting of functions that are equal to zero when restricted
 to any cell not in $S_l$. For our choice of spaces, this entails
 zeroing any degrees of freedom on the boundary of $S_l$ and beyond
-(See Figure \ref{fig:patch}). In the multigrid algorithm, the goal of
+(\checkit{see} \st{See} Figure \ref{fig:patch}). In the multigrid algorithm, the goal of
 the smoother is to approximately solve a problem of the form
 (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$ replaced
-by residuals provided from the next finest grid.  For the additive
+by residuals provided from the next finest grid.
+\werner{Is this normal that you use residuals from finer grid levels? I did not see this in the video I have watched so far!}
+For the additive
 Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with solutions
 $w_l$ and test functions restricted to $W_l$, using a direct
 solve. These ``patch problems'' can be solved independently and in
@@ -330,13 +343,18 @@ parallel using a dense direct solver.  Then, the additive Schwarz
 approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
+\werner{What is with the overlaps? Why do they not matter?
+Should we mention why we do not use non-overlapping methods?
+}
 
 The reason for choosing vertex star patches is that they deal well
 with the oscillatory wave coupling in the linear system. When this
 form of multigrid is applied to the rotating shallow water equations
 linearised about a state of rest (referred to as the linear rotating
 shallow water equations), we observe mesh- and $\Delta t$-robust
-convergence rates. This is believed to be related to the efficacy of
+convergence rates.
+\werner{is this true for both, whether you use multigrid for preconditioner or for the solver?}
+This is believed to be related to the efficacy of
 vertex star patches for Hdiv problems \citep{arnold2000multigrid} but
 there is no analysis for monolithic multigrid applied to mixed
 elliptic problems at present \citep{sm}. The reason for choosing patches
@@ -344,12 +362,12 @@ that couple between all stages is that we aim to obtain robust
 convergence in the number of Runge-Kutta stages, as analysed in
 \citep{kirby2024convergence}.
 
-To avoid having to tune scaling parameters whose optimal values might
+To avoid having to tune scaling parameters \werner{where do we need those parameters?} whose optimal values might
 depend on the system state, our smoothers consist of two iterations of
 GMRES preconditioned by the additive Schwarz method above. This has
 the effect of selecting the scaling parameter adaptively.  This
 necessitates the use of a flexible Krylov method (FGMRES, in our
-case), since the use of GMRES means that the smoother is residual
+case) \werner{as solver on the 'outside'???}, since the use of GMRES means that the smoother is residual
 dependent and hence is not a stationary iterative method (which is a
 requirement for standard Krylov methods such as GMRES).
 
@@ -374,7 +392,7 @@ As a final optimisation, we used the Eisenstat-Walker (version 2)
 inexact Newton approach \citep{eisenstat1996choosing} which adaptively
 controls the number of Krylov iterations for the Jacobian system
 during the Newton algorithm, since it is not useful to solve the
-Jacobian system accurately when the nonlinear solution is only going
+Jacobian system \werner{should we add equation numbers 12-13?} accurately when the nonlinear solution is only going
 to be updated again in the next Newton iteration anyway. This reduces the overall
 number of Krylov iterations per timestep, and hence reduces the overall
 number of multigrid cycles which dominate the cost of the method.
@@ -384,7 +402,7 @@ In this work we implemented this approach using Irksome
 wraps time discretisations on top of finite element spatial
 discretisations implemented using Firedrake
 \citep{FiredrakeUserManual}, an automated system for the solution of
-partial differential equatoins using the finite element method.  This
+partial differential equations using the finite element method.  This
 combination in turn makes significant use of PETSc
 \citep{dalcin2011parallel,balay2019petsc}. In particular, PETSc's and
 Firedrake's PCPatch implementation of additive Schwarz methods is used
@@ -394,6 +412,7 @@ the Unified Form Language (UFL) \citep{alnaes2012ufl} to obtain the
 formulae for (\ref{eq:u J}-\ref{eq:D J}) from which code assembling
 the matrix-vector action and the patch linear systems is automatically
 generated.
+\werner{Details of the implementation can be found in the supplementary material???}
 
 \subsection{Implicit-explicit time discretisation}
 
