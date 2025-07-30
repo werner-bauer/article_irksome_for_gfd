@@ -166,8 +166,6 @@ $p=1$.
 
 \subsection{Implicit Runge Kutta time discretisation}
 
-\colin{Define the big space and use big space variables in R}
-
 Runge-Kutta methods advance the solution $U$ from one step $U^n$ to
 the next $U^{n+1}$ by computing $s$ stages $(k_1,\ldots,k_s)$ and then
 updating the solution according to
@@ -201,14 +199,9 @@ seek $k\in W$ such that
 \end{align}
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge-Kutta scheme. This defines a coupled
-system for all of the stages in general. After solving
-(\ref{eq:u stages}-\ref{eq:D stages}) for the stages, the solution
-at the next timestep is obtained from
-\begin{equation}
-  u^{n+1} = u^n + \Delta t\sum_{i=1}^sb_i k_{u,i},\quad
-  D^{n+1} = D^n + \Delta t\sum_{i=1}^sb_i k_{D,i},
-\end{equation}
-where $b_i$ are also obtained from the Butcher tableau. In this work
+system for all of the stages in general.
+
+In this work
 we consider collocation Runge-Kutta methods, in particular the
 Gauss-Legendre methods that extend the implicit midpoint rule to
 higher orders, and the Radau IIA methods that extend the backward Euler
@@ -288,8 +281,6 @@ for the chosen Krylov method, because we used GMRES (the generalised
 minimum residual method \citep{saad1986gmres}) in some inner
 iterations in the preconditioner, which we shall describe next.
 
-\colin{FGMRES and GMRES in MG citations}
-
 \begin{figure}
   \center
   \includegraphics[width=5cm]{Images/patch}
@@ -306,6 +297,8 @@ iterations in the preconditioner, which we shall describe next.
     patch boundary).
   }
  \end{figure}
+
+
 
 As a preconditioner, we used geometric multigrid with a sequence of
 nested meshes of the spherical domain,\footnote{In fact our meshes are
@@ -400,7 +393,7 @@ inexact Newton approach \citep{eisenstat1996choosing} which adaptively
 controls the number of Krylov iterations for the Jacobian system
 during the Newton algorithm, since it is not useful to solve the
 Jacobian system \werner{should we add equation numbers 12-13?} accurately when the nonlinear solution is only going
-to be iteratively updated again anyway. This reduces the overall
+to be updated again in the next Newton iteration anyway. This reduces the overall
 number of Krylov iterations per timestep, and hence reduces the overall
 number of multigrid cycles which dominate the cost of the method.
 
@@ -461,7 +454,11 @@ defined by
   - \langle \phi, H\nabla\cdot u\rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle.
 \end{align}
-\colin{explain $L$ is linearisation about state of rest; slow-fast}
+Here, the linear terms $a_L$ and $c_L$ are from the linearisation of
+the equations at a state of rest, which have fast wave solutions.
+The nonlinear remainder terms $a_N$ and $c_N$ are advective and contribute
+on the slower advective timescale. Hence, it can be beneficial to use this
+splitting in an IMEX scheme where the linear terms are treated implicitly.
 
 In our setting, IMEX schemes take the form,
 \begin{align}
