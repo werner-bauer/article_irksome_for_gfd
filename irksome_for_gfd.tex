@@ -273,8 +273,7 @@ sparse), as well as between all of the stages from $i=1$ to $s$. This
 presents challenges for the solver. In this work, we solve (\ref{eq:u
   J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
 a preconditioned Krylov solver to the full set of basis coefficients
-for the iterative corrections $w=\{(k'_{u,i}, k'_{D,i})\}_{i=1}^s$,
-\werner{w could be confused with the test function from above! maybe use $\omega$?}
+for the iterative corrections $k'$,
 treated as a single vector. In our experiments we used FGMRES (the
 flexible generalised minimum residual method \citep{saad1993flexible})
 for the chosen Krylov method, because we used GMRES (the generalised
