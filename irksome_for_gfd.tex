@@ -18,8 +18,8 @@
 
 %opening
 \title{Fully implicit timestepping methods for the rotating shallow water equations}
-\author{Werner Bauer\footnote{University of Surrey, UK (w.bauer@surrey.ac.uk), Ochid: \url{https://orcid.org/0000-0002-5040-4287}} \ and
-Colin J. Cotter\footnote{Imperial College London, UK, Orchid: ???}  }
+\author{Werner Bauer\footnote{University of Surrey, UK (w.bauer@surrey.ac.uk), ORCID: \url{https://orcid.org/0000-0002-5040-4287}} \ and
+Colin J. Cotter\footnote{Imperial College London, UK, ORCID: \url{https://orcid.org/0000-0001-7962-8324}}}
 
 
 \newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
@@ -79,9 +79,22 @@ Colin J. Cotter\footnote{Imperial College London, UK, Orchid: ???}  }
 \begin{abstract}
 Fully implicit timestepping methods have several potential advantages for atmosphere/ocean simulation. First, being unconditionally stable, they degrade more gracefully as the Courant number increases, typically requiring more solver iterations rather than suddenly blowing up. Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method. Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods.
 
-Fully implicit timestepping methods have had limited application in geophysical fluid dynamics due to challenges of finding suitable iterative solvers, since the coupled treatment of advection prevents the standard elimination techniques. However, overlapping Additive Schwarz methods, as introduced for geophysical fluid dynamics by Cotter and Shipton (2023), provide a robust, scalable iterative approach for solving the monolithic coupled system for all fields and Runge-Kutta stages.
+Fully implicit timestepping methods have had limited application in
+geophysical fluid dynamics due to challenges of finding suitable
+iterative solvers, since the coupled treatment of advection prevents
+the standard elimination techniques. However, overlapping Additive
+Schwarz methods, provide a robust, scalable iterative approach for
+solving the monolithic coupled system for all fields and Runge-Kutta
+stages.
 
-In this study we investigate this approach applied to the rotating shallow water equations, facilitated by the Irksome package (Farrell et al, 2021) which provides automated code generation for implicit Runge-Kutta methods. We compare various schemes in terms of accuracy and efficiency using an implicit/explicit splitting method, namely the ARK2 scheme of Giraldo et al (2013), as a benchmark. This provides an initial look at whether implicit Runge-Kutta methods can be viable for atmosphere and ocean simulation.
+In this study we investigate this approach applied to the rotating
+shallow water equations, facilitated by the Irksome package which
+provides automated code generation for implicit Runge-Kutta
+methods. We compare various schemes in terms of accuracy and
+efficiency using an implicit/explicit splitting method, namely the
+ARK2 scheme of Giraldo et al (2013), as a benchmark. This provides an
+initial look at whether implicit Runge-Kutta methods can be viable for
+atmosphere and ocean simulation.
 \end{abstract}
 
 \section{Introduction}
