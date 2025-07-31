@@ -537,14 +537,6 @@ $1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
 
 \werner{Maybe here:::: Details of the implementation can be found in the supplementary material???}
 
-\begin{itemize}
- \item Describe test case Williamson 6
- \item Describe mesh levels somehow!!!
-\end{itemize}
-
-\colin{Some details of solver options for IRK and IMEX}
-\colin{Largest dt was 100 on mesh 6}
-
 In this section, we present numerical experiments to investigate the
 monolithic solver setup applied to IRKs for the rotating shallow water
 equations as introduced above. Specifically, we will consider Gauss
@@ -568,15 +560,15 @@ also estimate the spatial discretisation error to give context to
 these timestepping errors.
 
 The essential quantities of interest are the total runtime of a
-simulation and the time errors the integrators have, up to
-the point where they are of the same order of magnitude as the spatial
-errors. As such, we compare these quantities for various
-parameter choices for the IRK and IMEX
-schemes. As expected, accuracy and runtime crucially depend on the
-selected time step sizes and hence, those are added too to the
-graphics we present below to have an idea how the selection of step
-sizes impact on accuracy and runtime for IRKs and the ARK2 IMEX
-scheme.
+simulation and the time errors the integrators have, up to the point
+where they are of the same order of magnitude as the spatial
+errors. As such, we compare these quantities for various parameter
+choices for the IRK and IMEX schemes. As expected, accuracy and
+runtime crucially depend on the selected time step sizes; we compute
+errors and runtime for IRKs and the ARK2 IMEX scheme over a range
+of $\Delta t$ values. For the IMEX scheme, the maximum timestep
+was $\Delta t=100s$ on mesh 6 since the method was unstable for larger
+timesteps.
 
 \begin{figure}
   \centering
