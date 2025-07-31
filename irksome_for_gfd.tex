@@ -472,10 +472,12 @@ for stages $(Y_{u,i},Y_{D,i}) \in V \times Q$,
 where $A$ and $\tilde{A}$ are the explicit and implicit IMEX Butcher
 matrices respectively. Then, we reconstruct the solution from
 \begin{align}
+  \label{eq:mass u}
   \langle w, u^{n+1} - u^n\rangle + \Delta t\sum_{i=1}^s b_i
   a_N(Y_{u,i}, Y_{D,i}; w)
   + \Delta t \sum_{i=1}^s \tilde{b}_i
   a_L(Y_{u,i}, Y_{D,i}; w)=0,\, \forall w \in V, \\
+  \label{eq:mass D}
     \langle \phi, D^{n+1} - D^n\rangle + \Delta t\sum_{i=1}^s b_i
   c_N(Y_{u,i}, Y_{D,i}; \phi)
   + \Delta t \sum_{i=1}^s \tilde{b}_i
@@ -554,13 +556,16 @@ frequently used, very efficient IMEX method ARK2.
 The aim is to test this for geophysical applications, i.e for
 atmosphere and ocean simulations, in the balanced regime where the
 solution is dominated by the slow evolving component without
-significant fast oscillations. To this end, we use the Williamson 6
-test case which is a nonlinear travelling Rossby wave solution that is
-supported over the whole globe. Simulating it for a relatively short
-time of 1 day allows us to identify time integrator errors separately
-from spatial errors, by comparing with a numerical solution using the
-same spatial discretisation scheme and mesh resolution. Plots of the
-solution are shown in Figure \ref{tc6_fields}.
+significant fast oscillations. To this end, we use the Rossby-Haurwitz
+test case of \cite[Section 6]{WILLIAMSON1992211} which computes a
+nonlinear travelling Rossby wave solution that is supported over the
+whole globe. Plots of the solution are shown in Figure
+\ref{tc6_fields}. We compute errors at relatively short time of 1 day.
+The errors are computed relative to a numerical solution using the
+same spatial discretisation scheme and mesh resolution with timestep
+$\Delta t = 1s$. This enables us to isolate timestepping errors. We
+also estimate the spatial discretisation error to give context to
+these timestepping errors.
 
 The essential quantities of interest are the total runtime of a
 simulation and the time errors the integrators have, up to
@@ -588,6 +593,29 @@ scheme.
     degrees of freedom.}
  \label{tc6_fields}
 \end{figure}
+
+All computations were performed using an icosahedral mesh
+approximating the surface of the sphere by recursive refinement of an
+icosahedron as discussed previously. Mesh refinement level $p$ has
+$20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
+of freedom and $150\times 4^p$ velocity degrees of freedom. The
+machine used has 16 Intel Xeon 2.60GHz CPUs on two sockets, and we
+used one thread per core. The timing measurements were obtained using
+PETSc's event logging capability.
+
+For the IRKs we used the solver strategy discussed above with a Newton
+relative residual tolerance of $1.0\times 10^{-6}$. For the IMEX
+scheme we used the SUPERLU Dist parallel direct solver package
+\citep{li2023newly,li2003superlu_dist} for the reduced hybridised
+system in the implicit solve since this was the fastest of those
+available through PETSc. The mass matrix system (\ref{eq:mass u}) was
+solved using GMRES preconditioned by ILU(0) (incomplete LU
+factorisation discarding all values outside the sparsity pattern of
+the mass matrix) to a tolerance of $1.0\times 10^{-8}$, and the mass
+matrix system (\ref{eq:mass D}) was solved using a direct solve since
+it is block diagonal. These systems have insignificant solve times
+compared to the two implicit solves per timestep.
+
 \subsection{WORK OUT WHAT THE SPACIAL ERROR IS!!!}
 
 \begin{itemize}
@@ -621,7 +649,8 @@ already to the mesh level L6 in order to have a well defined error norm.
 
 We aim to compare the time integrators for applications of geophysical relevance, especially for atmosphere and ocean simulations. Further, we want to compare errors resulting from the time integrators while eliminating as much as possible other error sources such that the difference of the performance of the time integrators gets visible. Therefore, we use the Williamson 6 test case for a simulation time of 1 day. In this test case, a solid wave is transported around the globe. Simulating it for a relatively short time of 1 day allows us to identify time integrator errors, mitigation inpact of small scale errors triggered by nonlinearies that might dominate the error for longer integrations.
 
-The test case description, initialization on parameter values can all be found in the seminar paper of \cite{WILLIAMSON1992211} (Section 6, Rossby-Haurwitz Wave). Figure~\ref{tc6_fields} shows in the top row the initial fields for vorticity (left column) and depth field (right column). The bottom row shows these fields after a simulation time of 1 day. From the figures the solid body rotation of these fields gets obvious.
+The test case description, initialization on parameter values can all be found in the seminar paper of
+ Figure~\ref{tc6_fields} shows in the top row the initial fields for vorticity (left column) and depth field (right column). The bottom row shows these fields after a simulation time of 1 day. From the figures the solid body rotation of these fields gets obvious.
 
 
 % The initial conditions reads as follows:
