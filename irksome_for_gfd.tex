@@ -1052,6 +1052,7 @@ will investigate this in future work.
 %% \bibitem{Giraldo13} Giraldo, Francis X., James F. Kelly, and Emil M. Constantinescu. "Implicit-explicit formulations of a three-dimensional nonhydrostatic unified model of the atmosphere (NUMA)." SIAM Journal on Scientific Computing 35, no. 5 (2013): B1162-B1194.
 %% \end{thebibliography}
 
+\comment{
 \appendix
 
 \section{Supplementary materials}
@@ -1160,7 +1161,7 @@ dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
 \end{scriptsize}
 {Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
 \checkit{The 2nd, 4th, 6th column shows speed up when using 16 rather than 4 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3. NaN in the table indicates that for the given time step size and method, the solver did not converge, hence there is not total runtime available (here for Radau 3 with dt of 14400).}}
-
+}
 
 
 \end{document}
