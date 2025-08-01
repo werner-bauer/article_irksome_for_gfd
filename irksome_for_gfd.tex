@@ -78,7 +78,6 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID: \url{https://orcid.
 
 \begin{abstract}
 Fully implicit timestepping methods have several potential advantages for atmosphere/ocean simulation. First, being unconditionally stable, they degrade more gracefully as the Courant number increases, typically requiring more solver iterations rather than suddenly blowing up. Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method. Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods.
-
 Fully implicit timestepping methods have had limited application in
 geophysical fluid dynamics due to challenges of finding suitable
 iterative solvers, since the coupled treatment of advection prevents
@@ -86,7 +85,6 @@ the standard elimination techniques. However, overlapping Additive
 Schwarz methods, provide a robust, scalable iterative approach for
 solving the monolithic coupled system for all fields and Runge-Kutta
 stages.
-
 In this study we investigate this approach applied to the rotating
 shallow water equations, facilitated by the Irksome package which
 provides automated code generation for implicit Runge-Kutta
@@ -99,8 +97,56 @@ atmosphere and ocean simulation.
 
 \section{Introduction}
 
+The selection of timestepping algorithms for numerical methods for
+atmosphere models (and for large scale numerical solution of partial
+differential equations in general) is a complex issue due to the
+interplay between the timestepping method, the timescales present, the
+spatial discretisation, the types of implicit systems to be solved,
+the types of solver algorithms that are available, the parallel
+scalability and efficiency of those algorithms, \emph{etc.} For
+atmosphere models, there are a wide range of approaches to
+timestepping. Semi-implicit semi-Lagrangian methods are used by two of
+the leading operational centres, the European Centre for Medium Range
+Weather Forecasts \citep{hortal2002development} and the Met Office
+\citep{melvin2010inherently,wood2014inherently}, with the next
+generation Met Office model using a variant based on finite volume
+methods for the advective transport
+\citep{melvin2019mixed,melvin2024mixed}. Other approaches include
+split explicit methods \citep{klemp2007conservative} such as those
+used in the Weather Research and Forecasting (WRF) model
+\citep{skamarock2008description} and the German Weather Service ICON
+model \citep{zangl2015icon}, and implicit-explicit (IMEX) schemes
+\citep{vogl2019evaluation,giraldo2013implicit}.
+
+In this article we explore another direction which is fully implicit
+Runge-Kutta methods. These methods avoid the complications of
+splitting methods (stability conditions, options of composition, etc)
+and bring in new complications of solving the resulting sparse
+implicit systems. The main challenge is that the semi-implicit schemes
+above involve the solution of linear implicit systems that can be
+reduced down to a single scalar elliptic equation to be solved using
+classical iterative strategies. For fully implicit schemes implemented
+using Newton's method, the full Jacobian is involved; it cannot be
+reduced down to a single variable due to the advective terms. Hence,
+in this article we investigate monolithic additive Schwarz methods
+that tackle the full system of variables. In the present work we make
+an initial investigation of this strategy applied to the rotating
+shallow water equations on the sphere. This system is two dimensional
+so does not require a large facility to conduct experiments. Our
+implementation uses a compatible finite element spatial discretisation
+\citep{cotter2023compatible}, but this is not the central focus of the
+work.
+
+The rest of the paper is organised as follows. In Section \ref{sec:methods},
+we describe the space and time integration methods and the iterative
+solver algorithm which we are using. In Section \ref{sec:results} we
+present results of numerical experiments that compare the schemes for
+speed and accuracy with the ARK2 IMEX scheme, a well known approach that
+will allow the community to relate the performance to other methods.
+In Section \ref{sec:summary}, we provide a summary and outlook.
 
 \section{Description of methods}
+\label{sec:methods}
 \subsection{Spatial discretisation}
 In this article we consider implicit time discretisations for the
 rotating shallow water equations on the sphere, which we write
@@ -534,8 +580,8 @@ $1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
 \end{table}
 
 \section{Numerical results}
-
-\werner{Maybe here:::: Details of the implementation can be found in the supplementary material???}
+\label{sec:results}
+%\werner{Maybe here:::: Details of the implementation can be found in the supplementary material???}
 
 In this section, we present numerical experiments to investigate the
 monolithic solver setup applied to IRKs for the rotating shallow water
@@ -577,8 +623,6 @@ the height field after 1 day between consecutive meshes using $\Delta
 t =1s$ so that time discretisation error is not a factor. This
 provides an estimate of the spatial error; extrapolation was used to
 obtain an error estimate for mesh refinement 6.
-
-\colin{Add a table! Then, add a horizontal line to the error-time plots.}
 
 \begin{figure}
   \centering
@@ -678,7 +722,9 @@ For the Gauss-Legendre schemes, we were able to obtain a faster
 time-to-solution for the 1,2 and 3 stage schemes than the ARK IMEX
 scheme with the largest stable timestep.  For very large timesteps, we
 observed some loss of $\Delta t$ robustness in the iterative solver
-prevents further speedups from increasing the timestep. The
+prevents further speedups from increasing the timestep.
+
+The
 oscillatory appearance of the graph at large $\Delta t$ is due to the
 higher sensitivity of the total number of Krylov solves to the
 selected tolerance. The IMEX scheme does produce the quickest solution
@@ -690,6 +736,11 @@ spatial error for this resolution is above the error obtained by the
 IMEX scheme at largest stable timestep. We observe very similar trends
 for the Radau IIA schemes, except that the errors are larger due to
 the reduction by 1 in order relative to Gauss-Legendre.
+
+The loss of $\Delta t$ robustness for larger $\Delta t$ is demonstrated
+in Tables \ref{tab_niter_vs_dt G} and \ref{tab_niter_vs_dt G}. We observe
+$\Delta t$ robustness for smaller $\Delta t$, with more sustained $\Delta t$
+robustness for the higher order schemes.
 
 \begin{figure}[h]\centering
 \begin{tabular}{c}
@@ -720,11 +771,12 @@ the reduction by 1 in order relative to Gauss-Legendre.
 
 \subsection{Iteration counts tables}
 
-\begin{table}[h]\centering
+\begin{table}
+  \centering
   \begin{tabular}{ccccccc}
-    & \multicolumn{2}{c}{Gauss-Legendre 1} &
-    \multicolumn{2}{c}{Gauss-Legendre 2} &
-    \multicolumn{2}{c}{Gauss-Legendre 3} \\ 
+    & \multicolumn{2}{c}{Radau IIA 1} &
+    \multicolumn{2}{c}{Radau IIA 2} &
+    \multicolumn{2}{c}{Radau IIA 3} \\ 
    $\Delta t$  &  its/steps  &  its 
    &  its/steps  &  its
    &  its/steps  &  its 
@@ -738,28 +790,31 @@ the reduction by 1 in order relative to Gauss-Legendre.
   10800    &             22.375000 &    179.0   &        16.750000   &  134.0    &           16.250000   &  130.0 \\
   14400    &             24.166667  &   145.0   &        20.500000   &  123.0     &          17.666667   &  106.0
 \end{tabular}
-\caption{Iteration per step (its-per-step) and total iteration count (niter) vs $dt$ for the Gauss-Legendre 1, 2, 3 methods.}
-\label{tab_niter_vs_dt}
+\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the Gauss-Legendre  1, 2, 3 methods.}
+\label{tab_niter_vs_dt G}
 \end{table}
 
 
 \begin{table}[h]\centering
-\begin{scriptsize}
-\begin{tabular}{c||c|c|c||c|c|c||c|c|c}
- dt & rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter\\ \hline
-300  &        1 &      4.000000 & 1152.0 &         2 &      4.000000 & 1152.0 &         3&       5.000000 & 1440.0\\
-600  &        1  &     4.000000 &  576.0 &         2  &     6.777778 &  976.0  &        3 &      6.770833 &  975.0\\
-1200  &        1  &     8.750000&   630.0 &         2  &     8.000000 &  576.0  &        3 &      7.736111 &  557.0\\
-2400   &       1   &   12.027778 &  433.0  &        2   &    8.777778 &  316.0   &       3  &     8.000000  & 288.0\\
+    \begin{tabular}{ccccccc}
+    & \multicolumn{2}{c}{Gauss-Legendre 1} &
+    \multicolumn{2}{c}{Gauss-Legendre 2} &
+    \multicolumn{2}{c}{Gauss-Legendre 3} \\ 
+   $\Delta t$  &  its/steps  &  its 
+   &  its/steps  &  its
+   &  its/steps  &  its 
+   \\ \hline
+300  &              4.000000 & 1152.0 &               4.000000 & 1152.0 &                5.000000 & 1440.0\\
+600  &             4.000000 &  576.0 &              6.777778 &  976.0  &              6.770833 &  975.0\\
+1200  &             8.750000&   630.0 &              8.000000 &  576.0  &              7.736111 &  557.0\\
+2400   &          12.027778 &  433.0  &            8.777778 &  316.0   &            8.000000  & 288.0\\
 3600    &        12.250000 &  294.0   &          9.500000 &  228.0    &          9.000000  & 216.0\\
-7200     &     1   &   24.333333  & 292.0    &      2     & 13.083333 &  157.0     &     3    &  12.166667  & 146.0\\
-10800     &     1   &   30.375000 &  243.0    &      2  &    21.875000 &  175.0     &     3    &  19.000000 &  152.0\\
-14400      &    1   & -666.000000 & -3996.0    &      2 &     24.333333 &  146.0     &     3    &  20.833333 &  125.0
+7200     &        24.333333  & 292.0    &       13.083333 &  157.0     &       12.166667  & 146.0\\
+10800     &        30.375000 &  243.0    &          21.875000 &  175.0     &       19.000000 &  152.0\\
+14400      &     *  & *  &           24.333333 &  146.0     &       20.833333 &  125.0
 \end{tabular}
-\caption{Iteration per step (its-per-step) and total iteration count (niter) vs $dt$ for the RADAUII2 1,2,3 methods.
-\checkit{Substitute -666 by a star and mention that there is no result because the simulation crashed for these values}}
-\label{tab1_niter_vs_dt}
-\end{scriptsize}
+\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAUII2 1,2,3 methods. ``*'' indicates that the computation did not complete due to a solver failure.}
+\label{tab1_niter_vs_dt R}
 \end{table}
 
 
@@ -969,21 +1024,27 @@ the reduction by 1 in order relative to Gauss-Legendre.
 
 \section{Conclusions}
 
-   \begin{itemize}
-    \item Our benchmark tests are \textbf{fair comparisons} between implicit RK schemes (of different orders) from Irksome with the ARK2 IMEX scheme, all using the same monolithic solver in Firedrake.
+An iterative solver strategy was introduced for implicit Runge-Kutta
+methods applied to the rotating shallow water equations on the sphere,
+in conjunction with a compatible finite element discretisation. We
+compared wallclock times and timestepping error for Gauss-Legendre and
+Radau IIA implicit collocation schemes with 1, 2 and 3 stages with the
+ARK2 IMEX scheme. Our results demonstrate that these schemes are close
+to the IMEX scheme for comparible accuracy and can provide faster
+wallclock times if less accuracy is needed. Additionally, our solver
+approach could definitely benefit from further performance tuning, since
+the Firedrake multigrid and patch frameworks are probably not optimal,
+whilst the direct solver used for the implicit solve in the IMEX
+scheme probably is. Our results also demonstrate the capability of
+the combination of Irksome, Firedrake and PETSc to apply sophisticated
+solver strategies for IRKs.
 
-%    \item Figure 4 shows that under such 'fair' conditions, 3rd-order GL2 is more efficient than 2nd-order ARK2 IMEX: either it is two orders of magnitude more accurate or it requires much less runtime.
-   \item Figure 5 shows that under such 'fair' conditions:\\
-   (i) 3rd-order GL2 is a little slower than 2nd-order ARK2 IMEX, but about one order of magnitude more accurate; \\
-   (ii) 1st order GL1 is slightly quicker but less accurate.
-
-  \item So far, we did not explore advanced solver options, so further speedup for RK methods can be achieved.
-
-
-   \item Hence, the assumption that IMEX schemes are the fastest schemes for atmosphere/ocean simulation is not necessarily correct.
-
-   \item \textbf{Outlook:} the flexibility of Irksome in easily choosing different accuracy-orders for a vast variety of implicit RK methods allows us to further explore even more efficient time integrators.
-   \end{itemize}
+These results give us confidence to go forward to examine IRK schemes
+for three dimensional models. In that setting, direct solvers will not
+be optimal for the IMEX schemes, and vertical line smoothers are
+already required. Hence, it is possible that it will be easier to
+close the gap between IRKs and IMEX in this larger scale setting. We
+will investigate this in future work.
 
 \bibliography{refs}
 
