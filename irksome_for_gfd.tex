@@ -445,13 +445,14 @@ defined by
   c(u,D; \phi) &=
   - \langle \nabla_h \phi, uD \rangle
   - \langle \phi, H\nabla\cdot u\rangle
-  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle.
+  + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
 \end{align}
-Here, the linear terms $a_L$ and $c_L$ are from the linearisation of
-the equations at a state of rest, which have fast wave solutions.
-The nonlinear remainder terms $a_N$ and $c_N$ are advective and contribute
-on the slower advective timescale. Hence, it can be beneficial to use this
-splitting in an IMEX scheme where the linear terms are treated implicitly.
+where $H$ is the depth $D$ at rest. Here, the linear terms $a_L$ and
+$c_L$ are from the linearisation of the equations at a state of rest,
+which have fast wave solutions.  The nonlinear remainder terms $a_N$
+and $c_N$ are advective and contribute on the slower advective
+timescale. Hence, it can be beneficial to use this splitting in an
+IMEX scheme where the linear terms are treated implicitly.
 
 In our setting, IMEX schemes take the form,
 \begin{align}
@@ -534,13 +535,11 @@ $1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
 
 \section{Numerical results}
 
-
 \werner{Maybe here:::: Details of the implementation can be found in the supplementary material???}
 
 In this section, we present numerical experiments to investigate the
 monolithic solver setup applied to IRKs for the rotating shallow water
-equations as introduced above. Specifically, we will consider Gauss
-Legendre and Radau IIA timestepping methods in their versions with 1,
+equations as introduced above. Specifically, we will consider Gauss-Legendre and Radau IIA timestepping methods in their versions with 1,
 2 and 3 stages, combined with the finite element spaces discussed
 above in the case of $p=1$. We compare these methods with the
 frequently used, very efficient IMEX method ARK2.
@@ -570,6 +569,17 @@ of $\Delta t$ values. For the IMEX scheme, the maximum timestep
 was $\Delta t=100s$ on mesh 6 since the method was unstable for larger
 timesteps.
 
+As a benchmark to contextualise the time discretisation errors, we
+also estimate the spatial discretisation error, the point being that
+it is not necessary to reduce the former in situations where the
+latter will dominate. To do this we measured the difference between
+the height field after 1 day between consecutive meshes using $\Delta
+t =1s$ so that time discretisation error is not a factor. This
+provides an estimate of the spatial error; extrapolation was used to
+obtain an error estimate for mesh refinement 6.
+
+\colin{Add a table! Then, add a horizontal line to the error-time plots.}
+
 \begin{figure}
   \centering
  \begin{tabular}{cc}
@@ -586,14 +596,59 @@ timesteps.
  \label{tc6_fields}
 \end{figure}
 
+\begin{table}[h]\centering
+  \begin{tabular}{ccccccc}
+    $\Delta t$ $(s)$ & \multicolumn{6}{c}{Wallclock time ($s$)} \\
+    \hline
+    &  16 cores  &  8 cores  & 4 cores  &   8/16   &   4/8     & 4/16     \\\hline
+        \multicolumn{7}{c}{IMEX} \\
+18.75 & 3437.80 & 4953.10 & 8323.2 & 1.440776 & 1.680402  & 2.421083\\
+%37.50 & 1722.50 & 2475.70 & 4192.0 & 1.437271 & 1.693258  & 2.433672\\
+%75.00  & 873.01 & 1251.10  &2086.8 & 1.433088 & 1.667972  & 2.390351\\
+100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.67923 4& 2.406764\\
+    \multicolumn{7}{c}{Gauss-Legendre 1 stage} \\
+ 300 & 978.850 & 1479.10 & 2485.40 & 1.511059    & 1.680346 & 2.539102\\
+%    600 & 501.970  & 746.76 & 1264.30 & 1.487659 & 1.693047 & 2.518676\\
+%   1200 & 258.890  & 386.97  & 644.79 & 1.494727 & 1.666253 & 2.490594\\
+%   2400 & 203.150  & 299.47  & 491.16 & 1.474132 & 1.640098 & 2.417721\\
+   3600 & 198.420 &  289.11 &  472.88 & 1.457061 & 1.635640 & 2.383227\\
+%   7200 & 108.260  & 158.95  & 249.78 & 1.468225 & 1.571438 & 2.307223\\
+%  10800 & 118.050 &  168.39  & 273.80 & 1.426429 & 1.625987 & 2.319356\\
+  14400 &  98.331 &  137.50 &  219.78 & 1.398338 & 1.598400 & 2.235104\\
+  \multicolumn{7}{c}{Gauss-Legendre 2 stage} \\
+     300  & 2665.00  & 4158.80  & 7192.90  & 1.560525  & 1.729561 & 2.699024\\
+%     600  & 1357.90  & 2112.60  & 3621.10  & 1.555785  & 1.714049  & 2.666691 \\
+%    1200  &  765.88  & 1177.30  & 2065.20  & 1.537186  & 1.754183  & 2.696506\\
+%    2400  &  614.82   & 903.21  & 1537.40  & 1.469064  & 1.702151  & 2.500569\\
+   3600   & 430.65   & 644.89   &1086.70  & 1.497481  & 1.685094  & 2.523395\\
+%   7200  &  263.50   & 384.85   & 649.56   &1.460531  & 1.687826  & 2.465123\\
+%  10800   & 237.78   & 347.62   & 557.78  & 1.461940  & 1.604568  & 2.345782 \\
+  14400   & 212.17   & 312.52   & 508.26  & 1.472970  & 1.626328  & 2.395532\\
+    \multicolumn{7}{c}{Gauss-Legendre 3 stage} \\
+\hline
+    300  &  5468.80  &  8759.00  &  15414.0  &  1.601631  &  1.759790  &  2.818534\\
+%    600  &  2752.70  &  4403.80   &  7693.1  &  1.599811  &  1.746923  & 2.794747 \\
+%   1200  &  2109.30  &  3337.00   &  5775.2  &  1.582041  &  1.730656  & 2.737970 \\
+%   2400  &  1184.60  &  1846.70   &  3203.8  &  1.558923  &  1.734878  &  2.704542\\
+   3600  &   795.64  &  1244.30   &  2150.0  &  1.563898  &  1.727879  &  2.702227\\
+%   7200   &  424.55   &  647.44   &  1124.2  &  1.525003  &  1.736377  &  2.647980\\
+%  10800   &  452.88   &  691.13   &  1157.9  &  1.526078  &  1.675372  &  2.556748\\
+  14400   &  363.06   &  573.04    &  929.3   & 1.578362   & 1.621702  &  2.559632
+  \end{tabular}
+  \caption{Table showing wallclock times for different numbers of cores for the ARK IMEX scheme and the Gauss-Legendre IRKs. Similar values are obtained for the Radau IIA IRKs. The results are typical for intra node parallelism, with the usual bandwidth limitations.
+    \label{tab:cores}}
+\end{table}
+
 All computations were performed using an icosahedral mesh
 approximating the surface of the sphere by recursive refinement of an
 icosahedron as discussed previously. Mesh refinement level $p$ has
 $20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
 of freedom and $150\times 4^p$ velocity degrees of freedom. The
 machine used has 16 Intel Xeon 2.60GHz CPUs on two sockets, and we
-used one thread per core. The timing measurements were obtained using
-PETSc's event logging capability.
+used one thread per core. All 16 cores were used unless stated
+otherwise, with timings on fewer cores presented in Table
+\ref{tab:cores}.  The timing measurements were obtained using PETSc's
+event logging capability.
 
 For the IRKs we used the solver strategy discussed above with a Newton
 relative residual tolerance of $1.0\times 10^{-6}$. For the IMEX
@@ -608,87 +663,43 @@ matrix system (\ref{eq:mass D}) was solved using a direct solve since
 it is block diagonal. These systems have insignificant solve times
 compared to the two implicit solves per timestep.
 
-\subsection{WORK OUT WHAT THE SPACIAL ERROR IS!!!}
+Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}
+show wallclock time versus error plots for the Gauss-Legendre and
+Radau IIA IRKs, respectively; results for the ARK2 IMEX scheme are
+shown in both figures as a reference. Mesh refinement 6 was used. We
+considered 1, 2 and 3 stage versions of the IRKs, as we were limited
+by memory on the workstation from examining more stages at this
+resolution. The Gauss-Legendre $s$-stage schemes are order $2s$ with
+stage order $s$ (the relevant order for stiff problems at large
+$\Delta t$, whilst the Radua IIA schemes are order $2s-1$ with stage
+order $s$.
 
-\begin{itemize}
- \item velocity field has to be interpolated from one mesh to another, might be worrying, meshes are quite different.
- \item compare 1s l5 vs l6:
- \begin{itemize}
-  \item before making comparisons
-  \item move back the l6 mesh to l5: i.e. add the coordinate field to that!!!
-  \item Colin will help me (during next week)!
-  \item Write a paragraph about how this is done!!!
-  \item for h it will be sufficient to interpolate from l6 to l5! Go via DG
-  \item Let's start first with the h field and then check if we need velocity field!
- \end{itemize}
-
-The results from what we have used so far for the plots!
-\begin{itemize}
-\item Spacial error in the eta field:  6.720143e-04
-\item Spacial error in the vel field:  7.984353e-03
-\end{itemize}
-We compute the solution for L5 and project it onto the mesh of L6 and then compared this interpolated solutions with the ones directly computed on L6. We compute the relative error by determine the following:
-\begin{equation}
-err(f, fh) =  \frac{||f_{l6} - f_{l5}||}{||f_{l6}||}
-\end{equation}
-i.e. relative to the L2 value of $f$ on mesh level L6. Note that usually, $f_{l5}$ has been interpolated
-already to the mesh level L6 in order to have a well defined error norm.
-
-
-\end{itemize}
-
-\subsection{Test case description}
-
-We aim to compare the time integrators for applications of geophysical relevance, especially for atmosphere and ocean simulations. Further, we want to compare errors resulting from the time integrators while eliminating as much as possible other error sources such that the difference of the performance of the time integrators gets visible. Therefore, we use the Williamson 6 test case for a simulation time of 1 day. In this test case, a solid wave is transported around the globe. Simulating it for a relatively short time of 1 day allows us to identify time integrator errors, mitigation inpact of small scale errors triggered by nonlinearies that might dominate the error for longer integrations.
-
-The test case description, initialization on parameter values can all be found in the seminar paper of
- Figure~\ref{tc6_fields} shows in the top row the initial fields for vorticity (left column) and depth field (right column). The bottom row shows these fields after a simulation time of 1 day. From the figures the solid body rotation of these fields gets obvious.
-
-
-% The initial conditions reads as follows:
-% \begin{itemize}
-%  \item $R0 = 6371220$,
-%  \item $H = 5960$.
-%  \item $\Omega = 7.292e-5$  rotation rate
-%  \item $cz$ z-coordinate normal to Earth surface
-%  \item $f = 2*\Omega*cz/R0$   Coriolis parameter
-%  \item $g = 9.8$   Gravitational constant
-%  \item $b$  Topography,
-%  \item Sound speed $c = g*H$
-% \end{itemize}
-
-
-
-\subsection{Simulation results}
-
-We compare the solutions obtained from the studied time integrators with relatively
-large time step sizes (i.e. all methods including IMEX use values of $dt >18.5s$) with a reference solutions determined with a very small time step size of $dt=1s$. Because all methods converge with small
-$dt$, any of the methods can be used to compute the reference solution: we used the Gauss-Legendre method of order 1 and $dt=1$, for example.
-
-We run each simulation for 1 day and then compute the L2 errors for depth and velocity fields between the coarse time step runs and the reference run for a fixed mesh resolution. For the latter we use a relatively fine mesh resolution of Level 6 (corresponding to approx ???km edge length of the triangulation of the sphere). Besides computing these relative errors, we record for each simulation the total runtime.
-
-Figure~\ref{err_vs_runtime_gl_imex} and Figure~\ref{err_vs_runtime_rd_imex} show the results of this experiment in a concise manner. We used two different implicit Runga-Kutta methods, namely the GaussLegendre method of orders \checkit{1, 3, 5 and the RadauIIA method, or orders 1,2,3}. Points on the curves indicate the total runtime for a chosen method and the obtain accuracy. As both these values depend heavily on the selected time step size, the latter is indicated as numbers (in seconds) on the curves too.
-
-
-Let's consider first Figure~\ref{err_vs_runtime_gl_imex}, but the discussion is very similar for  Figure~\ref{err_vs_runtime_rd_imex}. We see that with GL, we can go up to a time step size of 14400s. For larger values, it get's more and more difficult for the solver to find an accurate solution, so often the solver does not converge any more if $dt$ is even bigger. Nevertheless, compared to IMEX that is partly explicit and hence underlies the CFL criteria, this time step size is huge. The total runtime for GL1 reduces for such large time step size to less then 100s, however, for a relative error at the order of around 10e-2. Note that both eta and vel have similar orders of error, so we do not distinguish between them in our discussion here and henceforth.
-
-Reducing the time step sizes leads for any of the selected method orders to an increase in accuracy, but with the cost of longer total runtimes. The kinks in the curves for large time step sizes (e.g. for 14400, 10800, 7200) might be related to jumps in the number if iterations required to obtain the desired solver tolerance but for smaller values in $dt$ the indicated relationship between $dt$ and total runtime gets clearer. Smaller $dt$ also leads to more accurate solutions in all cases while methods with higher order are generally more accurate, but because of the increased number of DoF also slower.
-
-Let us next consider the results for the Imex method (red curves in Figure~\ref{err_vs_runtime_gl_imex} and Figure~\ref{err_vs_runtime_rd_imex}). In general we can see that for the chosen second order Imex method (ARK2), the largest possible time step size for the given mesh level L6 is about 100s, restricted through the CFL condition related to the explicit part in the IMEX method. Nevertheless of this restriction, IMEX is a highly efficient scheme giving high performance of about 660s of total runtime with
-an accuracy at the order of 10e-5. Also here, reducing $dt$ leads to an increase in accuracy but to the costs of an increase in total runtime.
-
-
-
-
-
-
+For the Gauss-Legendre schemes, we were able to obtain a faster
+time-to-solution for the 1,2 and 3 stage schemes than the ARK IMEX
+scheme with the largest stable timestep.  For very large timesteps, we
+observed some loss of $\Delta t$ robustness in the iterative solver
+prevents further speedups from increasing the timestep. The
+oscillatory appearance of the graph at large $\Delta t$ is due to the
+higher sensitivity of the total number of Krylov solves to the
+selected tolerance. The IMEX scheme does produce the quickest solution
+when smaller errors are required. However, there is a fairly small gap
+to the IRKs at that error level, and it is known that the interpreted
+code handling the geometric multigrid in the Firedrake implementation
+could be accelerated with compiled code. Further, the estimated
+spatial error for this resolution is above the error obtained by the
+IMEX scheme at largest stable timestep. We observe very similar trends
+for the Radau IIA schemes, except that the errors are larger due to
+the reduction by 1 in order relative to Gauss-Legendre.
 
 \begin{figure}[h]\centering
 \begin{tabular}{c}
  \hspace{-0.0em}\includegraphics[scale=0.42]{Images/gl_imex.pdf}
 \end{tabular}
- \caption{Relative errors of Gauss-Legendre and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields $ u$.
-  }
+ \caption{Relative errors of Gauss-Legendre 1-3 and ARK2 IMEX methods
+   vs total wallclock time. The numbers on the curves indicate the
+   time step sizes $dt$ used for the corresponding solution. Solid
+   lines indicate values for the elevation field $\eta=D-H$ and dashed lines
+   for the velocity fields $ u$.}
  \label{err_vs_runtime_gl_imex}
 \end{figure}
 
@@ -696,250 +707,13 @@ an accuracy at the order of 10e-5. Also here, reducing $dt$ leads to an increase
 \begin{tabular}{c}
  \hspace{-0.0em}\includegraphics[scale=0.42]{Images/rd_imex.pdf}
 \end{tabular}
- \caption{Relative errors of Radau2 and Imex methods vs total simulation run-times. The numbers on the curves indicate the time step sizes $dt$ used for the corresponding simulation. Solid lines indicate values for the depth field $\eta$ and dashed lines for the velocity fields $ u$.
-  }
+ \caption{Relative errors of Radau IIA 1-3 and ARK2 IMEX methods vs total
+   wallclock time. The numbers on the curves indicate the
+   time step sizes $\Delta t$ used for the corresponding solution. Solid
+   lines indicate values for the elevation field $\eta$ and dashed lines
+   for the velocity fields $ u$.  }
  \label{err_vs_runtime_rd_imex}
 \end{figure}
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c}
-dt    & ref-level &  time    & err-eta      &    err-vel \\ \hline
-18.75 & 6         &  3437.80 & 1.494801e-07 &  2.594803e-07 \\
-37.50     &     6  &  1722.50 & 6.010706e-07  &1.044124e-06 \\
-75.00   &       6  &   873.01 & 2.404467e-06 & 4.181827e-06 \\
-100.00     &     6  &   658.81 & 4.271615e-06 & 7.436415e-06
-\end{tabular}
-\caption{Numerical values for the IMEX simulations.}
-\end{table}
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt    & ref-level & rk-stages & time  &    err-eta      &    err-vel \\ \hline
-300    &       6  &  1    &978.850  &  0.000101 &  0.000185 \\
-600    &       6  & 1    &501.970  & 0.000384 &  0.000739\\
-1200   &        6 &  1    &258.890 &  0.001193 &  0.002536\\
-2400    &       6 &  1    &203.150 &  0.002290 &  0.005305\\
-3600   &        6 &  1    &198.420 &  0.001944 &  0.008068\\
-7200    &       6  & 1    &108.260 &  0.002910 &  0.006148\\
-10800    &       6 & 1    & 118.050 &  0.002580 &  0.006506\\
-14400    &       6  & 1    & 98.331 &  0.002766 &  0.005868\\
-\end{tabular}
-\caption{Numerical values for the Gauss Legendre rk-stages 1 simulations.}
-\end{table}
-
-
-
-
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
-300    &      6    &      2 & 2665.00 & 1.119265e-07 & 2.295523e-07 \\
-600    &      6   &       2 & 1357.90 & 9.724745e-07 & 1.827295e-06\\
-1200   &       6   &       2  & 765.88 & 1.424818e-05 & 2.644705e-05\\
-2400    &      6   &       2 &  614.82 & 1.881205e-04 & 3.679311e-04\\
-3600    &      6   &       2 &  430.65 & 6.534951e-04 & 1.375421e-03\\
-7200    &      6    &      2  & 263.50 & 1.988320e-03 & 4.106426e-03\\
-10800    &      6   &       2 &  237.78 & 2.275762e-03 & 7.882027e-03\\
-14400    &      6   &       2 &  212.17 & 2.679312e-03 & 5.744365e-03\\
-\end{tabular}
-\caption{Numerical values for the Gauss Legendre rk-stages 2 simulations.}
-\end{table}
-
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
-300    &       6   &        3  & 5468.80  & 8.134017e-09  & 1.719576e-08 \\
-600     &      6    &       3  & 2752.70  & 8.364238e-08  & 1.753401e-07\\
-1200     &      6    &       3  & 2109.30  & 5.666891e-07  & 1.199175e-06\\
-2400     &      6    &       3  & 1184.60  & 5.082739e-06  & 9.872072e-06\\
-3600      &     6     &      3  &  795.64  & 4.065958e-05  & 7.928632e-05\\
-7200      &     6      &     3   & 424.55  & 7.089932e-04  & 1.551004e-03\\
-10800     &      6     &      3  &  452.88  & 1.301794e-03  & 3.055263e-03\\
-14400      &     6     &      3   & 363.06   &1.851840e-03  & 4.796533e-03\\
-\end{tabular}
-\caption{Numerical values for the Gauss Legendre rk-stages 3 simulations.}
-\end{table}
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
-300    &      6   &       1 & 973.78 & 0.001200 & 0.003610 \\
-600    &      6   &       1 & 501.30 & 0.001468 & 0.004560\\
-1200   &       6   &       1 & 455.43 & 0.001685 & 0.005498\\
-2400   &       6   &       1 & 294.77 & 0.001952 & 0.007593\\
-3600    &      6    &      1 & 206.78 & 0.002244 & 0.010134\\
-7200   &       6    &      1 & 183.77 & 0.003285 & 0.018488\\
-10800   &       6   &       1 & 150.23 & 0.004418 & 0.026992\\
-14400   &       6   &       1 &-666.00 & nan & nan
-\end{tabular}
-\caption{Numerical values for the Radau2 rk-stages 1 simulations.
-Note that the time -666 indicates a blow up of the run, hence not error values can be computed.}
-\end{table}
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
-300   &        6   &        2 &  2661.20 &  0.000003 &  0.000006\\
-600    &       6   &        2 &  1995.20 &  0.000020 &  0.000049\\
-1200  &         6   &        2 &  1151.00 &  0.000130 &  0.000336\\
-2400   &        6   &        2 &   622.44 &  0.000533 &  0.001421\\
-3600   &        6   &        2 &   447.14 &  0.000893 &  0.002546\\
-7200    &       6   &        2 &   287.81 &  0.001444 &  0.004587\\
-10800   &        6  &         2 &   291.70 &  0.001627 &  0.004711\\
-14400    &       6  &         2 &   242.43 &  0.001564 &  0.004848\\
-\end{tabular}
-\caption{Numerical values for the Radau2 rk-stages 2 simulations.}
-\end{table}
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c}
-dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
-300    &       6   &        3  & 6227.40 &  2.214081e-08 &  4.711117e-08\\
-600    &       6   &        3 &  4147.20 &  9.890813e-08 &  2.136634e-07\\
-1200    &       6  &         3&   2295.40 &  1.120790e-06 &  2.632214e-06\\
-2400    &       6  &         3 &  1181.60 &  2.802082e-05 &  6.698549e-05\\
-3600    &       6  &         3 &   851.04 &  1.406876e-04 &  3.477579e-04\\
-7200    &       6  &         3  &  550.43 &  7.251949e-04 &  1.890284e-03\\
-10800   &        6  &         3 &   507.18 &  1.125798e-03 &  3.585997e-03\\
-14400     &      6  &         3 &   413.00 &  1.390544e-03 &  4.723006e-03\\
-\end{tabular}
-\caption{Numerical values for the Radau2 rk-stages 3 simulations.}
-\end{table}
-
-
-
-
-
-\cleardoublepage
-
-
-
-\subsection{Dependency of runtimes on number of used CPU cores}
-
-
-So far, we used for all simulations the same amount of cores, i.e. 16 (no hyperthreading). To have a better understanding of the impact of HPC architectures on our result we next study the impact of using different numbers of cores on the total runtimes.
-
-Table~\ref{tab_imex_cores} shows the dependency of the total runtimes for the above studied Williamson test case 6 for 1 day simulation on mesh level 6. The total runtime, shown in the second column for 16 cores, in the third for 8 cores, and in the fourth for 4 cores depend on the time step size $dt$. The last two columns illustrate the speedup, in all cases of about 1.4 when doubling the number of cores from 8 to 16, and about 1.65 when doubling from 4 to 8 cores.
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4     & 16vs4     \\\hline
-18.75 & 3437.80 & 4953.10 & 8323.2 & 1.440776 & 1.680402  & 2.421083\\
-37.50 & 1722.50 & 2475.70 & 4192.0 & 1.437271 & 1.693258  & 2.433672\\
-75.00  & 873.01 & 1251.10  &2086.8 & 1.433088 & 1.667972  & 2.390351\\
-100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.67923 4& 2.406764
-\end{tabular}
-\caption{Total runtime of IMEX simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
-\label{tab_imex_cores}
-\end{table}
-
-Similarly, Table~\ref{tab_irksgl1_cores} illustrates the speedup of the
-Irksome GaussLegendre order 1 simulations when using different numbers of
-cores for various time step sizes.Here, the speedup when doubling the numbers of cores is about 1.45 in average when doubling the number of cores from 8 to 16, and about 1.65 when doubling from 4 to 8 cores, hence quite similar to the imex scheme. Note that for smaller dt, the speedup is slightly bigger, but it decreases with larger time step sizes.
-
-
-Tables~\ref{tab_irksgl2_cores} and \ref{tab_irksgl3_cores} show the same information but for Gauss-Legendre 2 and Gauss-Legendre 3, respectively. Given the increasing numbers of DOF for higher order methods, the total runtimes increase here, but we realize that the speedup for the higher order versions are comparable to GL1, although a tiny bit higher then for less Dofs indicating that the HO version seem to better benefit from more CPU cores.
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8       &   8vs4   & 16vs4 \\\hline
- 300 & 978.850 & 1479.10 & 2485.40 & 1.511059    & 1.680346 & 2.539102\\
-    600 & 501.970  & 746.76 & 1264.30 & 1.487659 & 1.693047 & 2.518676\\
-   1200 & 258.890  & 386.97  & 644.79 & 1.494727 & 1.666253 & 2.490594\\
-   2400 & 203.150  & 299.47  & 491.16 & 1.474132 & 1.640098 & 2.417721\\
-   3600 & 198.420 &  289.11 &  472.88 & 1.457061 & 1.635640 & 2.383227\\
-   7200 & 108.260  & 158.95  & 249.78 & 1.468225 & 1.571438 & 2.307223\\
-  10800 & 118.050 &  168.39  & 273.80 & 1.426429 & 1.625987 & 2.319356\\
-  14400 &  98.331 &  137.50 &  219.78 & 1.398338 & 1.598400 & 2.235104\\
-\end{tabular}
-\caption{Total runtime of GaussLegendre 1 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
-\label{tab_irksgl1_cores}
-\end{table}
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c|c}
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4  & 16vs4    \\\hline
-     300  & 2665.00  & 4158.80  & 7192.90  & 1.560525  & 1.729561 & 2.699024\\
-     600  & 1357.90  & 2112.60  & 3621.10  & 1.555785  & 1.714049  & 2.666691 \\
-    1200  &  765.88  & 1177.30  & 2065.20  & 1.537186  & 1.754183  & 2.696506\\
-    2400  &  614.82   & 903.21  & 1537.40  & 1.469064  & 1.702151  & 2.500569\\
-   3600   & 430.65   & 644.89   &1086.70  & 1.497481  & 1.685094  & 2.523395\\
-   7200  &  263.50   & 384.85   & 649.56   &1.460531  & 1.687826  & 2.465123\\
-  10800   & 237.78   & 347.62   & 557.78  & 1.461940  & 1.604568  & 2.345782 \\
-  14400   & 212.17   & 312.52   & 508.26  & 1.472970  & 1.626328  & 2.395532
-\end{tabular}
-\caption{Total runtime of GaussLegendre 2 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
-\label{tab_irksgl2_cores}
-\end{table}
-
-
-
-
-\begin{table}[h]\centering
-\begin{tabular}{c|c|c|c|c|c|c }
-dt &  time16  &  time8  & time4  &   16vs8   &   8vs4                 & 16vs4 \\\hline
-    300  &  5468.80  &  8759.00  &  15414.0  &  1.601631  &  1.759790  &  2.818534\\
-    600  &  2752.70  &  4403.80   &  7693.1  &  1.599811  &  1.746923  & 2.794747 \\
-   1200  &  2109.30  &  3337.00   &  5775.2  &  1.582041  &  1.730656  & 2.737970 \\
-   2400  &  1184.60  &  1846.70   &  3203.8  &  1.558923  &  1.734878  &  2.704542\\
-   3600  &   795.64  &  1244.30   &  2150.0  &  1.563898  &  1.727879  &  2.702227\\
-   7200   &  424.55   &  647.44   &  1124.2  &  1.525003  &  1.736377  &  2.647980\\
-  10800   &  452.88   &  691.13   &  1157.9  &  1.526078  &  1.675372  &  2.556748\\
-  14400   &  363.06   &  573.04    &  929.3   & 1.578362   & 1.621702  &  2.559632
-\end{tabular}
-\caption{Total runtime of GaussLegendre 3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size. The 5th column shows speed up when using 16 rather than 8 cores while the last columns shows such speed up when using 8 rather then 4 cores.}
-\label{tab_irksgl3_cores}
-\end{table}
-
-
-
-Finally, in Table~\ref{tab_irksrd123_cores} we show only speedups for the Radau 1 (RD1),
-Radau 2 (RD2) and Radau 3 RD3) methods when doubling the number of course (similarly to above).
-See see that the speedup rates are comparable to the ones obtained for any of the GaussLegendre methods.
-
-\begin{table}[h]\centering
-\begin{scriptsize}
-\begin{tabular}{c|c|c|c||c|c|c||c|c|c}
- dt & RD1 16vs8   & RD1  8vs4  & RD1 16vs4 & RD2 16vs8   & RD2  8vs4 & RD2 16vs4 &   RD3 16vs8
- & RD3  8vs4  & RD3 16vs4\\ \hline
-   300  &   1.539362 & 1.654903 &2.547495 &  1.559409 & 1.734572 & 2.704908 & 1.584337 &  1.746450  & 2.766965\\
-   600  &   1.489607 & 1.688540 & 2.515260& 1.537340 & 1.713950 & 2.634924 &   1.586299 & 1.745938  &2.769579 \\
-  1200  &   1.477944 & 1.664983 & 2.460751& 1.530582 & 1.709031 & 2.615812 & 1.573103 & 1.737185 &2.732770 \\
-  2400  &  1.468772 & 1.645109  & 2.416291& 1.520339 & 1.694670 & 2.576473 & 1.567282 & 1.733409 & 2.716740\\
-  3600  &  1.452123 & 1.638958  & 2.379969& 1.489243 & 1.691695 & 2.519345 & 1.565379 & 1.727143 & 2.703633\\
-  7200  & 1.408500 & 1.614395-  & 2.273875&  1.489768&  1.652774 & 2.462249 & 1.591538 & 1.650058 & 2.626129\\
- 10800 &   1.396592 & 1.819265  & 2.540771& 1.452383 & 1.653543 & 2.401577 & 1.540597 & 1.619612 &2.495169 \\
- 14400 &  NaN      &  1.259854 & NaN & 1.472219 & 1.619568 & 2.384358 &  1.570823 & 1.619422  &2.543826
-\end{tabular}
-\caption{Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
-\checkit{The 2nd, 4th, 6th column shows speed up when using 16 rather than 4 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3. NaN in the table indicates that for the given time step size and method, the solver did not converge, hence there is not total runtime available (here for Radau 3 with dt of 14400).}}
-\label{tab_irksrd123_cores}
-\end{scriptsize}
-\end{table}
 
 
 \cleardoublepage
@@ -947,21 +721,25 @@ See see that the speedup rates are comparable to the ones obtained for any of th
 \subsection{Iteration counts tables}
 
 \begin{table}[h]\centering
-\begin{scriptsize}
- \begin{tabular}{c||c|c|c||c|c|c||c|c|c}
-   dt & rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter  &  rk-stages  &  its-per-steps  &   niter\\ \hline
-  300  &          1    &     4.000000  &  1152.0    &    2   &    4.000000  &  1152.0   &      3   &      4.000000  &  1152.0 \\
-   600  &         1     &    4.000000  &   576.0    &    2    &   4.055556  &   584.0    &     3    &     4.000000   &  576.0 \\
-  1200   &         1   &      4.000000   &  288.0   &    2   &      4.722222  &   340.0    &        3    &     6.833333  &   492.0\\
-  2400    &        1    &     7.250000   &  261.0   &    2   &       8.194444   &  295.0    &        3    &     8.000000   &  288.0\\
-  3600     &       1    &    11.708333  &   281.0   &    2   &    8.958333   &  215.0     &       3    &     8.000000  &   192.0 \\
-  7200     &       1   &     11.916667  &   143.0    &   2   &     11.416667  &   137.0    &        3   &      8.500000  &   102.0\\
-  10800    &        1   &     22.375000 &    179.0   &   2   &     16.750000   &  134.0    &        3     &   16.250000   &  130.0 \\
-  14400    &        1   &     24.166667  &   145.0   &   2   &     20.500000   &  123.0     &       3     &   17.666667   &  106.0
+  \begin{tabular}{ccccccc}
+    & \multicolumn{2}{c}{Gauss-Legendre 1} &
+    \multicolumn{2}{c}{Gauss-Legendre 2} &
+    \multicolumn{2}{c}{Gauss-Legendre 3} \\ 
+   $\Delta t$  &  its/steps  &  its 
+   &  its/steps  &  its
+   &  its/steps  &  its 
+   \\ \hline
+  300  &               4.000000  &  1152.0    &        4.000000  &  1152.0   &            4.000000  &  1152.0 \\
+   600  &             4.000000  &   576.0    &       4.055556  &   584.0    &          4.000000   &  576.0 \\
+  1200   &               4.000000   &  288.0   &          4.722222  &   340.0    &             6.833333  &   492.0\\
+  2400    &             7.250000   &  261.0   &           8.194444   &  295.0    &             8.000000   &  288.0\\
+  3600     &           11.708333  &   281.0   &        8.95833  & 215.0     &            8.000000  &   192.0 \\
+  7200     &            11.916667  &   143.0    &        11.416667  &   137.0    &              8.500000  &   102.0\\
+  10800    &             22.375000 &    179.0   &        16.750000   &  134.0    &           16.250000   &  130.0 \\
+  14400    &             24.166667  &   145.0   &        20.500000   &  123.0     &          17.666667   &  106.0
 \end{tabular}
 \caption{Iteration per step (its-per-step) and total iteration count (niter) vs $dt$ for the Gauss-Legendre 1, 2, 3 methods.}
 \label{tab_niter_vs_dt}
-\end{scriptsize}
 \end{table}
 
 
@@ -973,7 +751,7 @@ See see that the speedup rates are comparable to the ones obtained for any of th
 600  &        1  &     4.000000 &  576.0 &         2  &     6.777778 &  976.0  &        3 &      6.770833 &  975.0\\
 1200  &        1  &     8.750000&   630.0 &         2  &     8.000000 &  576.0  &        3 &      7.736111 &  557.0\\
 2400   &       1   &   12.027778 &  433.0  &        2   &    8.777778 &  316.0   &       3  &     8.000000  & 288.0\\
-3600    &      1    &  12.250000 &  294.0   &       2    &   9.500000 &  228.0    &      3   &    9.000000  & 216.0\\
+3600    &        12.250000 &  294.0   &          9.500000 &  228.0    &          9.000000  & 216.0\\
 7200     &     1   &   24.333333  & 292.0    &      2     & 13.083333 &  157.0     &     3    &  12.166667  & 146.0\\
 10800     &     1   &   30.375000 &  243.0    &      2  &    21.875000 &  175.0     &     3    &  19.000000 &  152.0\\
 14400      &    1   & -666.000000 & -3996.0    &      2 &     24.333333 &  146.0     &     3    &  20.833333 &  125.0
@@ -994,110 +772,110 @@ See see that the speedup rates are comparable to the ones obtained for any of th
 %     \multicolumn{2}{c|}{User C} & \multirow{3}{*}{D}\\
 
 
-\begin{table}[h]\centering
-\begin{scriptsize}
-\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-\multicolumn{0}{c|}{dt} &
-\multicolumn{2}{c|}{300} &
-\multicolumn{2}{c|}{600} &
-\multicolumn{2}{c|}{1200} &
-\multicolumn{2}{c|}{2400}
-\\ \hline\hline
-ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
-     3    &      4.000000  & 1152.0 & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
-     4   &      4.000000  & 1152.0  & 4.006944 & 577.0 & 4.0 & 288.0 & 4.00 & 144.0\\
-     5   &      4.017361  & 1157.0  & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
-     6   &      4.000000  & 1152.0 & 4.000000 & 576.0  & 4.0 & 288.0 & 7.25 & 261.0\\
-%     ref_level   dt  its per step  niter
-% 22          3  600      4.000000  576.0
-% 21          4  600      4.006944  577.0
-% 23          5  600      4.000000  576.0
-% 20          6  600      4.000000  576.0
-%     ref_level    dt  its per step  niter
-% 32          3  1200           4.0  288.0
-% 28          4  1200           4.0  288.0
-% 29          5  1200           4.0  288.0
-% 35          6  1200           4.0  288.0
-%     ref_level    dt  its per step  niter
-% 36          3  2400          4.00  144.0
-% 38          4  2400          4.00  144.0
-% 37          5  2400          4.00  144.0
-% 46          6  2400          7.25  261.0
-\end{tabular}
-\bigskip
+%% \begin{table}[h]\centering
+%% \begin{scriptsize}
+%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+%% \multicolumn{0}{c|}{dt} &
+%% \multicolumn{2}{c|}{300} &
+%% \multicolumn{2}{c|}{600} &
+%% \multicolumn{2}{c|}{1200} &
+%% \multicolumn{2}{c|}{2400}
+%% \\ \hline\hline
+%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
+%%      3    &      4.000000  & 1152.0 & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
+%%      4   &      4.000000  & 1152.0  & 4.006944 & 577.0 & 4.0 & 288.0 & 4.00 & 144.0\\
+%%      5   &      4.017361  & 1157.0  & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
+%%      6   &      4.000000  & 1152.0 & 4.000000 & 576.0  & 4.0 & 288.0 & 7.25 & 261.0\\
+%% %     ref_level   dt  its per step  niter
+%% % 22          3  600      4.000000  576.0
+%% % 21          4  600      4.006944  577.0
+%% % 23          5  600      4.000000  576.0
+%% % 20          6  600      4.000000  576.0
+%% %     ref_level    dt  its per step  niter
+%% % 32          3  1200           4.0  288.0
+%% % 28          4  1200           4.0  288.0
+%% % 29          5  1200           4.0  288.0
+%% % 35          6  1200           4.0  288.0
+%% %     ref_level    dt  its per step  niter
+%% % 36          3  2400          4.00  144.0
+%% % 38          4  2400          4.00  144.0
+%% % 37          5  2400          4.00  144.0
+%% % 46          6  2400          7.25  261.0
+%% \end{tabular}
+%% \bigskip
 
-\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-\multicolumn{0}{c|}{dt} &
-\multicolumn{2}{c|}{3600} &
-\multicolumn{2}{c|}{7200} &
-\multicolumn{2}{c|}{14400}
-\\ \hline\hline
-ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
-     3    &   4.000000  & 96.0 & 4.000000 &  48.0&  8.166667 &  49.0\\
-     4   &     4.000000 &  96.0 &8.000000 &  96.0 &8.500000  & 51.0\\
-     5   &    7.541667 & 181.0 & 10.833333 & 130.0&12.333333 &  74.0 \\
-     6   &   11.708333 & 281.0 & 11.916667 & 143.0&  24.166667 & 145.0
-%     ref_level    dt  its per step  niter
-% 48          3  3600      4.000000   96.0
-% 56          4  3600      4.000000   96.0
-% 51          5  3600      7.541667  181.0
-% 58          6  3600     11.708333  281.0
-%     ref_level    dt  its per step  niter
-% 64          3  7200      4.000000   48.0
-% 66          4  7200      8.000000   96.0
-% 69          5  7200     10.833333  130.0
-% 70          6  7200     11.916667  143.0
-%     ref_level     dt  its per step  niter
-% 88          3  14400      8.166667   49.0
-% 92          4  14400      8.500000   51.0
-% 89          5  14400     12.333333   74.0
-% 93          6  14400     24.166667  145.0
-\end{tabular}
-\caption{GaussLegendre, rk-stages 1}
-\label{tab_niter_vs_spatial}
-\end{scriptsize}
-\end{table}
-
-
-
-\begin{table}[h]\centering
-\begin{scriptsize}
-\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-\multicolumn{0}{c|}{dt} &
-\multicolumn{2}{c|}{300} &
-\multicolumn{2}{c|}{600} &
-\multicolumn{2}{c|}{1200} &
-\multicolumn{2}{c|}{2400}
-\\ \hline\hline
-ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
-        3 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
-        4 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
-        5 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       6.611111 &   238.0\\
-        6 &      4.0  &      1152.0 &            4.0 &   576.0 &       6.833333 &   492.0 &       8.000000 &   288.0
-\end{tabular}
-\bigskip
-
-\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-\multicolumn{0}{c|}{dt} &
-\multicolumn{2}{c|}{3600} &
-\multicolumn{2}{c|}{7200} &
-\multicolumn{2}{c|}{14400}
-\\ \hline\hline
-ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
-       3 &      4.000000  & 96.0 &       7.916667  & 95.0 &    7.333333 &  44.0\\
-       4 &      7.208333  & 173.0 &      7.916667  & 95.0 &    8.166667 &  49.0\\
-       5 &      8.000000  & 192.0 &      8.000000  & 96.0 &    8.500000 &  51.0\\
-       6 &      8.000000  & 192.0 &      8.500000  &102.0 &   17.666667 & 106.0
-\end{tabular}
-\caption{GaussLegendre, rk-stages 3}
-\label{tab_niter_vs_spatial}
-\end{scriptsize}
-\end{table}
+%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+%% \multicolumn{0}{c|}{dt} &
+%% \multicolumn{2}{c|}{3600} &
+%% \multicolumn{2}{c|}{7200} &
+%% \multicolumn{2}{c|}{14400}
+%% \\ \hline\hline
+%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
+%%      3    &   4.000000  & 96.0 & 4.000000 &  48.0&  8.166667 &  49.0\\
+%%      4   &     4.000000 &  96.0 &8.000000 &  96.0 &8.500000  & 51.0\\
+%%      5   &    7.541667 & 181.0 & 10.833333 & 130.0&12.333333 &  74.0 \\
+%%      6   &   11.708333 & 281.0 & 11.916667 & 143.0&  24.166667 & 145.0
+%% %     ref_level    dt  its per step  niter
+%% % 48          3  3600      4.000000   96.0
+%% % 56          4  3600      4.000000   96.0
+%% % 51          5  3600      7.541667  181.0
+%% % 58          6  3600     11.708333  281.0
+%% %     ref_level    dt  its per step  niter
+%% % 64          3  7200      4.000000   48.0
+%% % 66          4  7200      8.000000   96.0
+%% % 69          5  7200     10.833333  130.0
+%% % 70          6  7200     11.916667  143.0
+%% %     ref_level     dt  its per step  niter
+%% % 88          3  14400      8.166667   49.0
+%% % 92          4  14400      8.500000   51.0
+%% % 89          5  14400     12.333333   74.0
+%% % 93          6  14400     24.166667  145.0
+%% \end{tabular}
+%% \caption{GaussLegendre, rk-stages 1}
+%% \label{tab_niter_vs_spatial}
+%% \end{scriptsize}
+%% \end{table}
 
 
-Note: Radau II behaves very similarly with respect to the iteration count: i.e.
-its per step increases with dt, but this effect is also less pronounced for higher
-order methods (not shown).
+
+%% \begin{table}[h]\centering
+%% \begin{scriptsize}
+%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+%% \multicolumn{0}{c|}{dt} &
+%% \multicolumn{2}{c|}{300} &
+%% \multicolumn{2}{c|}{600} &
+%% \multicolumn{2}{c|}{1200} &
+%% \multicolumn{2}{c|}{2400}
+%% \\ \hline\hline
+%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
+%%         3 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
+%%         4 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
+%%         5 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       6.611111 &   238.0\\
+%%         6 &      4.0  &      1152.0 &            4.0 &   576.0 &       6.833333 &   492.0 &       8.000000 &   288.0
+%% \end{tabular}
+%% \bigskip
+
+%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+%% \multicolumn{0}{c|}{dt} &
+%% \multicolumn{2}{c|}{3600} &
+%% \multicolumn{2}{c|}{7200} &
+%% \multicolumn{2}{c|}{14400}
+%% \\ \hline\hline
+%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
+%%        3 &      4.000000  & 96.0 &       7.916667  & 95.0 &    7.333333 &  44.0\\
+%%        4 &      7.208333  & 173.0 &      7.916667  & 95.0 &    8.166667 &  49.0\\
+%%        5 &      8.000000  & 192.0 &      8.000000  & 96.0 &    8.500000 &  51.0\\
+%%        6 &      8.000000  & 192.0 &      8.500000  &102.0 &   17.666667 & 106.0
+%% \end{tabular}
+%% \caption{GaussLegendre, rk-stages 3}
+%% \label{tab_niter_vs_spatial}
+%% \end{scriptsize}
+%% \end{table}
+
+
+%% Note: Radau II behaves very similarly with respect to the iteration count: i.e.
+%% its per step increases with dt, but this effect is also less pronounced for higher
+%% order methods (not shown).
 
 
 
@@ -1220,8 +998,114 @@ order methods (not shown).
 %% \bibitem{Giraldo13} Giraldo, Francis X., James F. Kelly, and Emil M. Constantinescu. "Implicit-explicit formulations of a three-dimensional nonhydrostatic unified model of the atmosphere (NUMA)." SIAM Journal on Scientific Computing 35, no. 5 (2013): B1162-B1194.
 %% \end{thebibliography}
 
+\appendix
 
+\section{Supplementary materials}
 
+\begin{tabular}{c|c|c|c|c}
+dt    & ref-level &  time    & err-eta      &    err-vel \\ \hline
+18.75 & 6         &  3437.80 & 1.494801e-07 &  2.594803e-07 \\
+37.50     &     6  &  1722.50 & 6.010706e-07  &1.044124e-06 \\
+75.00   &       6  &   873.01 & 2.404467e-06 & 4.181827e-06 \\
+100.00     &     6  &   658.81 & 4.271615e-06 & 7.436415e-06
+\end{tabular}
+Numerical values for the IMEX simulations.
+\\
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level & rk-stages & time  &    err-eta      &    err-vel \\ \hline
+300    &       6  &  1    &978.850  &  0.000101 &  0.000185 \\
+600    &       6  & 1    &501.970  & 0.000384 &  0.000739\\
+1200   &        6 &  1    &258.890 &  0.001193 &  0.002536\\
+2400    &       6 &  1    &203.150 &  0.002290 &  0.005305\\
+3600   &        6 &  1    &198.420 &  0.001944 &  0.008068\\
+7200    &       6  & 1    &108.260 &  0.002910 &  0.006148\\
+10800    &       6 & 1    & 118.050 &  0.002580 &  0.006506\\
+14400    &       6  & 1    & 98.331 &  0.002766 &  0.005868\\
+\end{tabular}
+{Numerical values for the Gauss Legendre rk-stages 1 simulations.}
+\\
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &      6    &      2 & 2665.00 & 1.119265e-07 & 2.295523e-07 \\
+600    &      6   &       2 & 1357.90 & 9.724745e-07 & 1.827295e-06\\
+1200   &       6   &       2  & 765.88 & 1.424818e-05 & 2.644705e-05\\
+2400    &      6   &       2 &  614.82 & 1.881205e-04 & 3.679311e-04\\
+3600    &      6   &       2 &  430.65 & 6.534951e-04 & 1.375421e-03\\
+7200    &      6    &      2  & 263.50 & 1.988320e-03 & 4.106426e-03\\
+10800    &      6   &       2 &  237.78 & 2.275762e-03 & 7.882027e-03\\
+14400    &      6   &       2 &  212.17 & 2.679312e-03 & 5.744365e-03\\
+\end{tabular}
+{Numerical values for the Gauss Legendre rk-stages 2 simulations.}
+\\
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &       6   &        3  & 5468.80  & 8.134017e-09  & 1.719576e-08 \\
+600     &      6    &       3  & 2752.70  & 8.364238e-08  & 1.753401e-07\\
+1200     &      6    &       3  & 2109.30  & 5.666891e-07  & 1.199175e-06\\
+2400     &      6    &       3  & 1184.60  & 5.082739e-06  & 9.872072e-06\\
+3600      &     6     &      3  &  795.64  & 4.065958e-05  & 7.928632e-05\\
+7200      &     6      &     3   & 424.55  & 7.089932e-04  & 1.551004e-03\\
+10800     &      6     &      3  &  452.88  & 1.301794e-03  & 3.055263e-03\\
+14400      &     6     &      3   & 363.06   &1.851840e-03  & 4.796533e-03\\
+\end{tabular}
+{Numerical values for the Gauss Legendre rk-stages 3 simulations.}
+\\
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &      6   &       1 & 973.78 & 0.001200 & 0.003610 \\
+600    &      6   &       1 & 501.30 & 0.001468 & 0.004560\\
+1200   &       6   &       1 & 455.43 & 0.001685 & 0.005498\\
+2400   &       6   &       1 & 294.77 & 0.001952 & 0.007593\\
+3600    &      6    &      1 & 206.78 & 0.002244 & 0.010134\\
+7200   &       6    &      1 & 183.77 & 0.003285 & 0.018488\\
+10800   &       6   &       1 & 150.23 & 0.004418 & 0.026992\\
+14400   &       6   &       1 & * & * & *
+\end{tabular}
+    {Numerical values for the Radau2 rk-stages 1 simulations. '*' indicates
+      that the run was unsuccessful due to solver divergence.}
+\\
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300   &        6   &        2 &  2661.20 &  0.000003 &  0.000006\\
+600    &       6   &        2 &  1995.20 &  0.000020 &  0.000049\\
+1200  &         6   &        2 &  1151.00 &  0.000130 &  0.000336\\
+2400   &        6   &        2 &   622.44 &  0.000533 &  0.001421\\
+3600   &        6   &        2 &   447.14 &  0.000893 &  0.002546\\
+7200    &       6   &        2 &   287.81 &  0.001444 &  0.004587\\
+10800   &        6  &         2 &   291.70 &  0.001627 &  0.004711\\
+14400    &       6  &         2 &   242.43 &  0.001564 &  0.004848\\
+\end{tabular}
+{Numerical values for the Radau2 rk-stages 2 simulations.}
+\\
+\begin{tabular}{c|c|c|c|c|c}
+dt    & ref-level &  rk-stages & time    & err-eta      &    err-vel \\ \hline
+300    &       6   &        3  & 6227.40 &  2.214081e-08 &  4.711117e-08\\
+600    &       6   &        3 &  4147.20 &  9.890813e-08 &  2.136634e-07\\
+1200    &       6  &         3&   2295.40 &  1.120790e-06 &  2.632214e-06\\
+2400    &       6  &         3 &  1181.60 &  2.802082e-05 &  6.698549e-05\\
+3600    &       6  &         3 &   851.04 &  1.406876e-04 &  3.477579e-04\\
+7200    &       6  &         3  &  550.43 &  7.251949e-04 &  1.890284e-03\\
+10800   &        6  &         3 &   507.18 &  1.125798e-03 &  3.585997e-03\\
+14400     &      6  &         3 &   413.00 &  1.390544e-03 &  4.723006e-03\\
+\end{tabular}
+{Numerical values for the Radau2 rk-stages 3 simulations.}
+\\
+\begin{scriptsize}
+\begin{tabular}{c|c|c|c||c|c|c||c|c|c}
+ dt & RD1 16vs8   & RD1  8vs4  & RD1 16vs4 & RD2 16vs8   & RD2  8vs4 & RD2 16vs4 &   RD3 16vs8
+ & RD3  8vs4  & RD3 16vs4\\ \hline
+   300  &   1.539362 & 1.654903 &2.547495 &  1.559409 & 1.734572 & 2.704908 & 1.584337 &  1.746450  & 2.766965\\
+   600  &   1.489607 & 1.688540 & 2.515260& 1.537340 & 1.713950 & 2.634924 &   1.586299 & 1.745938  &2.769579 \\
+  1200  &   1.477944 & 1.664983 & 2.460751& 1.530582 & 1.709031 & 2.615812 & 1.573103 & 1.737185 &2.732770 \\
+  2400  &  1.468772 & 1.645109  & 2.416291& 1.520339 & 1.694670 & 2.576473 & 1.567282 & 1.733409 & 2.716740\\
+  3600  &  1.452123 & 1.638958  & 2.379969& 1.489243 & 1.691695 & 2.519345 & 1.565379 & 1.727143 & 2.703633\\
+  7200  & 1.408500 & 1.614395-  & 2.273875&  1.489768&  1.652774 & 2.462249 & 1.591538 & 1.650058 & 2.626129\\
+ 10800 &   1.396592 & 1.819265  & 2.540771& 1.452383 & 1.653543 & 2.401577 & 1.540597 & 1.619612 &2.495169 \\
+ 14400 &  NaN      &  1.259854 & NaN & 1.472219 & 1.619568 & 2.384358 &  1.570823 & 1.619422  &2.543826
+\end{tabular}
+\end{scriptsize}
+{Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
+\checkit{The 2nd, 4th, 6th column shows speed up when using 16 rather than 4 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3. NaN in the table indicates that for the given time step size and method, the solver did not converge, hence there is not total runtime available (here for Radau 3 with dt of 14400).}}
 
 
 
