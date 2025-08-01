@@ -233,17 +233,16 @@ IRKs for (\ref{eq:ut}-\ref{eq:Dt}) then
 seek $k\in W$ such that
 \begin{align}
     \label{eq:u stages}
-    R_{u,i}[k;w] := \langle w, k_{u,i} \rangle + \checkit{\Delta t} a\left(
+    R_{u,i}[k;w] := \langle w, k_{u,i} \rangle +  a\left(
     u^n_i,D^n_i;w\right)
   & = 0,  
   \quad \forall w \in V,\mbox{ for }i=1,\ldots,s, \\
   \label{eq:D stages}
-  R_{D,i}[k;\phi] := \langle \phi, k_{D,i} \rangle + \checkit{\Delta t} c\left(u^n_i,D^n_i; \phi\right)
+  R_{D,i}[k;\phi] := \langle \phi, k_{D,i} \rangle +  c\left(u^n_i,D^n_i; \phi\right)
   & = 0, \quad \forall \phi \in Q, \mbox{ for }i=1,\ldots,s,\\
   u^n_i = u^n + \Delta t\sum_{j=1}^sA_{ij}k_{u,j}, & \mbox{ for }i=1,\ldots,s,\\
   D^n_i = D^n + \Delta t\sum_{j=1}^sA_{ij}k_{D,j}, & \mbox{ for }i=1,\ldots,s,
 \end{align}
-\werner{still $\Delta t$?}
 where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge-Kutta scheme. This defines a coupled
 system for all of the stages in general.
@@ -376,8 +375,7 @@ zeroing any degrees of freedom on the boundary of $S_l$ and beyond
 (see Figure \ref{fig:patch}). In the multigrid algorithm, the goal of
 the smoother is to approximately solve a problem of the form
 (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$ replaced
-by residuals provided from the next finest grid.
-\werner{Is this normal that you use residuals from finer grid levels? I did not see this in the video I have watched so far!}
+by appropriate linear residuals.
 For the additive
 Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with solutions
 $w_l$ and test functions restricted to $W_l$, using a direct
@@ -406,10 +404,11 @@ To avoid having to tune scaling parameters whose optimal values might
 depend on the system state, our smoothers consist of two iterations of
 GMRES preconditioned by the additive Schwarz method above. This has
 the effect of selecting the scaling parameter adaptively.  This
-necessitates the use of a flexible Krylov method (FGMRES, in our
-case) \werner{as solver on the 'outside'???}, since the use of GMRES means that the smoother is residual
-dependent and hence is not a stationary iterative method (which is a
-requirement for standard Krylov methods such as GMRES).
+necessitates the use of a flexible Krylov method (FGMRES, in our case)
+for the ``outer'' monolithic solver, since the use of GMRES here means
+that the smoother is residual dependent and hence is not a stationary
+iterative method (which is a requirement for standard Krylov methods
+such as GMRES).
 
 In our multigrid setup, we also used the above smoothing approach for
 the correction on the coarsest grid. This avoids having to use a
