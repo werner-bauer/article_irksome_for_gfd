@@ -26,11 +26,12 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID: \url{https://orcid.
 \newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
 	\framebox{\begin{minipage}[c]{0.95 \textwidth}
 			\tt #1 \end{minipage}}\vspace{5 mm}\par}
-\newcommand{\checkit}[1]{{\color{red}#1}}
 \newcommand{\werner}[1]{{\color{magenta}WB says: #1}}
 \newcommand{\colin}[1]{{\color{blue}CC says: #1}}
 \newcommand{\incl}[1]{{\color{red}#1}}
 
+\newcommand{\checkit}[1]{{\color{black}#1}}
+%\renewcommand{\checkit}[1]{{\color{red}#1}}
 
 
 \DeclareMathOperator{\sat}{sat}
@@ -99,7 +100,7 @@ atmosphere and ocean simulation.
 \section{Introduction}
 
 The selection of timestepping algorithms for numerical methods for
-atmosphere models (and for large scale numerical solution of partial
+atmosphere models (and for large scale numerical solutions of partial
 differential equations in general) is a complex issue due to the
 interplay between the timestepping method, the timescales present, the
 spatial discretisation, the types of implicit systems to be solved,
@@ -202,7 +203,7 @@ product defined for scalar or vector fields integrating over the
 domain $\mathcal{X}$, $\llangle\cdot,\cdot \rrangle$ is the $L^2$
 inner product integrating over the set $\Gamma$ of mesh facets,
 $\nabla_h$ is the ``broken'' cellwise gradient, $\tilde{u}$ and
-$\tilde{D}$ are the values of $D$ of $u$ evaluated on the upwind side
+$\tilde{D}$ are the values of $D$ and $u$ evaluated on the upwind side
 of a facet (the side with $u\cdot n<0$), $n$ is the unit normal (here,
 bivalued so that on each side of the facet $n$ is oriented to point
 into the other side), and $\jump{\psi}$ indicates the sum of the
@@ -340,7 +341,7 @@ iterations in the preconditioner, which we shall describe next.
     which are discontinuous across cell edges.  The shaded region
     indicates the patch.  All degrees of freedom outside the shaded
     region (including normal but not tangential components on the
-    patch boundary).
+    patch boundary) \checkit{are equal to zero}.
   }
  \end{figure}
 
@@ -361,9 +362,10 @@ the same function in the larger space on the finer mesh; restriction
 is taken as the $L_2$ dual of prolongation.
 
 For smoothers on each level, we used an additive Schwarz method that
-is built using overlapping subspaces $W_l=V_l\times Q_l \subset W =
-\prod_{i=1}^s\left(V \times Q\right)$, $l=1,\ldots,N_l$, where $W$ is
-the mixed finite element space comprising all of the stages.
+is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
+\checkit{=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_l$,
+\checkit{where $W$ is
+the mixed finite element space comprising all of the stages.}
 In this work we define the subspaces $W_l$ using ``vertex
 star patches''.
 Here, there is one subspace $W_l$ for each of the $M$
@@ -612,7 +614,7 @@ choices for the IRK and IMEX schemes. As expected, accuracy and
 runtime crucially depend on the selected time step sizes; we compute
 errors and runtime for IRKs and the ARK2 IMEX scheme over a range
 of $\Delta t$ values. For the IMEX scheme, the maximum timestep
-was $\Delta t=100s$ on mesh 6 since the method was unstable for larger
+was $\Delta t=100s$ on mesh \checkit{refinement} 6 since the method was unstable for larger
 timesteps.
 
 As a benchmark to contextualise the time discretisation errors, we
@@ -649,7 +651,7 @@ obtain an error estimate for mesh refinement 6.
 18.75 & 3437.80 & 4953.10 & 8323.2 & 1.440776 & 1.680402  & 2.421083\\
 %37.50 & 1722.50 & 2475.70 & 4192.0 & 1.437271 & 1.693258  & 2.433672\\
 %75.00  & 873.01 & 1251.10  &2086.8 & 1.433088 & 1.667972  & 2.390351\\
-100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.67923 4& 2.406764\\
+100.00 &  658.81 &  944.24&  1585.6 & 1.433251 & 1.679234 & 2.406764\\
     \multicolumn{7}{c}{Gauss-Legendre 1 stage} \\
  300 & 978.850 & 1479.10 & 2485.40 & 1.511059    & 1.680346 & 2.539102\\
 %    600 & 501.970  & 746.76 & 1264.30 & 1.487659 & 1.693047 & 2.518676\\
@@ -685,8 +687,9 @@ obtain an error estimate for mesh refinement 6.
 
 All computations were performed using an icosahedral mesh
 approximating the surface of the sphere by recursive refinement of an
-icosahedron as discussed previously. Mesh refinement level $p$ has
-$20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
+icosahedron as discussed previously. \checkit{Mesh refinement level $p$}
+% p same symbol as for FE space order
+has $20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
 of freedom and $150\times 4^p$ velocity degrees of freedom. The
 machine used has 16 Intel Xeon 2.60GHz CPUs on two sockets, and we
 used one thread per core. All 16 cores were used unless stated
@@ -715,14 +718,14 @@ considered 1, 2 and 3 stage versions of the IRKs, as we were limited
 by memory on the workstation from examining more stages at this
 resolution. The Gauss-Legendre $s$-stage schemes are order $2s$ with
 stage order $s$ (the relevant order for stiff problems at large
-$\Delta t$, whilst the Radua IIA schemes are order $2s-1$ with stage
+$\Delta t$), whilst the Radau IIA schemes are order $2s-1$ with stage
 order $s$.
 
 For the Gauss-Legendre schemes, we were able to obtain a faster
-time-to-solution for the 1,2 and 3 stage schemes than the ARK IMEX
+time-to-solution for the 1, 2 and 3 stage schemes than the ARK\checkit{2} IMEX
 scheme with the largest stable timestep.  For very large timesteps, we
 observed some loss of $\Delta t$ robustness in the iterative solver
-prevents further speedups from increasing the timestep.
+\checkit{which} prevents further speedups from increasing the timestep.
 
 The
 oscillatory appearance of the graph at large $\Delta t$ is due to the
@@ -738,17 +741,17 @@ for the Radau IIA schemes, except that the errors are larger due to
 the reduction by 1 in order relative to Gauss-Legendre.
 
 The loss of $\Delta t$ robustness for larger $\Delta t$ is demonstrated
-in Tables \ref{tab_niter_vs_dt G} and \ref{tab_niter_vs_dt G}. We observe
+in Tables \ref{tab_niter_vs_dt G} and \ref{tab1_niter_vs_dt R}. We observe
 $\Delta t$ robustness for smaller $\Delta t$, with more sustained $\Delta t$
 robustness for the higher order schemes.
 
 \begin{figure}[h]\centering
 \begin{tabular}{c}
- \hspace{-0.0em}\includegraphics[scale=0.55]{Images/gl_imex.pdf}
+ \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
 \end{tabular}
  \caption{Relative errors of Gauss-Legendre 1-3 and ARK2 IMEX methods
    vs total wallclock time. The numbers on the curves indicate the
-   time step sizes $dt$ used for the corresponding solution. Solid
+   time step sizes $\Delta t$ used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
    for the velocity fields $ u$.}
  \label{err_vs_runtime_gl_imex}
@@ -756,12 +759,12 @@ robustness for the higher order schemes.
 
 \begin{figure}[h]\centering
 \begin{tabular}{c}
- \hspace{-0.0em}\includegraphics[scale=0.55]{Images/rd_imex.pdf}
+ \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/rd_imex.pdf}
 \end{tabular}
  \caption{Relative errors of Radau IIA 1-3 and ARK2 IMEX methods vs total
    wallclock time. The numbers on the curves indicate the
-   time step sizes $\Delta t$ used for the corresponding solution. Solid
-   lines indicate values for the elevation field $\eta$ and dashed lines
+   time step sizes \checkit{$\Delta t$} used for the corresponding solution. Solid
+   lines indicate values for the elevation field $\eta=D-H$ and dashed lines
    for the velocity fields $ u$.  }
  \label{err_vs_runtime_rd_imex}
 \end{figure}
@@ -769,14 +772,16 @@ robustness for the higher order schemes.
 
 \cleardoublepage
 
-\subsection{Iteration counts tables}
 
-\begin{table}
+% \subsection{Iteration counts tables}
+
+
+\begin{table}[h]\centering
   \centering
   \begin{tabular}{ccccccc}
-    & \multicolumn{2}{c}{Radau IIA 1} &
-    \multicolumn{2}{c}{Radau IIA 2} &
-    \multicolumn{2}{c}{Radau IIA 3} \\ 
+    & \multicolumn{2}{c}{Gauss-Legendre 1} &
+    \multicolumn{2}{c}{Gauss-Legendre 2} &
+    \multicolumn{2}{c}{Gauss-Legendre 3} \\
    $\Delta t$  &  its/steps  &  its 
    &  its/steps  &  its
    &  its/steps  &  its 
@@ -797,9 +802,9 @@ robustness for the higher order schemes.
 
 \begin{table}[h]\centering
     \begin{tabular}{ccccccc}
-    & \multicolumn{2}{c}{Gauss-Legendre 1} &
-    \multicolumn{2}{c}{Gauss-Legendre 2} &
-    \multicolumn{2}{c}{Gauss-Legendre 3} \\ 
+        & \multicolumn{2}{c}{Radau IIA 1} &
+    \multicolumn{2}{c}{Radau IIA 2} &
+    \multicolumn{2}{c}{Radau IIA 3} \\
    $\Delta t$  &  its/steps  &  its 
    &  its/steps  &  its
    &  its/steps  &  its 
@@ -813,7 +818,8 @@ robustness for the higher order schemes.
 10800     &        30.375000 &  243.0    &          21.875000 &  175.0     &       19.000000 &  152.0\\
 14400      &     *  & *  &           24.333333 &  146.0     &       20.833333 &  125.0
 \end{tabular}
-\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAUII2 1,2,3 methods. ``*'' indicates that the computation did not complete due to a solver failure.}
+\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAUII2 1, 2, 3 methods.
+``*'' indicates that the computation did not complete due to a solver failure.}
 \label{tab1_niter_vs_dt R}
 \end{table}
 
