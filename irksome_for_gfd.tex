@@ -30,7 +30,7 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID: \url{https://orcid.
 \newcommand{\colin}[1]{{\color{blue}CC says: #1}}
 \newcommand{\incl}[1]{{\color{red}#1}}
 
-\newcommand{\checkit}[1]{{\color{black}#1}}
+\newcommand{\checkit}[1]{{\color{magenta}#1}}
 %\renewcommand{\checkit}[1]{{\color{red}#1}}
 
 
@@ -606,10 +606,25 @@ $\Delta t = 1s$. This enables us to isolate timestepping errors. We
 also estimate the spatial discretisation error to give context to
 these timestepping errors.
 
+
+\checkit{
+The spatial discretization error is estimated by comparing the solution
+between mesh refinement level L6 and L7 after a 1-day simulation using
+a very small time step size of $dt =1$. We assume that, for the chosen mesh
+levels and time step size, the temporal error is sufficiently small so that
+the spatial discretization error dominates for the chosen mesh levels.
+We found spatial discretization errors
+of $2.542863 \cdot 10^{-05}$ for the depth field $\eta$ and $ 9.777218 \cdot 10^{-06}$ for the
+velocity field $u$. This error values are indicted as vertical lines in
+Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}.
+}
+
+
 The essential quantities of interest are the total runtime of a
 simulation and the time errors the integrators have, up to the point
 where they are of the same order of magnitude as the spatial
-errors. As such, we compare these quantities for various parameter
+errors. \werner{Maybe here we could need more explanation!}
+As such, we compare these quantities for various parameter
 choices for the IRK and IMEX schemes. As expected, accuracy and
 runtime crucially depend on the selected time step sizes; we compute
 errors and runtime for IRKs and the ARK2 IMEX scheme over a range
@@ -681,7 +696,7 @@ obtain an error estimate for mesh refinement 6.
 %  10800   &  452.88   &  691.13   &  1157.9  &  1.526078  &  1.675372  &  2.556748\\
   14400   &  363.06   &  573.04    &  929.3   & 1.578362   & 1.621702  &  2.559632
   \end{tabular}
-  \caption{Table showing wallclock times for different numbers of cores for the ARK IMEX scheme and the Gauss-Legendre IRKs. Similar values are obtained for the Radau IIA IRKs. The results are typical for intra node parallelism, with the usual bandwidth limitations.
+  \caption{Table showing wallclock times for different numbers of cores for the ARK2 IMEX scheme and the Gauss-Legendre IRKs. Similar values are obtained for the Radau IIA IRKs. The results are typical for intra node parallelism, with the usual bandwidth limitations.
     \label{tab:cores}}
 \end{table}
 
@@ -753,7 +768,12 @@ robustness for the higher order schemes.
    vs total wallclock time. The numbers on the curves indicate the
    time step sizes $\Delta t$ used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
-   for the velocity fields $ u$.}
+   for the velocity fields $ u$.
+   \checkit{
+   The solid and dashed vertical lines indicate the spatial error between mesh levels L6 and L7
+   of $\eta$ and $u$, respectively.
+   }
+   }
  \label{err_vs_runtime_gl_imex}
 \end{figure}
 
@@ -765,7 +785,12 @@ robustness for the higher order schemes.
    wallclock time. The numbers on the curves indicate the
    time step sizes \checkit{$\Delta t$} used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
-   for the velocity fields $ u$.  }
+   for the velocity fields $ u$.
+   \checkit{
+   The solid and dashed vertical lines indicate the spatial error between mesh levels L6 and L7
+   of $\eta$ and $u$, respectively.
+   }
+   }
  \label{err_vs_runtime_rd_imex}
 \end{figure}
 
@@ -818,7 +843,7 @@ robustness for the higher order schemes.
 10800     &        30.375000 &  243.0    &          21.875000 &  175.0     &       19.000000 &  152.0\\
 14400      &     *  & *  &           24.333333 &  146.0     &       20.833333 &  125.0
 \end{tabular}
-\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAUII2 1, 2, 3 methods.
+\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.
 ``*'' indicates that the computation did not complete due to a solver failure.}
 \label{tab1_niter_vs_dt R}
 \end{table}
