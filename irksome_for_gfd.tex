@@ -120,9 +120,6 @@ used in the Weather Research and Forecasting (WRF) model
 model \citep{zangl2015icon}, and implicit-explicit (IMEX) schemes
 \citep{vogl2019evaluation,giraldo2013implicit}.
 
-\todo{Add information somewhere about using Firedrake and Irksome!}
-
-
 In this article we explore another direction which is fully implicit
 Runge-Kutta methods. These methods avoid the complications of
 splitting methods (stability conditions, options of composition, etc)
@@ -138,9 +135,11 @@ that tackle the full system of variables. In the present work we make
 an initial investigation of this strategy applied to the rotating
 shallow water equations on the sphere. This system is two dimensional
 so does not require a large facility to conduct experiments. Our
-implementation uses a compatible finite element spatial discretisation
-\citep{cotter2023compatible}, but this is not the central focus of the
-work.
+implementation, facilitated by the Firedrake
+\citep{FiredrakeUserManual}, Irksome \citep{farrell2021irksome} and
+PETsc \citep{balay2019petsc} software packages, uses a compatible
+finite element spatial discretisation \citep{cotter2023compatible},
+but this is not the central focus of the work.
 
 The rest of the paper is organised as follows. In Section \ref{sec:methods},
 we describe the space and time integration methods and the iterative
@@ -344,7 +343,7 @@ iterations in the preconditioner, which we shall describe next.
     which are discontinuous across cell edges.  The shaded region
     indicates the patch.  All degrees of freedom outside the shaded
     region (including normal but not tangential components on the
-    patch boundary) \checkit{are equal to zero}.
+    patch boundary) are excluded from the patch.
   }
  \end{figure}
 
@@ -366,8 +365,8 @@ is taken as the $L_2$ dual of prolongation.
 
 For smoothers on each level, we used an additive Schwarz method that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
-\checkit{=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_l$,
-\checkit{where $W$ is
+{=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_l$,
+{where $W$ is
 the mixed finite element space comprising all of the stages.}
 In this work we define the subspaces $W_l$ using ``vertex
 star patches''.
@@ -610,39 +609,31 @@ also estimate the spatial discretisation error to give context to
 these timestepping errors.
 
 
-\checkit{
-The spatial discretization error is estimated by comparing the solution
-between mesh refinement level L6 and L7 after a 1-day simulation using
-a very small time step size of $dt =1$. We assume that, for the chosen mesh
-levels and time step size, the temporal error is sufficiently small so that
-the spatial discretization error dominates for the chosen mesh levels.
-We found spatial discretization errors
-of $2.542863 \cdot 10^{-05}$ for the depth field $\eta$ and $ 9.777218 \cdot 10^{-06}$ for the
-velocity field $u$. This error values are indicted as vertical lines in
-Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}.
-}
+As a benchmark to contextualise the time discretisation errors, we
+provide an indication of the spatial discretization error. This is
+done by comparing the solution between mesh refinement levels L6 and
+L7 after a 1 day simulation using a very small time step size of $dt
+=1$ so that for the chosen mesh levels and time step size, the
+temporal error is negligible compared to the spatial discretization
+error.  We found spatial discretization errors of $2.542863 \cdot
+10^{-05}$ for the depth field $\eta$ and $ 9.777218 \cdot 10^{-06}$
+for the velocity field $u$. This error values are indicted as vertical
+lines in Figures \ref{err_vs_runtime_gl_imex} and
+\ref{err_vs_runtime_rd_imex}. The point is that reducing time stepping
+error much below these values will not lead to an overall reduction in
+the combined spatial and temporal error, so there is no benefit in
+reducing the time stepping error further.
 
-
-The essential quantities of interest are the total runtime of a
+In our experiments, essential quantities of interest are the total runtime of a
 simulation and the time errors the integrators have, up to the point
 where they are of the same order of magnitude as the spatial
-errors. \werner{Maybe here we could need more explanation!}
-As such, we compare these quantities for various parameter
+errors. As such, we compare these quantities for various parameter
 choices for the IRK and IMEX schemes. As expected, accuracy and
 runtime crucially depend on the selected time step sizes; we compute
-errors and runtime for IRKs and the ARK2 IMEX scheme over a range
-of $\Delta t$ values. For the IMEX scheme, the maximum timestep
-was $\Delta t=100s$ on mesh \checkit{refinement} 6 since the method was unstable for larger
-timesteps.
-
-As a benchmark to contextualise the time discretisation errors, we
-also estimate the spatial discretisation error, the point being that
-it is not necessary to reduce the former in situations where the
-latter will dominate. To do this we measured the difference between
-the height field after 1 day between consecutive meshes using $\Delta
-t =1s$ so that time discretisation error is not a factor. This
-provides an estimate of the spatial error; extrapolation was used to
-obtain an error estimate for mesh refinement 6.
+errors and runtime for IRKs and the ARK2 IMEX scheme over a range of
+$\Delta t$ values. For the IMEX scheme, the maximum timestep was
+$\Delta t=100s$ on mesh {refinement} 6 since the method was unstable
+for larger timesteps.
 
 \begin{figure}
   \centering
@@ -705,74 +696,74 @@ obtain an error estimate for mesh refinement 6.
 
 All computations were performed using an icosahedral mesh
 approximating the surface of the sphere by recursive refinement of an
-icosahedron as discussed previously. \checkit{Mesh refinement level $p$}
-% p same symbol as for FE space order
-has $20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
-of freedom and $150\times 4^p$ velocity degrees of freedom. The
-machine used has 16 Intel Xeon 2.60GHz CPUs on two sockets, and we
-used one thread per core. All 16 cores were used unless stated
-otherwise, with timings on fewer cores presented in Table
-\ref{tab:cores}.  The timing measurements were obtained using PETSc's
-event logging capability.
+icosahedron as discussed previously. {Mesh refinement level $p$}
+ % p same symbol as for FE space order
+ has $20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
+ of freedom and $150\times 4^p$ velocity degrees of freedom. The
+ machine used has 16 Intel Xeon 2.60GHz CPUs on two sockets, and we
+ used one thread per core. All 16 cores were used unless stated
+ otherwise, with timings on fewer cores presented in Table
+ \ref{tab:cores}.  The timing measurements were obtained using PETSc's
+ event logging capability.
 
-For the IRKs we used the solver strategy discussed above with a Newton
-relative residual tolerance of $1.0\times 10^{-6}$. For the IMEX
-scheme we used the SUPERLU Dist parallel direct solver package
-\citep{li2023newly,li2003superlu_dist} for the reduced hybridised
-system in the implicit solve since this was the fastest of those
-available through PETSc. The mass matrix system (\ref{eq:mass u}) was
-solved using GMRES preconditioned by ILU(0) (incomplete LU
-factorisation discarding all values outside the sparsity pattern of
-the mass matrix) to a tolerance of $1.0\times 10^{-8}$, and the mass
-matrix system (\ref{eq:mass D}) was solved using a direct solve since
-it is block diagonal. These systems have insignificant solve times
-compared to the two implicit solves per timestep.
+ For the IRKs we used the solver strategy discussed above with a Newton
+ relative residual tolerance of $1.0\times 10^{-6}$. For the IMEX
+ scheme we used the SUPERLU Dist parallel direct solver package
+ \citep{li2023newly,li2003superlu_dist} for the reduced hybridised
+ system in the implicit solve since this was the fastest of those
+ available through PETSc. The mass matrix system (\ref{eq:mass u}) was
+ solved using GMRES preconditioned by ILU(0) (incomplete LU
+ factorisation discarding all values outside the sparsity pattern of
+ the mass matrix) to a tolerance of $1.0\times 10^{-8}$, and the mass
+ matrix system (\ref{eq:mass D}) was solved using a direct solve since
+ it is block diagonal. These systems have insignificant solve times
+ compared to the two implicit solves per timestep.
 
-Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}
-show wallclock time versus error plots for the Gauss-Legendre and
-Radau IIA IRKs, respectively; results for the ARK2 IMEX scheme are
-shown in both figures as a reference. Mesh refinement 6 was used. We
-considered 1, 2 and 3 stage versions of the IRKs, as we were limited
-by memory on the workstation from examining more stages at this
-resolution. The Gauss-Legendre $s$-stage schemes are order $2s$ with
-stage order $s$ (the relevant order for stiff problems at large
-$\Delta t$), whilst the Radau IIA schemes are order $2s-1$ with stage
-order $s$.
+ Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}
+ show wallclock time versus error plots for the Gauss-Legendre and
+ Radau IIA IRKs, respectively; results for the ARK2 IMEX scheme are
+ shown in both figures as a reference. Mesh refinement 6 was used. We
+ considered 1, 2 and 3 stage versions of the IRKs, as we were limited
+ by memory on the workstation from examining more stages at this
+ resolution. The Gauss-Legendre $s$-stage schemes are order $2s$ with
+ stage order $s$ (the relevant order for stiff problems at large
+ $\Delta t$), whilst the Radau IIA schemes are order $2s-1$ with stage
+ order $s$.
 
-For the Gauss-Legendre schemes, we were able to obtain a faster
-time-to-solution for the 1, 2 and 3 stage schemes than the ARK2 IMEX
-scheme with the largest stable timestep.  For very large timesteps, we
-observed some loss of $\Delta t$ robustness in the iterative solver
-which prevents further speedups from increasing the timestep.
+ For the Gauss-Legendre schemes, we were able to obtain a faster
+ time-to-solution for the 1, 2 and 3 stage schemes than the ARK2 IMEX
+ scheme with the largest stable timestep.  For very large timesteps, we
+ observed some loss of $\Delta t$ robustness in the iterative solver
+ which prevents further speedups from increasing the timestep.
 
-The
-oscillatory appearance of the graph at large $\Delta t$ is due to the
-higher sensitivity of the total number of Krylov solves to the
-selected tolerance. The IMEX scheme does produce the quickest solution
-when smaller errors are required. However, there is a fairly small gap
-to the IRKs at that error level, and it is known that the interpreted
-code handling the geometric multigrid in the Firedrake implementation
-could be accelerated with compiled code. Further, the estimated
-spatial error for this resolution is above the error obtained by the
-IMEX scheme at largest stable timestep. We observe very similar trends
-for the Radau IIA schemes, except that the errors are larger due to
-the reduction by 1 in order relative to Gauss-Legendre.
+ The
+ oscillatory appearance of the graph at large $\Delta t$ is due to the
+ higher sensitivity of the total number of Krylov solves to the
+ selected tolerance. The IMEX scheme does produce the quickest solution
+ when smaller errors are required. However, there is a fairly small gap
+ to the IRKs at that error level, and it is known that the interpreted
+ code handling the geometric multigrid in the Firedrake implementation
+ could be accelerated with compiled code. Further, the estimated
+ spatial error for this resolution is above the error obtained by the
+ IMEX scheme at largest stable timestep. We observe very similar trends
+ for the Radau IIA schemes, except that the errors are larger due to
+ the reduction by 1 in order relative to Gauss-Legendre.
 
-The loss of $\Delta t$ robustness for larger $\Delta t$ is demonstrated
-in Tables \ref{tab_niter_vs_dt G} and \ref{tab1_niter_vs_dt R}. We observe
-$\Delta t$ robustness for smaller $\Delta t$, with more sustained $\Delta t$
-robustness for the higher order schemes.
+ The loss of $\Delta t$ robustness for larger $\Delta t$ is demonstrated
+ in Tables \ref{tab_niter_vs_dt G} and \ref{tab1_niter_vs_dt R}. We observe
+ $\Delta t$ robustness for smaller $\Delta t$, with more sustained $\Delta t$
+ robustness for the higher order schemes.
 
-\begin{figure}[h]\centering
-\begin{tabular}{c}
- \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
-\end{tabular}
- \caption{Relative errors of Gauss-Legendre 1-3 and ARK2 IMEX methods
-   vs total wallclock time. The numbers on the curves indicate the
-   time step sizes $\Delta t$ used for the corresponding solution. Solid
-   lines indicate values for the elevation field $\eta=D-H$ and dashed lines
-   for the velocity fields $ u$.
-   \checkit{
+ \begin{figure}[h]\centering
+ \begin{tabular}{c}
+  \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
+ \end{tabular}
+  \caption{Relative errors of Gauss-Legendre 1-3 and ARK2 IMEX methods
+    vs total wallclock time. The numbers on the curves indicate the
+    time step sizes $\Delta t$ used for the corresponding solution. Solid
+    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
+    for the velocity fields $ u$.
+ {
    The solid and dashed vertical lines indicate the spatial discretisation
    error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
@@ -787,10 +778,10 @@ robustness for the higher order schemes.
 \end{tabular}
  \caption{Relative errors of Radau IIA 1-3 and ARK2 IMEX methods vs total
    wallclock time. The numbers on the curves indicate the
-   time step sizes \checkit{$\Delta t$} used for the corresponding solution. Solid
+   time step sizes {$\Delta t$} used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
    for the velocity fields $ u$.
-   \checkit{
+  {
    The solid and dashed vertical lines indicate the spatial discretisation
    error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
