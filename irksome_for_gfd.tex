@@ -120,6 +120,9 @@ used in the Weather Research and Forecasting (WRF) model
 model \citep{zangl2015icon}, and implicit-explicit (IMEX) schemes
 \citep{vogl2019evaluation,giraldo2013implicit}.
 
+\todo{Add information somewhere about using Firedrake and Irksome!}
+
+
 In this article we explore another direction which is fully implicit
 Runge-Kutta methods. These methods avoid the complications of
 splitting methods (stability conditions, options of composition, etc)
@@ -737,10 +740,10 @@ $\Delta t$), whilst the Radau IIA schemes are order $2s-1$ with stage
 order $s$.
 
 For the Gauss-Legendre schemes, we were able to obtain a faster
-time-to-solution for the 1, 2 and 3 stage schemes than the ARK\checkit{2} IMEX
+time-to-solution for the 1, 2 and 3 stage schemes than the ARK2 IMEX
 scheme with the largest stable timestep.  For very large timesteps, we
 observed some loss of $\Delta t$ robustness in the iterative solver
-\checkit{which} prevents further speedups from increasing the timestep.
+which prevents further speedups from increasing the timestep.
 
 The
 oscillatory appearance of the graph at large $\Delta t$ is due to the
@@ -770,7 +773,8 @@ robustness for the higher order schemes.
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
    for the velocity fields $ u$.
    \checkit{
-   The solid and dashed vertical lines indicate the spatial error between mesh levels L6 and L7
+   The solid and dashed vertical lines indicate the spatial discretisation
+   error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
    }
@@ -787,7 +791,8 @@ robustness for the higher order schemes.
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
    for the velocity fields $ u$.
    \checkit{
-   The solid and dashed vertical lines indicate the spatial error between mesh levels L6 and L7
+   The solid and dashed vertical lines indicate the spatial discretisation
+   error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
    }
