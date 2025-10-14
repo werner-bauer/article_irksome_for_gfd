@@ -1,0 +1,7 @@
+Highlights:
+
+• We introduce a novel iterative solver strategy for fully implicit Runge-Kutta schemes
+• Usually approximative splitting methods are used in geophysical applications
+• Implicit schemes, in contrast, can be energy conserving while avoiding splitting errors
+• Our approach is close to a benchmark splitting (IMEX) scheme for comparable accuracy
+• However, it can provide faster wallclock times if less accuracy is needed
