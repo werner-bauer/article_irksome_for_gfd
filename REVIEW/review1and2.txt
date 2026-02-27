@@ -1,0 +1,106 @@
+ 
+Re: JCOMP-D-25-02608
+
+Dear Dr Bauer,
+
+Based on the received referee report, which is appended below, I have come to a decision on your manuscript entitled "Fully implicit timestepping methods for the rotating shallow water equations".
+
+In view of the referee report, I have come to the conclusion that after major revisions your paper can be reconsidered for publication in the Journal of Computational Physics. Therefore, I am looking forward to receiving the revised version (mandatory) of the paper together with a reply to the reports (mandatory) and a summary of the revisions made (mandatory).
+
+The changes you will have made must be described in a separate file labeled "Response to Reviewers" that carefully addresses, point-by-point, the issues raised in the comments appended below. You should also include a suitable rebuttal to any specific request for change that you have not made. Mention the page, paragraph, and line number of any revisions that are made. It is mandatory to indicate in the revised manuscript the changes you have made by highlighting the text in different colors for different reviewers. Failure to address any of these 3 points (changes made, changes not made, highlight of change) without justification may lead the associate editor in charge of your submission to send the revised submission back to you.
+
+The revised version of your submission is due by May 07, 2026.
+
+If the revised version is submitted within the due date, the manuscript will retain the original submission date. After due date, your paper might be treated as a new submission and may be sent to new reviewers.
+PLEASE NOTE: Journal of Computational Physics would like to enrich online articles by displaying interactive figures that help the reader to visualize and explore your research results. For this purpose, we would like to invite you to upload figures in the MATLAB .FIG file format as supplementary material to our online submission system. Elsevier will generate interactive figures from these files and include them with the online article on SciVerse ScienceDirect. If you wish, you can submit .FIG files along with your revised submission.
+
+
+Include interactive data visualizations in your publication and let your readers interact and engage more closely with your research. Follow the instructions here: https://www.elsevier.com/researcher/author/tools-and-resources/data-visualization to find out about available data visualization options and how to include them with your article.
+
+Research Elements (optional)
+This journal encourages you to share research objects - including your raw data, methods, protocols, software, hardware and more – which support your original research article in a Research Elements journal. Research Elements are open access, multidisciplinary, peer-reviewed journals which make the objects associated with your research more discoverable, trustworthy and promote replicability and reproducibility. As open access journals, there may be an Article Publishing Charge if your paper is accepted for publication. Find out more about the Research Elements journals at https://www.elsevier.com/authors/tools-and-resources/research-elements-journals?dgcid=ec_em_research_elements_email.
+
+
+With best regards,
+
+Mario Ricchiuto, PhD
+Associate Editor
+Journal of Computational Physics
+
+The reviewers' comments are as follows:
+
+************************************************************
+
+
+
+
+Reviewer #1: # Review of "Fully implicit timestepping methods for the rotating shallow water equations"
+
+The work present an implicit Runge Kutta method for solving the rotating SW equations, focusing on how to solve the nonlinear system with a quasi Newton method and on the preconditioners used to preprocess the solution of the monolithic system of equations. In particular, it uses an Additive Schwarz method to split the domain in components to get an initial guess, multigrid nested meshes and Krylov subspace preconditioner.
+The work compares this algorithm with an IMEX RK on a test of a nonlinear Rossby wave solution.
+
+
+# Comment
+The work is well written and mathematically correct on what presents. Nevertheless, the proposed algorithm is composed of many ingredients that overlaps and get compared in the description section so that it is not easy to have a full picture of its structure by reading that section. Also, the description of the finite element method, of the algorithm and of the test under consideration lack many details that could help the reader and are left to the references. I think adding some details would help understanding the work and wouldn't lengthen it too much. Finally, the comparison with another algorithm is not too fair as they scale very different in terms of stability and accuracy. It is really hard to compare them and to decide if the novel algorithm is worth the effort of a more complicated fully implicit structure. Other tests could help validate this aspect. I list below some remarks that should be addressed before publication.
+
+# Remarks
+* page 3: Define the acronym BDM
+* Page 3 eq 5: shouldn't it be g(D-b) according to eq 1?
+* Page 3: the notation [[ \cdot ]] for the average is uncommon and reminds more of jump rather than an average
+* Page 4, last sentence should be revisited, it is complicated to read.
+* Section 2.2 is somewhat chaotic, there are many different ingredients listed in the section, but it is difficult to follow the precise algorithm the authors use to solve their IRK problem. It would be useful to put an algorithmic box for the solution of the linear solver that explains the order of the algorithms, and it should be more clear what has just been compared and what has been used in the end.
+* Page 6: the sentence "For this type of problem, it is also typical to scale ∆t to keep the advective Courant number (U ∆t/∆x where U is a typical velocity scale and ∆x is a typical cell diameter) constant as the mesh is refined, so we can hope for mesh independent Krylov iteration counts under this refinement scaling without multigrid. However, we found that using the multigrid produced faster wallclock times." was to me clear only at page 8 when the authors state that IMEX are restricted by the Courant number on the explicit part and that "means that it is limited to smaller timesteps. It is this property that we shall contrast with the IRKs." Make clearer from the beginning that you are using more iterations and larger timesteps.
+* There are many tolerances in the proposed algorithm that make the comparison not so fair, it would be interesting to see if it is stable under perturbation of these tolerances.
+* Comparing algorithms to only one test case could be misleading. In fact the errors of the IMEX and of the IRK (low order) for this test are so different that is really impossible to compare them.
+* I also suggest to find another algorithm to compare the proposed IRK method as the IMEX is so much more accurate and already unstable with relatively small timesteps that the curves are so far apart. Either another test that makes the two more comparable or another state-of-the-art algorithm (a DIRK for example)?
+
+
+--->>> US:
+--->>> We can do a DIRK run!!!
+
+
+Reviewer #2: The authors present some preliminary results on the application of fully-implicit Runge-Kutta (Gauss and Radau-IIA) methods to a finite element discretization of the rotating shallow water equations on the sphere. They combine some existing tools and approaches, and show some numerical results including a comparison with a second-order IMEX method. The results can be interesting for the community, but I would like to see several improvements before recommending publication.
+
+- Abstract, "Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method." This is not the case for the methods used in this paper.
+- Abstract, "Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods." Instead, fully implicit methods require solving nonlinear systems with Jacobian changing at each iteration. Thus, the complexity increases significantly.
+- It would be helpful for readers not familiar with the notation to explain the significance of the semicolon in the forms $a, c$ defined in (3) and (4).
+- References to concrete results in books have to be more specific, e.g., by mentioning the section/theorem/page number (e.g., on page 4).
+- Page 4: The time derivatives $k_u$ and $k_D$ are used as primary variables in the Newton iteration. However, in their well-known textbook, Hairer and Wanner recommend using updates of the stage values $u$ and $D$ instead (Section IV.8). Please comment on the choice, explain, and discuss the advantages/disadvantages.
+- Continuing the previous comment: Hairer and Wanner also recommend transforming the linear systems to solve multiple smaller systems instead of one large system (in the same section). Please comment on this as well.
+- Page 4: Please explain in detail what "sufficiently small" means.
+- Please provide numerical results concerning the long-term stability of the methods for more demanding test cases. For example, run the Rossby-Haurwitz test case for 28 days instead of one day, and consider also other test cases involving instabilities.
+- Aims and scope of the journal: "Reproducibility, that is the ability to reproduce results obtained by others, is a core principle of the scientific method. As the impact of and knowledge discovery enabled by computational science and engineering continues to increase, it is imperative that reproducibility becomes a natural part of these activities. The journal strongly encourages authors to make available all software or data that would allow published results to be reproduced and that every effort is made to include sufficient information in manuscripts to enable this. This should not only include information used for setup but also details on post-processing to recover published results."
+
+--->>> US:
+--->>> Rewrite Abstract:
+--->>> Hairer and Wanner (scott does not see a difference) do an example run where we see no difference!!!!
+--->>> Numerical long run Rossby-Hourwitz TC for 28 days, WTC 5 50 days!!! model not blowing up!!!!
+--->>> Add links to the code and mention release Firedrake date ?????
+--->>>
+
+
+
+
+%ATTACH_FOR_REVIEWER_DEEP_LINK INSTRUCTIONS%
+
+
+NOTE: Additional comments by the reviewers may be available in Editorial Manager (EM). You can find these comments in EM by clicking on "view review attachments". Please contact jcp@elsevier.com if you have any problems opening the reviewer comments in EM.
+************************************************************
+
+
+Data in Brief (optional):
+
+We invite you to convert your supplementary data (or a part of it) into an additional journal publication in Data in Brief, a multi-disciplinary open access journal. Data in Brief articles are a fantastic way to describe supplementary data and associated metadata, or full raw datasets deposited in an external repository, which are otherwise unnoticed. A Data in Brief article (which will be reviewed, formatted, indexed, and given a DOI) will make your data easier to find, reproduce, and cite.
+
+You can submit to Data in Brief via the Journal of Computational Physics submission system when you upload your revised Journal of Computational Physics manuscript. To do so, complete the template and follow the co-submission instructions found here: www.elsevier.com/dib-template. If your Journal of Computational Physics manuscript is accepted, your Data in Brief submission will automatically be transferred to Data in Brief for editorial review and publication.
+
+Please note: an open access Article Publication Charge (APC) is payable by the author or research funder to cover the costs associated with publication in Data in Brief and ensure your data article is immediately and permanently free to access by all. For the current APC see: www.elsevier.com/journals/data-in-brief/2352-3409/open-access-journal
+
+Please contact the Data in Brief editorial office at dib-me@elsevier.com or visit the Data in Brief homepage (www.journals.elsevier.com/data-in-brief/) if you have questions or need further information.
+
+At Elsevier, we want to help all our authors to stay safe when publishing. Please be aware of fraudulent messages requesting money in return for the publication of your paper. If you are publishing open access with Elsevier, bear in mind that we will never request payment before the paper has been accepted. We have prepared some guidelines (https://www.elsevier.com/connect/authors-update/seven-top-tips-on-stopping-apc-scams ) that you may find helpful, including a short video on Identifying fake acceptance letters (https://www.youtube.com/watch?v=o5l8thD9XtE ). Please remember that you can contact Elsevier s Researcher Support team (https://service.elsevier.com/app/home/supporthub/publishing/) at any time if you have questions about your manuscript, and you can log into Editorial Manager to check the status of your manuscript (https://service.elsevier.com/app/answers/detail/a_id/29155/c/10530/supporthub/publishing/kw/status/).
+
+#AU_JCOMP#
+
+To ensure this email reaches the intended recipient, please do not delete the above code
+
