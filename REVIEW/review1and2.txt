@@ -57,6 +57,12 @@ The work is well written and mathematically correct on what presents. Neverthele
 
 --->>> US:
 --->>> We can do a DIRK run!!!
+--->>> 'is it stable under pertubations of tolerances': I guess we did this, so we checked for smaller and larger tolerances. The question is, what does they mean with 'stable'? I mean everything is quicker or slower, i.e. needs more or less iterations relative to tol, but the results are the same, only a bit scaled. When it comes to IMEX, what does a modification of tol do?
+--->>>
+
+
+
+
 
 
 Reviewer #2: The authors present some preliminary results on the application of fully-implicit Runge-Kutta (Gauss and Radau-IIA) methods to a finite element discretization of the rotating shallow water equations on the sphere. They combine some existing tools and approaches, and show some numerical results including a comparison with a second-order IMEX method. The results can be interesting for the community, but I would like to see several improvements before recommending publication.
@@ -77,6 +83,10 @@ Reviewer #2: The authors present some preliminary results on the application of 
 --->>> Numerical long run Rossby-Hourwitz TC for 28 days, WTC 5 50 days!!! model not blowing up!!!!
 --->>> Add links to the code and mention release Firedrake date ?????
 --->>>
+
+
+
+
 
 
 
