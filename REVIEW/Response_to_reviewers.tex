@@ -1,0 +1,116 @@
+ 
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+%\usepackage{geometry}[2cm,2cm,2cm,2cm]
+\usepackage[utf8]{inputenc}
+\usepackage[nosumlimits]{amsmath}
+\usepackage{amssymb,stmaryrd,amsthm,MnSymbol}
+\usepackage{amsfonts,amssymb,amsopn}
+\usepackage[colorlinks=true,
+            linkcolor=red,
+            filecolor=blue,
+            citecolor=blue,
+            urlcolor=blue,]{hyperref}
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{comment}
+\usepackage{graphicx}
+\usepackage{natbib}
+\bibliographystyle{elsarticle-harv}
+\usepackage{multirow}
+
+\usepackage{soul}
+\setstcolor{red}
+
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+	\framebox{\begin{minipage}[c]{0.95 \textwidth}
+			\tt #1 \end{minipage}}\vspace{5 mm}\par}
+\newcommand{\werner}[1]{{\color{magenta}WB says: #1}}
+\newcommand{\colin}[1]{{\color{blue}CC says: #1}}
+\newcommand{\incl}[1]{{\color{red}#1}}
+
+\newcommand{\checkit}[1]{{\color{magenta}#1}}
+
+
+
+%opening
+\title{Response to reviewers}
+\author{Werner Bauer, Colin J. Cotter}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We would like to thank the reviewers for the constructive comments which helped us to improve the
+manuscript. The questions and comments by the reviewer are written in normal font, followed by our
+responses in italic fonts. In addition, we marked in the revised manuscript those parts in blue (reviewer 1) and magenta (reviewer 2), which have been rewritten in order to highlight the changes.
+\end{abstract}
+
+
+
+
+
+\section{Reviewer 1}
+
+The work present an implicit Runge Kutta method for solving the rotating SW equations, focusing on how to solve the nonlinear system with a quasi Newton method and on the preconditioners used to preprocess the solution of the monolithic system of equations. In particular, it uses an Additive Schwarz method to split the domain in components to get an initial guess, multigrid nested meshes and Krylov subspace preconditioner.
+The work compares this algorithm with an IMEX RK on a test of a nonlinear Rossby wave solution.
+
+\subsection{Comment}
+The work is well written and mathematically correct on what presents. Nevertheless, the proposed algorithm is composed of many ingredients that overlaps and get compared in the description section so that it is not easy to have a full picture of its structure by reading that section. Also, the description of the finite element method, of the algorithm and of the test under consideration lack many details that could help the reader and are left to the references. I think adding some details would help understanding the work and wouldn't lengthen it too much. Finally, the comparison with another algorithm is not too fair as they scale very different in terms of stability and accuracy. It is really hard to compare them and to decide if the novel algorithm is worth the effort of a more complicated fully implicit structure. Other tests could help validate this aspect. I list below some remarks that should be addressed before publication.
+
+\subsection{Remarks}
+* page 3: Define the acronym BDM
+
+\werner{}
+
+* Page 3 eq 5: shouldn't it be g(D-b) according to eq 1?
+
+* Page 3: the notation $[[ \cdot ]]$ for the average is uncommon and reminds more of jump rather than an average
+
+* Page 4, last sentence should be revisited, it is complicated to read.
+
+* Section 2.2 is somewhat chaotic, there are many different ingredients listed in the section, but it is difficult to follow the precise algorithm the authors use to solve their IRK problem. It would be useful to put an algorithmic box for the solution of the linear solver that explains the order of the algorithms, and it should be more clear what has just been compared and what has been used in the end.
+
+* Page 6: the sentence "For this type of problem, it is also typical to scale $\Delta t$ to keep the advective Courant number ($U(\Delta t/\Delta x) $ where U is a typical velocity scale and $\Delta x$ is a typical cell diameter) constant as the mesh is refined, so we can hope for mesh independent Krylov iteration counts under this refinement scaling without multigrid. However, we found that using the multigrid produced faster wallclock times." was to me clear only at page 8 when the authors state that IMEX are restricted by the Courant number on the explicit part and that "means that it is limited to smaller timesteps. It is this property that we shall contrast with the IRKs." Make clearer from the beginning that you are using more iterations and larger timesteps.
+
+* There are many tolerances in the proposed algorithm that make the comparison not so fair, it would be interesting to see if it is stable under perturbation of these tolerances.
+
+* Comparing algorithms to only one test case could be misleading. In fact the errors of the IMEX and of the IRK (low order) for this test are so different that is really impossible to compare them.
+
+* I also suggest to find another algorithm to compare the proposed IRK method as the IMEX is so much more accurate and already unstable with relatively small timesteps that the curves are so far apart. Either another test that makes the two more comparable or another state-of-the-art algorithm (a DIRK for example)?
+
+
+
+
+
+\section{Reviewer 2}
+
+The authors present some preliminary results on the application of fully-implicit Runge-Kutta (Gauss and Radau-IIA) methods to a finite element discretization of the rotating shallow water equations on the sphere. They combine some existing tools and approaches, and show some numerical results including a comparison with a second-order IMEX method. The results can be interesting for the community, but I would like to see several improvements before recommending publication.
+
+
+
+\subsection{Remarks}
+
+- Abstract, "Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method." This is not the case for the methods used in this paper.
+
+- Abstract, "Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods." Instead, fully implicit methods require solving nonlinear systems with Jacobian changing at each iteration. Thus, the complexity increases significantly.
+
+- It would be helpful for readers not familiar with the notation to explain the significance of the semicolon in the forms $a, c$ defined in (3) and (4).
+
+- References to concrete results in books have to be more specific, e.g., by mentioning the section/theorem/page number (e.g., on page 4).
+
+- Page 4: The time derivatives $k_u$ and $k_D$ are used as primary variables in the Newton iteration. However, in their well-known textbook, Hairer and Wanner recommend using updates of the stage values $u$ and $D$ instead (Section IV.8). Please comment on the choice, explain, and discuss the advantages/disadvantages.
+
+- Continuing the previous comment: Hairer and Wanner also recommend transforming the linear systems to solve multiple smaller systems instead of one large system (in the same section). Please comment on this as well.
+
+- Page 4: Please explain in detail what "sufficiently small" means.
+
+- Please provide numerical results concerning the long-term stability of the methods for more demanding test cases. For example, run the Rossby-Haurwitz test case for 28 days instead of one day, and consider also other test cases involving instabilities.
+
+- Aims and scope of the journal: "Reproducibility, that is the ability to reproduce results obtained by others, is a core principle of the scientific method. As the impact of and knowledge discovery enabled by computational science and engineering continues to increase, it is imperative that reproducibility becomes a natural part of these activities. The journal strongly encourages authors to make available all software or data that would allow published results to be reproduced and that every effort is made to include sufficient information in manuscripts to enable this. This should not only include information used for setup but also details on post-processing to recover published results."
+
+
+
+\end{document}
