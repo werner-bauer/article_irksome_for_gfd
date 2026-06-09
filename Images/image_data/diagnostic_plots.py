@@ -14,8 +14,10 @@ for ff in files:
         lambda row: row.Divergence/Area**0.5, axis=1)
     df.plot(x="Step", y="Energy", xlabel="Timestep",
             ylabel="Relative Energy Error", title=ff[1])
-    pp.show()
+    pp.savefig(ff[1]+'_energy.png')
+    pp.clf()
 
     df.plot(x="Step", y="Normalised Divergence", xlabel="Timestep",
             ylabel="Divergence RMS", title=ff[1])
-    pp.show()
+    pp.savefig(ff[1]+'_divergence.png')
+    pp.clf()
