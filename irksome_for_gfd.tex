@@ -18,6 +18,15 @@
 \bibliographystyle{elsarticle-harv}
 \usepackage{multirow}
 
+\usepackage{tikz}
+\usetikzlibrary{positioning, calc, chains}
+\usetikzlibrary{shapes.misc}
+\usetikzlibrary{shapes.symbols}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{shapes.arrows}
+\usetikzlibrary{fit}
+\usetikzlibrary{shadows}
+
 \usepackage{soul}
 \setstcolor{red}
 
@@ -43,6 +52,7 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID:
 \newcommand{\colin}[1]{{\color{blue}CC says: #1}}
 \newcommand{\revisedA}[1]{{\color{blue}#1}}
 \newcommand{\revisedB}[1]{{\color{magenta}#1}}
+\newcommand{\revisedus}[1]{{\color{Green}#1}}
 
 \newcommand{\checkit}[1]{{\color{magenta}#1}}
 %\renewcommand{\checkit}[1]{{\color{red}#1}}
@@ -360,12 +370,12 @@ sparse), as well as between all of the stages from $i=1$ to $s$. This
 presents challenges for the solver. In this work, we solve (\ref{eq:u
   J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
 a preconditioned Krylov solver to the full set of basis coefficients
-for the iterative corrections $k'$,
-treated as a single vector. In our experiments we used FGMRES (the
-flexible generalised minimum residual method \citep{saad1993flexible})
-for the chosen Krylov method, because we used GMRES (the generalised
-minimum residual method \citep{saad1986gmres}) in some inner
-iterations in the preconditioner, which we shall describe next.
+for the iterative corrections $k'$, treated as a single vector. In our
+experiments we used FGMRES (the flexible generalised minimum residual
+method \citep{saad1993flexible}) for the chosen Krylov
+method\revisedA{. This is because we used GMRES in some inner
+  iterations in the preconditioner (see later), which necessitates a flexible
+  Krylov method outside.}
 
 \begin{figure}
   \center
@@ -427,6 +437,25 @@ approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
 
+\begin{tikzpicture}
+  [
+    every node/.style={draw=black, thick, anchor=west},
+%  grow via three points={one child at (0.0,-0.6) and two children at (0.0,-0.6) and (0.0,-1.4)},
+  edge from parent path={(\tikzparentnode.210) |- (\tikzchildnode.west)}]
+  \node {Multigrid}
+      child { node {Krylov solver (GMRES)}
+        child { node {Preconditioner}
+          child { node {Additive Vanka patch smoother}
+            child { node {Direct LU patch solve} }
+          }
+        }
+      }
+      child [missing] {}
+      child [missing] {}
+      child { node {Direct LU coarse grid solve}
+      };
+\end{tikzpicture}
+
 
 The reason for choosing vertex star patches is that they deal well
 with the oscillatory wave coupling in the linear system. When this
@@ -444,13 +473,14 @@ convergence in the number of Runge-Kutta stages, as analysed in
 
 To avoid having to tune scaling parameters whose optimal values might
 depend on the system state, our smoothers consist of two iterations of
-GMRES preconditioned by the additive Schwarz method above. This has
-the effect of selecting the scaling parameter adaptively.  This
-necessitates the use of a flexible Krylov method (FGMRES, in our case)
-for the ``outer'' monolithic solver, since the use of GMRES here means
-that the smoother is residual dependent and hence is not a stationary
-iterative method (which is a requirement for standard Krylov methods
-such as GMRES).
+GMRES \revisedus{(the generalised minimum residual method
+  \citep{saad1986gmres})} preconditioned by the additive Schwarz
+method above. This has the effect of selecting the scaling parameter
+adaptively.  This necessitates the use of a flexible Krylov method
+(FGMRES, in our case) for the ``outer'' monolithic solver, since the
+use of GMRES here means that the smoother is residual dependent and
+hence is not a stationary iterative method (which is a requirement for
+standard Krylov methods such as GMRES).
 
 In our multigrid setup, we also used the above smoothing approach for
 the correction on the coarsest grid. This avoids having to use a
@@ -477,6 +507,8 @@ Jacobian system (\ref{eq:u J}-\ref{eq:D J}) accurately when the nonlinear soluti
 to be updated again in the next Newton iteration anyway. This reduces the overall
 number of Krylov iterations per timestep, and hence reduces the overall
 number of multigrid cycles which dominate the cost of the method.
+
+DESCRIBE THE JOSH TRICK
 
 In this work we implemented this approach using Irksome
 \citep{farrell2021irksome,kirby2024extending}, a Python library that
@@ -798,6 +830,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  robustness for the higher order schemes.
 
  \begin{figure}[h]\centering
+   \revisedus{
  \begin{tabular}{c}
   \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
  \end{tabular}
@@ -811,11 +844,12 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
-   }
+   }}
  \label{err_vs_runtime_gl_imex}
 \end{figure}
 
-\begin{figure}[h]\centering
+ \begin{figure}[h]\centering
+   \revisedus{
 \begin{tabular}{c}
  \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/rd_imex.pdf}
 \end{tabular}
@@ -829,7 +863,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
-   }
+   }}
  \label{err_vs_runtime_rd_imex}
 \end{figure}
 
@@ -839,7 +873,8 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 
 % \subsection{Iteration counts tables}
 
-\begin{table}[h]\centering
+\begin{table}[h]
+  \revisedus{
   \centering
   \begin{tabular}{ccccccc}
     & \multicolumn{2}{c}{Gauss-Legendre 1} &
@@ -857,11 +892,12 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 300 & 2.00 & 577.00 & 2.00 & 576.00 & 2.00 & 576.00 \\
 \end{tabular}
 \caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the Gauss-Legendre  1, 2, 3 methods.}
-\label{tab_niter_vs_dt G}
+\label{tab_niter_vs_dt G}}
 \end{table}
 
 
-\begin{table}[h]\centering
+\begin{table}[h]
+  \revisedus{\centering
     \begin{tabular}{ccccccc}
         & \multicolumn{2}{c}{Radau IIA 1} &
     \multicolumn{2}{c}{Radau IIA 2} &
@@ -878,9 +914,8 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
     300 & 3.00 & 864.00 & 3.00 & 864.00 & 3.00 & 864.00 \\
 \end{tabular}
 \caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.}
-\label{tab1_niter_vs_dt R}
+\label{tab1_niter_vs_dt R}}
 \end{table}
-
 
 
 

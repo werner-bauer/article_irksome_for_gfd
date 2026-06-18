@@ -41,21 +41,36 @@
 \begin{enumerate}
 \item 4/8 core runs for IMEX/GL1/GL2/GL3, and update table
 \item describe the changes that were done in the simulations
-\item Update tables 
 \end{enumerate}
 
-We would like to thank the reviewers for the constructive comments
+We would like to thank the Reviewers for the constructive comments
 which helped us to improve the manuscript.
 
-The questions and comments by the reviewer are written in normal font,
+In preparing our response, we noticed a couple of things that have led
+to changes in our results. First, we realised that despite describing
+the vector invariant form in the exposition, our results actually used
+the advective form (due to us incorrectly selecting a switch in the
+code).  The vector invariant form is more suited to the sphere, and we
+anyway intended to use it, so we have rerun all our results using
+vector invariant form, leading to slightly different errors. Second,
+we realised that the IMEX and IRK results were not converging to each
+other as $\Delta t\to 0$. This turned out to be a problem with a
+tolerance in the IMEX mass matrix solve being too loose, so it was
+effectively solving a different ODE. We have changed this, and it now
+leads to slightly slower IMEX results (the solve is not dominated by
+the mass solve but it does add a little time). We apologise to the Editor
+and Reviewer for these inaccuracies in the first manuscript.
+
+Additionally, we have improved the treatment of the Eisenstat-Walker
+scheme, by adding an automated absolute tolerance to the Krylov method
+which avoids over-solution of the linear system in the final Newton
+iteration beyond the tolerance of the Newton solver. We have added 
+
+The questions and comments by the Reviewer are written in Roman font,
 followed by our responses in italic fonts. In addition, we marked in
-the revised manuscript those parts in blue (reviewer 1) and magenta
-(reviewer 2), which have been rewritten in order to highlight the
-changes.
-
-
-
-
+the revised manuscript those parts in blue (Reviewer 1) and magenta
+(Reviewer 2), which have been rewritten in order to highlight the
+changes. Our own changes are marked in green.
 
 \section{Reviewer 1}
 
@@ -104,8 +119,15 @@ publication.
   We have added a footnote to clarify this.}
   
 \item Page 4, last sentence should be revisited, it is complicated to read.
-
-\item Section 2.2 is somewhat chaotic, there are many different ingredients listed in the section, but it is difficult to follow the precise algorithm the authors use to solve their IRK problem. It would be useful to put an algorithmic box for the solution of the linear solver that explains the order of the algorithms, and it should be more clear what has just been compared and what has been used in the end.
+\emph{We have done this.}
+  
+\item Section 2.2 is somewhat chaotic, there are many different
+  ingredients listed in the section, but it is difficult to follow the
+  precise algorithm the authors use to solve their IRK problem. It
+  would be useful to put an algorithmic box for the solution of the
+  linear solver that explains the order of the algorithms, and it
+  should be more clear what has just been compared and what has been
+  used in the end.
 
 \item Page 6: the sentence "For this type of problem, it is also typical to scale $\Delta t$ to keep the advective Courant number ($U(\Delta t/\Delta x) $ where U is a typical velocity scale and $\Delta x$ is a typical cell diameter) constant as the mesh is refined, so we can hope for mesh independent Krylov iteration counts under this refinement scaling without multigrid. However, we found that using the multigrid produced faster wallclock times." was to me clear only at page 8 when the authors state that IMEX are restricted by the Courant number on the explicit part and that "means that it is limited to smaller timesteps. It is this property that we shall contrast with the IRKs." Make clearer from the beginning that you are using more iterations and larger timesteps.
 
