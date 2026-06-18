@@ -19,13 +19,6 @@
 \usepackage{multirow}
 
 \usepackage{tikz}
-\usetikzlibrary{positioning, calc, chains}
-\usetikzlibrary{shapes.misc}
-\usetikzlibrary{shapes.symbols}
-\usetikzlibrary{shapes.geometric}
-\usetikzlibrary{shapes.arrows}
-\usetikzlibrary{fit}
-\usetikzlibrary{shadows}
 
 \usepackage{soul}
 \setstcolor{red}
@@ -437,25 +430,38 @@ approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
 
-\begin{tikzpicture}
-  [
-    every node/.style={draw=black, thick, anchor=west},
-%  grow via three points={one child at (0.0,-0.6) and two children at (0.0,-0.6) and (0.0,-1.4)},
-  edge from parent path={(\tikzparentnode.210) |- (\tikzchildnode.west)}]
-  \node {Multigrid}
-      child { node {Krylov solver (GMRES)}
-        child { node {Preconditioner}
-          child { node {Additive Vanka patch smoother}
-            child { node {Direct LU patch solve} }
-          }
-        }
-      }
-      child [missing] {}
-      child [missing] {}
-      child { node {Direct LU coarse grid solve}
-      };
-\end{tikzpicture}
+% Define block styles
+\begin{figure}
+\tikzstyle{decision} = [rectangle, draw, fill=blue!20, 
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex]
 
+\scalebox{0.75}{
+\begin{tikzpicture}[node distance = 3cm]
+  % Place nodes
+  \node [block] (NL) {Nonlinear system};
+    \node [block, below of=NL] (Newton) {Eisenstat Walker Quasi-Newton};
+    \node [block, right of=Newton, node distance=4cm] (FGMRES) {FGMRES};
+    \node [block, right of=FGMRES, node distance=3.5cm] (MG) {Multigrid};
+    \node [block, right of=MG, node distance=7cm] (Coarse) {GMRES 3 its};
+    \node [block, right of=Coarse, node distance=3.5cm] (CPC) {Block ILU};
+    \node [block, below of=Coarse] (Levels) {GMRES 3 its};
+    \node [block, right of=Levels, node distance=3.5cm] (LPC) {Patch ASM};
+    % Draw edges
+    \path [line] (NL) -- node[right]{Nonlinear solver}(Newton);
+    \path [line] (Newton) -- node[below]{linear Jacobi solver}(FGMRES);
+    \path [line] (MG) -- node [below]{Coarse grid smoother} (Coarse);
+    \path [line] (Coarse) -- node [below]{PC} (CPC);
+    \path [line] (Levels) -- node [below]{PC} (LPC);
+    \path [line] (MG) |-node [below right]{Levels smoother}  (Levels);
+    \path [line] (FGMRES) -- node [below]{PC} (MG);
+\end{tikzpicture}
+} \revisedus{\caption{\label{fig:solver_diag}Diagram showing the
+    composition of solver components for our approach. The boxes
+    indicate solvers which have components indicated by the arrows.}}
+\end{figure}
 
 The reason for choosing vertex star patches is that they deal well
 with the oscillatory wave coupling in the linear system. When this
@@ -472,21 +478,25 @@ convergence in the number of Runge-Kutta stages, as analysed in
 \citep{kirby2024convergence}.
 
 To avoid having to tune scaling parameters whose optimal values might
-depend on the system state, our smoothers consist of two iterations of
-GMRES \revisedus{(the generalised minimum residual method
-  \citep{saad1986gmres})} preconditioned by the additive Schwarz
-method above. This has the effect of selecting the scaling parameter
-adaptively.  This necessitates the use of a flexible Krylov method
-(FGMRES, in our case) for the ``outer'' monolithic solver, since the
-use of GMRES here means that the smoother is residual dependent and
-hence is not a stationary iterative method (which is a requirement for
-standard Krylov methods such as GMRES).
+depend on the system state, our smoothers consist of \revisedus{3}
+iterations of GMRES \revisedus{(the generalised minimum residual
+  method \citep{saad1986gmres})} preconditioned by the additive
+Schwarz method above. This has the effect of selecting the scaling
+parameter adaptively.  This necessitates the use of a flexible Krylov
+method (FGMRES, in our case) for the ``outer'' monolithic solver,
+since the use of GMRES here means that the smoother is residual
+dependent and hence is not a stationary iterative method (which is a
+requirement for standard Krylov methods such as GMRES).
 
-In our multigrid setup, we also used the above smoothing approach for
-the correction on the coarsest grid. This avoids having to use a
-parallel direct solve. We experimented with a direct solve on the coarse
-grid but found that it did not alter the overall convergence of the
-solver strategy.
+In our multigrid setup, we \revisedus{used 3 iterations of GMRES
+  preconditioned by block ILU (incomplete LU factorisation)} for the
+correction on the coarsest grid. This avoids having to use a parallel
+direct solve. We experimented with a direct solve on the coarse grid
+but found that it did not alter the overall convergence of the solver
+strategy.
+
+\revisedus{A diagram showing the composition of these various solvers
+is given in Figure \ref{fig:solver_diag}.}
 
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in

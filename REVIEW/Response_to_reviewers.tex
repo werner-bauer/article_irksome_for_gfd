@@ -127,7 +127,8 @@ publication.
   would be useful to put an algorithmic box for the solution of the
   linear solver that explains the order of the algorithms, and it
   should be more clear what has just been compared and what has been
-  used in the end.
+  used in the end.\\
+  \emph{This is a very good suggestion, we have done this.}
 
 \item Page 6: the sentence "For this type of problem, it is also typical to scale $\Delta t$ to keep the advective Courant number ($U(\Delta t/\Delta x) $ where U is a typical velocity scale and $\Delta x$ is a typical cell diameter) constant as the mesh is refined, so we can hope for mesh independent Krylov iteration counts under this refinement scaling without multigrid. However, we found that using the multigrid produced faster wallclock times." was to me clear only at page 8 when the authors state that IMEX are restricted by the Courant number on the explicit part and that "means that it is limited to smaller timesteps. It is this property that we shall contrast with the IRKs." Make clearer from the beginning that you are using more iterations and larger timesteps.
 
