@@ -41,7 +41,8 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID:
 			\tt #1 \end{minipage}}\vspace{5 mm}\par}
 \newcommand{\werner}[1]{{\color{magenta}WB says: #1}}
 \newcommand{\colin}[1]{{\color{blue}CC says: #1}}
-\newcommand{\incl}[1]{{\color{red}#1}}
+\newcommand{\revisedA}[1]{{\color{blue}#1}}
+\newcommand{\revisedB}[1]{{\color{magenta}#1}}
 
 \newcommand{\checkit}[1]{{\color{magenta}#1}}
 %\renewcommand{\checkit}[1]{{\color{red}#1}}
@@ -180,7 +181,7 @@ rotating shallow water equations on the sphere, which we write
 here in vector-invariant form as
 \begin{align}
   u_t + \left(\nabla\cdot u^\perp + f\right)u^\perp
-  + \nabla\left(\frac{|u|^2}{2} + g(D-b)\right) & = 0, \\
+  + \nabla\left(\frac{|u|^2}{2} + g(D\revisedA{-}b)\right) & = 0, \\
   D_t + \nabla\cdot(uD) & = 0,
 \end{align}
 where $u$ is the velocity (tangential to the sphere), $\nabla$ is the
@@ -196,12 +197,13 @@ discretisation of these equations. We do not expect that the precise
 details are important for our conclusions, which are hopefully
 translatable to other discretisation approaches. However, to
 efficiently describe our iterative solver approach a precise
-description is useful. We select $V$ as the degree $p+1$ BDM finite
-element space on triangles, and $Q$ as the degree $p$ discontinuous
-Lagrange finite element space, here defined on an icosahedral grid
-$\mathcal{X}$ formed by recursively refining an icosahedron and then projecting
-vertices radially out to the sphere. Then we seek $(u,D)\in V\times Q$
-such that
+description is useful. We select $V$ as the degree $p+1$ BDM
+\revisedA{(Brezzi-Douglas-Marini)} finite element space on triangles,
+and $Q$ as the degree $p$ discontinuous Lagrange finite element space,
+here defined on an icosahedral grid $\mathcal{X}$ formed by
+recursively refining an icosahedron and then projecting vertices
+radially out to the sphere.  Then we seek $(u,D)\in V\times Q$ such
+that
 \begin{align}
   \label{eq:ut}
   \langle w, u_t \rangle + a(u,D;w) 
@@ -232,7 +234,19 @@ $\tilde{D}$ are the values of $D$ and $u$ evaluated on the upwind side
 of a facet (the side with $u\cdot n<0$), $n$ is the unit normal (here,
 bivalued so that on each side of the facet $n$ is oriented to point
 into the other side), and $\jump{\psi}$ indicates the sum of the
-values of $\psi$ over both sides of the facet. For more details, and a
+values of $\psi$ over both sides of the facet.\footnote{\revisedA{To
+  explain the $\jump{\cdot}$ operator further, we consider labelling
+  the two sides of each edge with $+$ and $-$, so that $\psi^-$
+  indicates the value of $\psi$ on the $-$ side, etc., thus
+  $\jump{\psi}=\psi^++\psi^-$. Note that when $n$ is present,
+  $n^+=-n^-$, and hence e.g. $\jump{\phi n \cdot u}=\phi^+n^+\cdot u^+
+  + \phi^+n^-\cdot u^- = n^+(\phi^+u^+ - \phi^-u^-)$, so this gives
+  rise to a jump. This particular choice of notation is used because
+  of the appearance of $n^\perp$, which does not match standard
+  patterns in mixed formulations of elliptic problems or discontinuous
+  Galerkin discretisations for scalar transport.}} EXPLAIN INTEGRATION
+BY PARTS.
+For more details, and a
 derivation of the finite element spaces and this finite element
 approximation, see \cite{gibson2019compatible}. In this work we used
 $p=1$.
