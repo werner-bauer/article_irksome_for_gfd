@@ -839,7 +839,6 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 
 % \subsection{Iteration counts tables}
 
-
 \begin{table}[h]\centering
   \centering
   \begin{tabular}{ccccccc}
@@ -849,15 +848,13 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    $\Delta t$  &  its/steps  &  its 
    &  its/steps  &  its
    &  its/steps  &  its 
-   \\ \hline
-  300  &               4.000000  &  1152.0    &        4.000000  &  1152.0   &            4.000000  &  1152.0 \\
-   600  &             4.000000  &   576.0    &       4.055556  &   584.0    &          4.000000   &  576.0 \\
-  1200   &               4.000000   &  288.0   &          4.722222  &   340.0    &             6.833333  &   492.0\\
-  2400    &             7.250000   &  261.0   &           8.194444   &  295.0    &             8.000000   &  288.0\\
-  3600     &           11.708333  &   281.0   &        8.95833  & 215.0     &            8.000000  &   192.0 \\
-  7200     &            11.916667  &   143.0    &        11.416667  &   137.0    &              8.500000  &   102.0\\
-  10800    &             22.375000 &    179.0   &        16.750000   &  134.0    &           16.250000   &  130.0 \\
-  14400    &             24.166667  &   145.0   &        20.500000   &  123.0     &          17.666667   &  106.0
+    \\ \hline
+    7200 & 11.83 & 142.00 & 8.92 & 107.00 & 8.92 & 107.00 \\
+3600 & 5.96 & 143.00 & 4.38 & 105.00 & 4.38 & 105.00 \\
+2400 & 4.03 & 145.00 & 4.00 & 144.00 & 4.00 & 144.00 \\
+1200 & 4.00 & 288.00 & 4.00 & 288.00 & 4.00 & 288.00 \\
+600 & 3.00 & 432.00 & 3.01 & 433.00 & 3.01 & 433.00 \\
+300 & 2.00 & 577.00 & 2.00 & 576.00 & 2.00 & 576.00 \\
 \end{tabular}
 \caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the Gauss-Legendre  1, 2, 3 methods.}
 \label{tab_niter_vs_dt G}
@@ -872,18 +869,15 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    $\Delta t$  &  its/steps  &  its 
    &  its/steps  &  its
    &  its/steps  &  its 
-   \\ \hline
-300  &              4.000000 & 1152.0 &               4.000000 & 1152.0 &                5.000000 & 1440.0\\
-600  &             4.000000 &  576.0 &              6.777778 &  976.0  &              6.770833 &  975.0\\
-1200  &             8.750000&   630.0 &              8.000000 &  576.0  &              7.736111 &  557.0\\
-2400   &          12.027778 &  433.0  &            8.777778 &  316.0   &            8.000000  & 288.0\\
-3600    &        12.250000 &  294.0   &          9.500000 &  228.0    &          9.000000  & 216.0\\
-7200     &        24.333333  & 292.0    &       13.083333 &  157.0     &       12.166667  & 146.0\\
-10800     &        30.375000 &  243.0    &          21.875000 &  175.0     &       19.000000 &  152.0\\
-14400      &     *  & *  &           24.333333 &  146.0     &       20.833333 &  125.0
+    \\ \hline
+    7200 & 23.08 & 277.00 & 12.83 & 154.00 & 12.83 & 154.00 \\
+    3600 & 9.71 & 233.00 & 6.21 & 149.00 & 6.21 & 149.00 \\
+    2400 & 6.94 & 250.00 & 4.06 & 146.00 & 4.06 & 146.00 \\
+    1200 & 4.03 & 290.00 & 4.00 & 288.00 & 4.00 & 288.00 \\
+    600 & 4.00 & 576.00 & 4.00 & 576.00 & 4.00 & 576.00 \\
+    300 & 3.00 & 864.00 & 3.00 & 864.00 & 3.00 & 864.00 \\
 \end{tabular}
-\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.
-``*'' indicates that the computation did not complete due to a solver failure.}
+\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.}
 \label{tab1_niter_vs_dt R}
 \end{table}
 
