@@ -19,7 +19,7 @@ day = 60*60*24
 for i, dt in enumerate(GL1["dt"]):
     itsGL1 = GL1["Iterations per timestep"].iloc[i]
     itsGL2 = GL2["Iterations per timestep"].iloc[i]
-    itsGL3 = GL2["Iterations per timestep"].iloc[i]
+    itsGL3 = GL3["Iterations per timestep"].iloc[i]
 
     totitsGL1 = itsGL1*day/dt
     totitsGL2 = itsGL2*day/dt
@@ -31,7 +31,7 @@ print("")
 for i, dt in enumerate(Radau1["dt"]):
     itsRadau1 = Radau1["Iterations per timestep"].iloc[i]
     itsRadau2 = Radau2["Iterations per timestep"].iloc[i]
-    itsRadau3 = Radau2["Iterations per timestep"].iloc[i]
+    itsRadau3 = Radau3["Iterations per timestep"].iloc[i]
 
     totitsRadau1 = itsRadau1*day/dt
     totitsRadau2 = itsRadau2*day/dt

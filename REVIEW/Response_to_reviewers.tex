@@ -40,7 +40,7 @@
 
 \begin{enumerate}
 \item 4/8 core runs for IMEX/GL1/GL2/GL3, and update table
-\item describe the changes that were done in the simulations
+\item Do code release and Zenodo
 \end{enumerate}
 
 We would like to thank the Reviewers for the constructive comments
@@ -74,35 +74,35 @@ changes. Our own changes are marked in green.
 
 \section{Reviewer 1}
 
-The work present an implicit Runge Kutta method for solving the
-rotating SW equations, focusing on how to solve the nonlinear system
-with a quasi Newton method and on the preconditioners used to
-preprocess the solution of the monolithic system of equations. In
-particular, it uses an Additive Schwarz method to split the domain in
-components to get an initial guess, multigrid nested meshes and Krylov
-subspace preconditioner.
+%% The work present an implicit Runge Kutta method for solving the
+%% rotating SW equations, focusing on how to solve the nonlinear system
+%% with a quasi Newton method and on the preconditioners used to
+%% preprocess the solution of the monolithic system of equations. In
+%% particular, it uses an Additive Schwarz method to split the domain in
+%% components to get an initial guess, multigrid nested meshes and Krylov
+%% subspace preconditioner.
 
-The work compares this algorithm with an IMEX RK on a test of a
-nonlinear Rossby wave solution.
+%% The work compares this algorithm with an IMEX RK on a test of a
+%% nonlinear Rossby wave solution.
 
-\subsection{Comment}
-The work is well written and mathematically correct on what
-presents. Nevertheless, the proposed algorithm is composed of many
-ingredients that overlaps and get compared in the description section
-so that it is not easy to have a full picture of its structure by
-reading that section. Also, the description of the finite element
-method, of the algorithm and of the test under consideration lack many
-details that could help the reader and are left to the references. I
-think adding some details would help understanding the work and
-wouldn't lengthen it too much. Finally, the comparison with another
-algorithm is not too fair as they scale very different in terms of
-stability and accuracy. It is really hard to compare them and to
-decide if the novel algorithm is worth the effort of a more
-complicated fully implicit structure. Other tests could help validate
-this aspect. I list below some remarks that should be addressed before
-publication.
+%% \subsection{Comment}
+%% The work is well written and mathematically correct on what
+%% presents. Nevertheless, the proposed algorithm is composed of many
+%% ingredients that overlaps and get compared in the description section
+%% so that it is not easy to have a full picture of its structure by
+%% reading that section. Also, the description of the finite element
+%% method, of the algorithm and of the test under consideration lack many
+%% details that could help the reader and are left to the references. I
+%% think adding some details would help understanding the work and
+%% wouldn't lengthen it too much. Finally, the comparison with another
+%% algorithm is not too fair as they scale very different in terms of
+%% stability and accuracy. It is really hard to compare them and to
+%% decide if the novel algorithm is worth the effort of a more
+%% complicated fully implicit structure. Other tests could help validate
+%% this aspect. I list below some remarks that should be addressed before
+%% publication.
 
-\subsection{Remarks}
+%% \subsection{Remarks}
 \begin{enumerate}
 \item page 3: Define the acronym BDM \\
   \emph{Thank you, this has been done.}
@@ -130,13 +130,54 @@ publication.
   used in the end.\\
   \emph{This is a very good suggestion, we have done this.}
 
-\item Page 6: the sentence "For this type of problem, it is also typical to scale $\Delta t$ to keep the advective Courant number ($U(\Delta t/\Delta x) $ where U is a typical velocity scale and $\Delta x$ is a typical cell diameter) constant as the mesh is refined, so we can hope for mesh independent Krylov iteration counts under this refinement scaling without multigrid. However, we found that using the multigrid produced faster wallclock times." was to me clear only at page 8 when the authors state that IMEX are restricted by the Courant number on the explicit part and that "means that it is limited to smaller timesteps. It is this property that we shall contrast with the IRKs." Make clearer from the beginning that you are using more iterations and larger timesteps.
+\item Page 6: the sentence "For this type of problem, it is also
+  typical to scale $\Delta t$ to keep the advective Courant number
+  ($U(\Delta t/\Delta x) $ where U is a typical velocity scale and
+  $\Delta x$ is a typical cell diameter) constant as the mesh is
+  refined, so we can hope for mesh independent Krylov iteration counts
+  under this refinement scaling without multigrid. However, we found
+  that using the multigrid produced faster wallclock times." was to me
+  clear only at page 8 when the authors state that IMEX are restricted
+  by the Courant number on the explicit part and that "means that it
+  is limited to smaller timesteps. It is this property that we shall
+  contrast with the IRKs." Make clearer from the beginning that you
+  are using more iterations and larger timesteps.\\
+  \emph{We agree that this was not very clear. We have now clarified
+  that this means that using multigrid is faster than just using
+  a patch smoother on the finest grid.}
+\item There are many tolerances in the proposed algorithm that make the comparison not so fair, it would be interesting to see if it is stable under perturbation of these tolerances.\\
+{\itshape
+  We would like to emphasise that the comparison with IMEX is
+  not to try to compete with it. We include IMEX results as a point of
+  reference so that the reader can decide if IRKs are viable using our
+  solver approach. The idea is that IMEX schemes are commonly used in
+  the community and so the reader might have a feel for how long IMEX
+  schemes take for their preferred discretisation. We have clarified this
+  in the text.
 
-\item There are many tolerances in the proposed algorithm that make the comparison not so fair, it would be interesting to see if it is stable under perturbation of these tolerances.
-
-\item Comparing algorithms to only one test case could be misleading. In fact the errors of the IMEX and of the IRK (low order) for this test are so different that is really impossible to compare them.
-
-\item I also suggest to find another algorithm to compare the proposed IRK method as the IMEX is so much more accurate and already unstable with relatively small timesteps that the curves are so far apart. Either another test that makes the two more comparable or another state-of-the-art algorithm (a DIRK for example)?
+  Regarding the tolerances, there is really only one tolerance in the
+  IRK methodology, which is the relative tolerance for the Newton
+  iterations.
+  We have included a discussion of the effects of changing this tolerance in
+  the text.
+  
+  As we mentioned above, the tolerance in the mass matrix solve for the
+  IMEX scheme is important to keep tight, since otherwise we do not converge
+  to the right solution as $\Delta t \to 0$. However, this mass solve
+  does not dominate the IMEX cost.}
+\item Comparing algorithms to only one test case could be
+  misleading. In fact the errors of the IMEX and of the IRK (low
+  order) for this test are so different that is really impossible to
+  compare them.\\
+  \emph{The goal here is not to say that IRKs are better or worse than IMEX
+  schemes in general, but just to give the reader a point of reference
+  as written above. In any case, the timings have changed quite a lot after
+  our updates.}
+\item I also suggest to find another algorithm to compare the proposed IRK method as the IMEX is so much more accurate and already unstable with relatively small timesteps that the curves are so far apart. Either another test that makes the two more comparable or another state-of-the-art algorithm (a DIRK for example)?\\
+  \emph{We have now included a 3rd order 3 stage DIRK, for comparison.
+  However, note that this DIRK also required a scalable solver strategy,
+  we used the same one as we used for the IRKs.
+  }
 \end{enumerate}
 
 
@@ -144,7 +185,13 @@ publication.
 
 \section{Reviewer 2}
 
-The authors present some preliminary results on the application of fully-implicit Runge-Kutta (Gauss and Radau-IIA) methods to a finite element discretization of the rotating shallow water equations on the sphere. They combine some existing tools and approaches, and show some numerical results including a comparison with a second-order IMEX method. The results can be interesting for the community, but I would like to see several improvements before recommending publication.
+%% The authors present some preliminary results on the application of
+%% fully-implicit Runge-Kutta (Gauss and Radau-IIA) methods to a finite
+%% element discretization of the rotating shallow water equations on the
+%% sphere. They combine some existing tools and approaches, and show some
+%% numerical results including a comparison with a second-order IMEX
+%% method. The results can be interesting for the community, but I would
+%% like to see several improvements before recommending publication.
 
 
 
@@ -152,20 +199,68 @@ The authors present some preliminary results on the application of fully-implici
 \begin{enumerate}
 \item  Abstract, "Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method." This is not the case for the methods used in this paper.
 
+  \emph{We have removed this from the abstract, as this kind of discussion is
+  anyway not really suitable for an abstract.}
+  
 \item  Abstract, "Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods." Instead, fully implicit methods require solving nonlinear systems with Jacobian changing at each iteration. Thus, the complexity increases significantly.
 
+  \emph{Similarly, we have removed this from the abstract.}
+  
 \item  It would be helpful for readers not familiar with the notation to explain the significance of the semicolon in the forms $a, c$ defined in (3) and (4).
 
+\emph{Thank you, this has been done.}
+  
 \item  References to concrete results in books have to be more specific, e.g., by mentioning the section/theorem/page number (e.g., on page 4).
 
-\item  Page 4: The time derivatives $k_u$ and $k_D$ are used as primary variables in the Newton iteration. However, in their well-known textbook, Hairer and Wanner recommend using updates of the stage values $u$ and $D$ instead (Section IV.8). Please comment on the choice, explain, and discuss the advantages/disadvantages.
+\emph{We have added some details about the relevant chapters in this book citation.}
+  
+\item Page 4: The time derivatives $k_u$ and $k_D$ are used as primary
+  variables in the Newton iteration. However, in their well-known
+  textbook, Hairer and Wanner recommend using updates of the stage
+  values $u$ and $D$ instead (Section IV.8). Please comment on the
+  choice, explain, and discuss the advantages/disadvantages.\\
+  {\itshape It does not seem to be the case that Hairer and Wanner
+  recommend using the stage values, it is just that they only discuss
+  this formulation in the implementation section. In that textbook,
+  they seem to presume that you must avoid full Newton and do
+  something cheaper in practice, but that's not really the case with
+  modern computational implementations such as PETSc.
 
+  We made a preliminary investigation of the stage values formulation,
+  since this option is easily available in Irksome. However, we
+  obtained linear solver divergences on the second Newton iteration
+  for the largest timestep considered (7200s), which suggests that a
+  better initial guess is needed at large timesteps (we used the value
+  of the solution at the start of the timestep for all stages). We did
+  not encounter this problem for stage derivatives, even for larger values
+  not presented in the manuscript. For smaller values there is no difference
+  in performance or error for stage values, so this does not seem to be
+  an important aspect.}
 \item  Continuing the previous comment: Hairer and Wanner also recommend transforming the linear systems to solve multiple smaller systems instead of one large system (in the same section). Please comment on this as well.
 
+  \emph{Hairer and Wanner assume a direct solver is being used for the
+  entire system, whilst we are using an iterative solver. Solving one
+  large system versus several small systems will only make a
+  difference if the preconditioner behaviour differs. We do have
+  direct solvers for the patch systems, but at this point it becomes
+  dangerous to think only of operation counts since the bottleneck can
+  frequently be the time required to stream RHS data to the patch
+  solves.  Hence it is probably safer to decline to comment on this
+  without doing a proper performance model and benchmarking of the
+  patch solves.  }
+  
 \item  Page 4: Please explain in detail what "sufficiently small" means.
+  \emph{We have described the relative tolerance test used.}
+  
+\item Please provide numerical results concerning the long-term
+  stability of the methods for more demanding test cases. For example,
+  run the Rossby-Haurwitz test case for 28 days instead of one day,
+  and consider also other test cases involving instabilities.
 
-\item  Please provide numerical results concerning the long-term stability of the methods for more demanding test cases. For example, run the Rossby-Haurwitz test case for 28 days instead of one day, and consider also other test cases involving instabilities.
-
+\emph{These have now been included. For instabilities we ran the
+Williamson test case 5 to 50 days, after which it has developed a lot of
+vorticity structure.}
+  
 \item  Aims and scope of the journal: "Reproducibility, that is the ability to reproduce results obtained by others, is a core principle of the scientific method. As the impact of and knowledge discovery enabled by computational science and engineering continues to increase, it is imperative that reproducibility becomes a natural part of these activities. The journal strongly encourages authors to make available all software or data that would allow published results to be reproduced and that every effort is made to include sufficient information in manuscripts to enable this. This should not only include information used for setup but also details on post-processing to recover published results."
 \end{enumerate}
 
