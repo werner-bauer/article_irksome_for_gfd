@@ -96,7 +96,8 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID:
 \maketitle
 
 \begin{abstract}
-Fully implicit timestepping methods have several potential advantages for atmosphere/ocean simulation. First, being unconditionally stable, they degrade more gracefully as the Courant number increases, typically requiring more solver iterations rather than suddenly blowing up. Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method. Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods.
+%Fully implicit timestepping methods have several potential advantages for atmosphere/ocean simulation. First, being unconditionally stable, they degrade more gracefully as the Courant number increases, typically requiring more solver iterations rather than suddenly blowing up. Second, particular choices of implicit timestepping methods can extend energy conservation properties of spatial discretisations to the fully discrete method. Third, these methods avoid issues related to splitting errors that can occur in some situations, and avoid the complexities of splitting methods.
+  
 Fully implicit timestepping methods have had limited application in
 geophysical fluid dynamics due to challenges of finding suitable
 iterative solvers, since the coupled treatment of advection prevents
@@ -247,8 +248,12 @@ values of $\psi$ over both sides of the facet.\footnote{\revisedA{To
   rise to a jump. This particular choice of notation is used because
   of the appearance of $n^\perp$, which does not match standard
   patterns in mixed formulations of elliptic problems or discontinuous
-  Galerkin discretisations for scalar transport.}} EXPLAIN INTEGRATION
-BY PARTS.
+  Galerkin discretisations for scalar transport.}} \revisedB{Here, the
+  semicolons in the forms $a(u,D;w)$ and $c(u,D;\phi)$ indicate the
+  linearity of the operators in the test functions $w$ and $\phi$,
+  respectively. The forms can be nonlinear in the solution variables;
+  this is a standard formulation for finite element methods applied
+  to nonlinear partial differential equations.}
 For more details, and a
 derivation of the finite element spaces and this finite element
 approximation, see \cite{gibson2019compatible}. In this work we used
@@ -291,6 +296,10 @@ where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge-Kutta scheme. This defines a coupled
 system for all of the stages in general.
 
+\revisedB{Here, we describe the stage derivatives formulation of IRKs, where
+  time derivatives are solved for at each step. There is an alternative
+  stage values formulation, which we do not consider here.}
+
 In this work
 we consider collocation Runge-Kutta methods, in particular the
 Gauss-Legendre methods that extend the implicit midpoint rule to
@@ -298,9 +307,9 @@ higher orders, and the Radau IIA methods that extend the backward Euler
 method to higher orders. The Gauss-Legendre methods are energy
 preserving for wave equations but slow down high frequency
 oscillations, whilst the Radau IIA methods damp high frequency
-oscillations.  See \citet{wanner1996solving} for a comprehensive
-derivation and analysis of these methods, along with their Butcher
-tableau. Note here that our system has no explicit time dependence
+oscillations.  \revisedB{See the two volume textbook \citet{hairer1993solving,wanner1996solving} for a comprehensive
+derivation along with their Butcher
+tableau (Chapter II.7), and stability and convergence analysis (Chapters IV.3-IV.5).}  Note here that our system has no explicit time dependence
 which would otherwise need to be incorporated into (\ref{eq:u
   stages}-\ref{eq:D stages}) in the usual way.
 
@@ -349,12 +358,15 @@ The solution is then updated according to
 \end{equation}
 and the iteration is repeated until the residuals in (\ref{eq:u
   stages}-\ref{eq:D stages}) are sufficiently small (according to an
-appropriately chosen termination criteria).  The assembly of these
-nonlinear and linear systems can be performed in the usual way by
-looping (in parallel) over cells and constructing the appropriate
-contributions upon substituting $w$ and $\phi$ for each basis function
-from standard sparse finite element bases for $V\times Q$. It remains
-to find a scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
+appropriately chosen termination criteria\revisedB{; we use a relative
+  tolerance test requiring that the ratio of the norm of the residual
+  to the residual coming from the initial guess is below a selected
+  tolerance}).  The assembly of these nonlinear and linear systems can
+be performed in the usual way by looping (in parallel) over cells and
+constructing the appropriate contributions upon substituting $w$ and
+$\phi$ for each basis function from standard sparse finite element
+bases for $V\times Q$. It remains to find a scalable way to solve
+(\ref{eq:u J}-\ref{eq:D J}).
 
 We observe that the stage components of the iterative corrections $k'$
 are coupled in (\ref{eq:u J}-\ref{eq:D J}) both between $u$ and $D$
@@ -438,12 +450,12 @@ W$).
     text width=5em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{line} = [draw, -latex]
 
-\scalebox{0.75}{
+\scalebox{0.7}{
 \begin{tikzpicture}[node distance = 3cm]
   % Place nodes
   \node [block] (NL) {Nonlinear system};
     \node [block, below of=NL] (Newton) {Eisenstat Walker Quasi-Newton};
-    \node [block, right of=Newton, node distance=4cm] (FGMRES) {FGMRES};
+    \node [block, right of=Newton, node distance=6cm] (FGMRES) {FGMRES};
     \node [block, right of=FGMRES, node distance=3.5cm] (MG) {Multigrid};
     \node [block, right of=MG, node distance=7cm] (Coarse) {GMRES 3 its};
     \node [block, right of=Coarse, node distance=3.5cm] (CPC) {Block ILU};
@@ -495,31 +507,28 @@ direct solve. We experimented with a direct solve on the coarse grid
 but found that it did not alter the overall convergence of the solver
 strategy.
 
-\revisedus{A diagram showing the composition of these various solvers
-is given in Figure \ref{fig:solver_diag}.}
-
-As will become apparent from the results, we do not observe perfect
-multigrid behaviour in that the number of iterations is not robust in
-$\Delta t$: more iterations are required at larger $\Delta t$ due to
-the presence of the advective terms.  For this type of problem, it is
-also typical to scale $\Delta t$ to keep the advective Courant number
-($U\Delta t/\Delta x$ where $U$ is a typical velocity scale and
-$\Delta x$ is a typical cell diameter) constant as the mesh is
-refined, so we can hope for mesh independent Krylov iteration counts
-under this refinement scaling without multigrid. However, we found
-that using the multigrid produced faster wallclock times.
-
-As a final optimisation, we used the Eisenstat-Walker (version 2)
+In final optimisations, we used the Eisenstat-Walker (version 2)
 inexact Newton approach \citep{eisenstat1996choosing} which adaptively
-controls the number of Krylov iterations for the Jacobian system
-during the Newton algorithm, since it is not useful to solve the
-Jacobian system (\ref{eq:u J}-\ref{eq:D J}) accurately when the nonlinear solution is only going
-to be updated again in the next Newton iteration anyway. This reduces the overall
-number of Krylov iterations per timestep, and hence reduces the overall
-number of multigrid cycles which dominate the cost of the method.
+controls the \revisedus{relative tolerance for the Krylov method
+  solving Jacobian system (\ref{eq:u J}-\ref{eq:D J}) during the
+  Newton algorithm, since it is not useful to solve the Jacobian
+  system accurately when the nonlinear solution is only going to be
+  updated again in the next Newton iteration anyway. This reduces the
+  overall number of Krylov iterations per timestep, and hence reduces
+  the overall number of multigrid cycles which dominate the cost of
+  the method. To avoid excessive Krylov iterations in the final Newton
+  iteration, we also set an absolute tolerance for the Krylov method
+  equal to $0.1\times \tau$ multiplied by the norm of the starting
+  nonlinear residual, where $\tau$ is the chosen nonlinear tolerance.
+  We also ``lagged'' the Jacobian, so that it is only updated every
+  20 Krylov iterations (including between Newton solves). This reduces
+  the cost of rebuilding factorisations in the patch smoothers, at
+  the expense of potentially increasing the number of required Newton
+  iterations.
+}
 
-DESCRIBE THE JOSH TRICK
-
+\revisedus{A diagram showing the composition of these various solvers
+is given in Figure \ref{fig:solver_diag}.
 In this work we implemented this approach using Irksome
 \citep{farrell2021irksome,kirby2024extending}, a Python library that
 wraps time discretisations on top of finite element spatial
@@ -535,6 +544,20 @@ the Unified Form Language (UFL) \citep{alnaes2012ufl} to obtain the
 formulae for (\ref{eq:u J}-\ref{eq:D J}) from which code assembling
 the matrix-vector action and the patch linear systems is automatically
 generated.
+
+As will become apparent from the results, we do not observe perfect
+multigrid behaviour in that the number of iterations is not robust in
+$\Delta t$: more iterations are required at larger $\Delta t$ due to
+the presence of the advective terms.  For this type of problem, it is
+also typical to scale $\Delta t$ to keep the advective Courant number
+($U\Delta t/\Delta x$ where $U$ is a typical velocity scale and
+$\Delta x$ is a typical cell diameter) constant as the mesh is
+refined, so we can hope for mesh independent Krylov iteration counts
+under this refinement scaling without multigrid.
+However, we found
+that using the multigrid produced faster wallclock times than
+simply applying the patch smoother on the finest grid.
+}
 
 \subsection{Implicit-explicit time discretisation}
 
@@ -671,7 +694,10 @@ monolithic solver setup applied to IRKs for the rotating shallow water
 equations as introduced above. Specifically, we will consider Gauss-Legendre and Radau IIA timestepping methods in their versions with 1,
 2 and 3 stages, combined with the finite element spaces discussed
 above in the case of $p=1$. We compare these methods with the
-frequently used, very efficient IMEX method ARK2.
+frequently used, very efficient IMEX method ARK2. \revisedA{The goal
+  is not to compete with the IMEX scheme, but rather to provide a
+  point of reference using an approach that is familiar to the community,
+  to give an idea of the viability of IRK schemes.}
 
 The aim is to test this for geophysical applications, i.e for
 atmosphere and ocean simulations, in the balanced regime where the
@@ -791,55 +817,63 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 \end{table}
 
 
- For the IRKs we used the solver strategy discussed above with a Newton
- relative residual tolerance of $1.0\times 10^{-6}$. For the IMEX
- scheme we used the SUPERLU Dist parallel direct solver package
+ For the IRKs we used the solver strategy discussed above with a
+ Newton relative residual tolerance of $1.0\times 10^{-6}$. For the
+ IMEX scheme we used the SUPERLU Dist parallel direct solver package
  \citep{li2023newly,li2003superlu_dist} for the reduced hybridised
  system in the implicit solve since this was the fastest of those
  available through PETSc. The mass matrix system (\ref{eq:mass u}) was
  solved using GMRES preconditioned by ILU(0) (incomplete LU
  factorisation discarding all values outside the sparsity pattern of
- the mass matrix) to a tolerance of $1.0\times 10^{-8}$, and the mass
- matrix system (\ref{eq:mass D}) was solved using a direct solve since
- it is block diagonal. These systems have insignificant solve times
- compared to the two implicit solves per timestep.
+ the mass matrix) \revisedus{to a tolerance of $1.0\times 10^{-10}$,
+   and the mass matrix system (\ref{eq:mass D}) was solved using a
+   direct solve since it is block diagonal. These systems have minor
+   affect} on the solve times compared to the two implicit solves per
+ timestep.
 
+ \revisedA{We also took measurements for the 3 stage diagonally
+   implicit Runge-Kutta method (DIRK) of
+   \citet{alexander1977diagonally}, a third order method.  The
+   diagonal structure means that the stages can be solved one by one
+   instead of simultaneously. The system for each stage is solved using
+   the same iterative solver framework as for the IRKs.}
+ 
  Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}
  show wallclock time versus error plots for the Gauss-Legendre and
- Radau IIA IRKs, respectively; results for the ARK2 IMEX scheme are
- shown in both figures as a reference. Mesh refinement 6 was used. We
- considered 1, 2 and 3 stage versions of the IRKs, as we were limited
- by memory on the workstation from examining more stages at this
- resolution. The Gauss-Legendre $s$-stage schemes are order $2s$ with
- stage order $s$ (the relevant order for stiff problems at large
- $\Delta t$), whilst the Radau IIA schemes are order $2s-1$ with stage
- order $s$.
+ Radau IIA IRKs, and the Alexander DIRK; results for the ARK2 IMEX
+ scheme are shown in both figures as a reference. Mesh refinement 6
+ was used. We considered 1, 2 and 3 stage versions of the IRKs, as we
+ were limited by memory on the workstation from examining more stages
+ at this resolution. The Gauss-Legendre $s$-stage schemes are order
+ $2s$ with stage order $s$ (the relevant order for stiff problems at
+ large $\Delta t$), whilst the Radau IIA schemes are order $2s-1$ with
+ stage order $s$.
 
- For the Gauss-Legendre schemes, we were able to obtain a faster
- time-to-solution for the 1, 2 and 3 stage schemes than the ARK2 IMEX
- scheme with the largest stable timestep.  For very large timesteps, we
- observed some loss of $\Delta t$ robustness in the iterative solver
- which prevents further speedups from increasing the timestep.
 
- The
- oscillatory appearance of the graph at large $\Delta t$ is due to the
- higher sensitivity of the total number of Krylov solves to the
- selected tolerance. The IMEX scheme does produce the quickest solution
- when smaller errors are required. However, there is a fairly small gap
- to the IRKs at that error level, and it is known that the interpreted
- code handling the geometric multigrid in the Firedrake implementation
- could be accelerated with compiled code. Further, the estimated
- spatial error for this resolution is above the error obtained by the
- IMEX scheme at largest stable timestep. We observe very similar trends
- for the Radau IIA schemes, except that the errors are larger due to
- the reduction by 1 in order relative to Gauss-Legendre.
-
+\revisedA{We observe that the IRKs and DIRKs allow for larger timesteps and
+ hence quicker time to solution. The DIRK solution provides equivalent
+ error at slower time than the IRKs: the collocation schemes provide
+ higher accuracy for the same timestep, which is best seen by
+ comparing the 2 stage Radau IIA scheme with the DIRK (they are both
+ third order methods). We also see that the Gauss-Legendre schemes
+ provide quicker time-to-solution for the same error than the Radau
+ IIA schemes.  This is because they have one less stage per order. The
+ plots also show that the IRKs provide a viable option since they are
+ certainly not slower than the IMEX scheme in general.}
+ 
  The loss of $\Delta t$ robustness for larger $\Delta t$ is demonstrated
  in Tables \ref{tab_niter_vs_dt G} and \ref{tab1_niter_vs_dt R}. We observe
  $\Delta t$ robustness for smaller $\Delta t$, with more sustained $\Delta t$
  robustness for the higher order schemes.
 
- \begin{figure}[h]\centering
+ \revisedB{We also studied the effect of changing the nonlinear solver
+   tolerance from $10^{-6}$ to $10^{-5}$ and $10^{-7}$. There was
+   insignificant changes to the relative solution error values
+   (overall no bigger than $5\times 10^{-8}$), but there was a change in
+   wallclock times, due to changes in the number of Newton
+   iterations. These changes are presented in Table \ref{tab:GLntol}.}
+ 
+ \begin{figure}\centering
    \revisedus{
  \begin{tabular}{c}
   \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
@@ -858,7 +892,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  \label{err_vs_runtime_gl_imex}
 \end{figure}
 
- \begin{figure}[h]\centering
+ \begin{figure}\centering
    \revisedus{
 \begin{tabular}{c}
  \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/rd_imex.pdf}
@@ -877,13 +911,12 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  \label{err_vs_runtime_rd_imex}
 \end{figure}
 
-
 \cleardoublepage
 
 
 % \subsection{Iteration counts tables}
 
-\begin{table}[h]
+\begin{table}
   \revisedus{
   \centering
   \begin{tabular}{ccccccc}
@@ -894,12 +927,12 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    &  its/steps  &  its
    &  its/steps  &  its 
     \\ \hline
-    7200 & 11.83 & 142.00 & 8.92 & 107.00 & 8.92 & 107.00 \\
-3600 & 5.96 & 143.00 & 4.38 & 105.00 & 4.38 & 105.00 \\
+    7200 & 11.83 & 142.00 & 8.92 & 107.00 & 7.92 & 95.00 \\
+3600 & 5.96 & 143.00 & 4.38 & 105.00 & 4.17 & 100.00 \\
 2400 & 4.03 & 145.00 & 4.00 & 144.00 & 4.00 & 144.00 \\
-1200 & 4.00 & 288.00 & 4.00 & 288.00 & 4.00 & 288.00 \\
+1200 & 4.00 & 288.00 & 4.00 & 288.00 & 4.96 & 357.00 \\
 600 & 3.00 & 432.00 & 3.01 & 433.00 & 3.01 & 433.00 \\
-300 & 2.00 & 577.00 & 2.00 & 576.00 & 2.00 & 576.00 \\
+300 & 2.00 & 577.00 & 2.00 & 576.00 & 2.05 & 589.00 \\
 \end{tabular}
 \caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the Gauss-Legendre  1, 2, 3 methods.}
 \label{tab_niter_vs_dt G}}
@@ -916,12 +949,12 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    &  its/steps  &  its
    &  its/steps  &  its 
     \\ \hline
-    7200 & 23.08 & 277.00 & 12.83 & 154.00 & 12.83 & 154.00 \\
-    3600 & 9.71 & 233.00 & 6.21 & 149.00 & 6.21 & 149.00 \\
-    2400 & 6.94 & 250.00 & 4.06 & 146.00 & 4.06 & 146.00 \\
-    1200 & 4.03 & 290.00 & 4.00 & 288.00 & 4.00 & 288.00 \\
-    600 & 4.00 & 576.00 & 4.00 & 576.00 & 4.00 & 576.00 \\
-    300 & 3.00 & 864.00 & 3.00 & 864.00 & 3.00 & 864.00 \\
+    7200 & 23.08 & 277.00 & 12.83 & 154.00 & 9.83 & 118.00 \\
+3600 & 9.71 & 233.00 & 6.21 & 149.00 & 5.04 & 121.00 \\
+2400 & 6.94 & 250.00 & 4.06 & 146.00 & 4.11 & 148.00 \\
+1200 & 4.03 & 290.00 & 4.00 & 288.00 & 4.12 & 297.00 \\
+600 & 4.00 & 576.00 & 4.00 & 576.00 & 4.00 & 576.00 \\
+300 & 3.00 & 864.00 & 3.00 & 864.00 & 2.25 & 647.00 \\
 \end{tabular}
 \caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.}
 \label{tab1_niter_vs_dt R}}
@@ -932,7 +965,15 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 \begin{table}[h]
   \revisedus{\centering
       \begin{tabular}{c|cc|cc|ccc}
-dt & GL1 (06/05) & GL1 (07/06) &  GL2 (06/05) & GL2 (07/06) &  GL3 (06/05) &  GL3 (07/06)  \\\hline
+ & \multicolumn{2}{c}{GL1} & \multicolumn{2}{c}{GL2} & \multicolumn{2}{c}{GL3}\\
+        $\Delta t$ &
+        $T_{10^{-6}}/T_{10^{-5}}$ &
+        $T_{10^{-7}}/T_{10^{-6}}$ &
+                  $T_{10^{-6}}/T_{10^{-5}}$ &
+          $T_{10^{-7}}/T_{10^{-6}}$ &
+                    $T_{10^{-6}}/T_{10^{-5}}$ &
+        $T_{10^{-7}}/T_{10^{-6}}$ \\
+\hline
 300 & 1.221 & 1.078 & 0.957 & 1.230 &   1.217 & 1.093 \\
 600 & 1.153 & 1.017 & 1.230 & 1.052 &   1.101 & 1.067 \\
 1200 & 1.292 & 1.147 & 1.091 & 1.316 &  1.375 & 1.160 \\
@@ -941,208 +982,59 @@ dt & GL1 (06/05) & GL1 (07/06) &  GL2 (06/05) & GL2 (07/06) &  GL3 (06/05) &  GL
 7200 & 1.006 & 1.243 & 1.006 & 1.393 &  1.031 & 1.208 \\
 
       \end{tabular}
- \caption{Speed ups by ntol chances} }
+      \caption{\label{tab:GLntol}Wallclock time ratios for
+        Gauss-Legendre IRKs (stages 1,2,3) for various relative
+        tolerances. Here, $T_{\tau}$ indicates the time to solution
+        when nonlinear relative tolerance $\tau$ is used.
+      }}
   \end{table}
 
+Finally, to demonstrate robustness of the numerical schemes we ran two
+testcases for longer time periods, the mountain test case ``5'' in
+addition to the Rossby-Haurwitz wave test case ``6'', both of
+\citet{WILLIAMSON1992211}. We used the Gauss-Legendre scheme for this,
+with $\Delta t=3600$. Plots of the solution at longer times as well
+as time series of energy and divergence are shown Figures
+\ref{fig:w6_28}-\ref{fig:w5energy}.
 
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.4]{Images/w6_elevation_28days}
+  \end{center}
+  \caption{\label{fig:w6_28}The elevation after 28 days in the Rossby-Haurwitz
+    test case using $\Delta t=3600$.}
+\end{figure}
 
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.6]{Images/Williamson 6_energy.png}
+    \includegraphics[scale=0.6]{Images/Williamson 6_divergence.png}
+  \end{center}
+    \caption{\label{fig:w6energy}Plots of energy and the norm of the
+      divergence versus timestep over 28 days in the Rossby-Haurwitz
+      test case using $\Delta t=3600$.}
+\end{figure}
 
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.4]{Images/w5_elevation_15days.png}
+    \includegraphics[scale=0.4]{Images/w5_vorticity_50days.png}
+  \end{center}
+  \caption{\label{fig:w5_long}Top: The elevation after 15 days
+    in the mountain test case using $\Delta t=3600$. Bottom:
+  The vorticity for the same test after 50 days.}
 
+\end{figure}
 
-% \multirow{3}{*}{} & \multicolumn{2}{c|}{User B} & \multirow{3}{*}{X} & %
-%     \multicolumn{2}{c|}{User C} & \multirow{3}{*}{D}\\
-
-
-%% \begin{table}[h]\centering
-%% \begin{scriptsize}
-%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-%% \multicolumn{0}{c|}{dt} &
-%% \multicolumn{2}{c|}{300} &
-%% \multicolumn{2}{c|}{600} &
-%% \multicolumn{2}{c|}{1200} &
-%% \multicolumn{2}{c|}{2400}
-%% \\ \hline\hline
-%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
-%%      3    &      4.000000  & 1152.0 & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
-%%      4   &      4.000000  & 1152.0  & 4.006944 & 577.0 & 4.0 & 288.0 & 4.00 & 144.0\\
-%%      5   &      4.017361  & 1157.0  & 4.000000 & 576.0 & 4.0 & 288.0 & 4.00 & 144.0\\
-%%      6   &      4.000000  & 1152.0 & 4.000000 & 576.0  & 4.0 & 288.0 & 7.25 & 261.0\\
-%% %     ref_level   dt  its per step  niter
-%% % 22          3  600      4.000000  576.0
-%% % 21          4  600      4.006944  577.0
-%% % 23          5  600      4.000000  576.0
-%% % 20          6  600      4.000000  576.0
-%% %     ref_level    dt  its per step  niter
-%% % 32          3  1200           4.0  288.0
-%% % 28          4  1200           4.0  288.0
-%% % 29          5  1200           4.0  288.0
-%% % 35          6  1200           4.0  288.0
-%% %     ref_level    dt  its per step  niter
-%% % 36          3  2400          4.00  144.0
-%% % 38          4  2400          4.00  144.0
-%% % 37          5  2400          4.00  144.0
-%% % 46          6  2400          7.25  261.0
-%% \end{tabular}
-%% \bigskip
-
-%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-%% \multicolumn{0}{c|}{dt} &
-%% \multicolumn{2}{c|}{3600} &
-%% \multicolumn{2}{c|}{7200} &
-%% \multicolumn{2}{c|}{14400}
-%% \\ \hline\hline
-%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
-%%      3    &   4.000000  & 96.0 & 4.000000 &  48.0&  8.166667 &  49.0\\
-%%      4   &     4.000000 &  96.0 &8.000000 &  96.0 &8.500000  & 51.0\\
-%%      5   &    7.541667 & 181.0 & 10.833333 & 130.0&12.333333 &  74.0 \\
-%%      6   &   11.708333 & 281.0 & 11.916667 & 143.0&  24.166667 & 145.0
-%% %     ref_level    dt  its per step  niter
-%% % 48          3  3600      4.000000   96.0
-%% % 56          4  3600      4.000000   96.0
-%% % 51          5  3600      7.541667  181.0
-%% % 58          6  3600     11.708333  281.0
-%% %     ref_level    dt  its per step  niter
-%% % 64          3  7200      4.000000   48.0
-%% % 66          4  7200      8.000000   96.0
-%% % 69          5  7200     10.833333  130.0
-%% % 70          6  7200     11.916667  143.0
-%% %     ref_level     dt  its per step  niter
-%% % 88          3  14400      8.166667   49.0
-%% % 92          4  14400      8.500000   51.0
-%% % 89          5  14400     12.333333   74.0
-%% % 93          6  14400     24.166667  145.0
-%% \end{tabular}
-%% \caption{GaussLegendre, rk-stages 1}
-%% \label{tab_niter_vs_spatial}
-%% \end{scriptsize}
-%% \end{table}
-
-
-
-%% \begin{table}[h]\centering
-%% \begin{scriptsize}
-%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-%% \multicolumn{0}{c|}{dt} &
-%% \multicolumn{2}{c|}{300} &
-%% \multicolumn{2}{c|}{600} &
-%% \multicolumn{2}{c|}{1200} &
-%% \multicolumn{2}{c|}{2400}
-%% \\ \hline\hline
-%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter & its per step &   niter\\ \hline
-%%         3 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
-%%         4 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       4.000000 &   144.0\\
-%%         5 &      4.0  &      1152.0 &            4.0 &   576.0 &       4.000000 &   288.0 &       6.611111 &   238.0\\
-%%         6 &      4.0  &      1152.0 &            4.0 &   576.0 &       6.833333 &   492.0 &       8.000000 &   288.0
-%% \end{tabular}
-%% \bigskip
-
-%% \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-%% \multicolumn{0}{c|}{dt} &
-%% \multicolumn{2}{c|}{3600} &
-%% \multicolumn{2}{c|}{7200} &
-%% \multicolumn{2}{c|}{14400}
-%% \\ \hline\hline
-%% ref-level &   its per step &   niter & its per step &   niter & its per step &   niter  \\ \hline
-%%        3 &      4.000000  & 96.0 &       7.916667  & 95.0 &    7.333333 &  44.0\\
-%%        4 &      7.208333  & 173.0 &      7.916667  & 95.0 &    8.166667 &  49.0\\
-%%        5 &      8.000000  & 192.0 &      8.000000  & 96.0 &    8.500000 &  51.0\\
-%%        6 &      8.000000  & 192.0 &      8.500000  &102.0 &   17.666667 & 106.0
-%% \end{tabular}
-%% \caption{GaussLegendre, rk-stages 3}
-%% \label{tab_niter_vs_spatial}
-%% \end{scriptsize}
-%% \end{table}
-
-
-%% Note: Radau II behaves very similarly with respect to the iteration count: i.e.
-%% its per step increases with dt, but this effect is also less pronounced for higher
-%% order methods (not shown).
-
-
-
-
-
-
-
-%
-%
-%
-%
-% \begin{table}[h]\centering
-% \color{red}
-% \begin{tabular}{c|c|c|c|c|c|c|c}
-%  dt & RD1 16vs8   & RD1  8vs4  & RD2 16vs8   & RD2  8vs4   & RD3 16vs8   & RD3  8vs4 \\ \hline
-%    300  &   1.539362 & 1.654903 &  1.559409 & 1.734572 & 1.584337 &  1.746450 \\
-%    600  &   1.489607 & 1.688540 &  1.537340 & 1.713950 & 1.586299 & 1.745938 \\
-%   1200  &   1.477944 & 1.664983 &  1.530582 & 1.709031 & 1.573103 & 1.737185\\
-%   2400  &  1.468772 & 1.645109  &  1.520339 & 1.694670 & 1.567282 & 1.733409\\
-%   3600  &  1.452123 & 1.638958  &  1.489243 & 1.691695 & 1.565379 & 1.727143\\
-%   7200  & 1.408500 & 1.614395-  &   1.489768&  1.652774 & 1.591538 & 1.650058\\
-%  10800 &   1.396592 & 1.819265  &  1.452383 & 1.653543 & 1.540597 & 1.619612\\
-%  14400 &  NaN      &  1.259854 &   1.472219 & 1.619568 &  1.570823 & 1.619422
-% \end{tabular}
-% \caption{Total runtime of Radau 1,2,3 simulations when using 16, 8 or 4 CPU cores in dependency of the used time step size.
-% The 2nd, 4th, 6th column shows speed up when using 16 rather than 8 cores while the 3rd, 5th, 7th columns shows such speed up when using 8 rather then 4 cores. RD1 is Radau 1, RD2 is Radau 2, and RD3 is Radau 3.}
-% \label{tab_irksrd123_cores_old}
-% \end{table}
-
-
-
-
-
-
-
-
-
-
-
-%
-%
-% \vspace{10em}
-%
-%
-% %  \end{minipage}\hfill
-% % \begin{minipage}{0.55\linewidth}
-% \begin{figure}[h]\centering
-% \begin{tabular}{cc}
-%  \hspace{-0.4em}\includegraphics[scale=0.56]{Images/Figure_1_new1-crop.pdf}
-%   \hspace{-0.7em}\includegraphics[scale=0.26]{Images/gd_imex_16vs8cores.pdf}
-%    \end{tabular}
-% \caption{dependency of total runtimes of IMEX scheme (left) and
-% IRKs GL scheme (right) on the number of available CPU-cores.
-%   }
-%   \label{tc6_???}
-%   \end{figure}
-%  % \end{minipage}
-
-
-
-%
-%
-% \noindent \textcolor{blue}{\textbf{Total runtimes vs. relative errors}}
-%
-%   Figure 5 summarized the numerical results, i.e. total runtimes vs
-%   relative errors of depth $\rho$ and velocity $ u$ fields for ARK2 IMEX
-%   scheme, and for Gauss-Legendre (GL) schemes of order 1 (GL1), order 3 (GL2) and order 5 (GL3).
-%
-%  \begin{figure}[t]\centering
-%  \begin{tabular}{cc}
-%  \hspace{-0.2em}\includegraphics[scale=0.52]{Images/Figure_2_new3-crop.pdf} &
-%  %\hspace{-0.95em}\includegraphics[scale=1.19]{Images/Figure_1_new.pdf}
-%   \end{tabular}\vspace{-10pt}
-%   \caption*{{\bfseries Figure 5}: relative errors (y-axis)
-%   of depth (eta) and velocity (vel) fields against the
-%   total runtimes of the simulations depending on the chosen schemes
-%   (IMEX, GL1, GL2, GL3). The total runtimes depend on the schemes,
-%   the time step sizes (colored figures) and on the number of available CPU-cores
-%   (cf. Figure 4).
-%
-%   }
-%   \label{fig2}
-%   \end{figure}
-
-
-
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.6]{Images/Williamson 5_energy.png}
+    \includegraphics[scale=0.6]{Images/Williamson 5_divergence.png}
+  \end{center}
+      \caption{\label{fig:w5energy}Plots of energy and the norm of the
+      divergence versus timestep over 50 days in the mountain
+      test case using $\Delta t=3600$.}
+\end{figure}
 
 
 
