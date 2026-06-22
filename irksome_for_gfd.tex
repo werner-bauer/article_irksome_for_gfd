@@ -41,7 +41,7 @@ Colin J. Cotter\footnote{Imperial College London, UK, ORCID:
 \newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
 	\framebox{\begin{minipage}[c]{0.95 \textwidth}
 			\tt #1 \end{minipage}}\vspace{5 mm}\par}
-\newcommand{\werner}[1]{{\color{magenta}WB says: #1}}
+\newcommand{\werner}[1]{{\color{cyan}WB says: #1}}
 \newcommand{\colin}[1]{{\color{blue}CC says: #1}}
 \newcommand{\revisedA}[1]{{\color{blue}#1}}
 \newcommand{\revisedB}[1]{{\color{magenta}#1}}
@@ -872,13 +872,13 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    (overall no bigger than $5\times 10^{-8}$), but there was a change in
    wallclock times, due to changes in the number of Newton
    iterations. These changes are presented in Table \ref{tab:GLntol}.}
- 
+ \werner{{Is this response to Reviewer 1, then it should be blue!}}
  \begin{figure}\centering
    \revisedus{
  \begin{tabular}{c}
   \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
  \end{tabular}
-  \caption{Relative errors of Gauss-Legendre 1-3 and ARK2 IMEX methods
+  \caption{Relative errors of Gauss-Legendre 1-3\werner{, Alexander DIRK, } and ARK2 IMEX methods
     vs total wallclock time. The numbers on the curves indicate the
     time step sizes $\Delta t$ used for the corresponding solution. Solid
     lines indicate values for the elevation field $\eta=D-H$ and dashed lines
@@ -897,7 +897,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 \begin{tabular}{c}
  \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/rd_imex.pdf}
 \end{tabular}
- \caption{Relative errors of Radau IIA 1-3 and ARK2 IMEX methods vs total
+ \caption{Relative errors of Radau IIA 1-3\werner{, Alexander DIRK, } and ARK2 IMEX methods vs total
    wallclock time. The numbers on the curves indicate the
    time step sizes {$\Delta t$} used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
