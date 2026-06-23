@@ -361,12 +361,12 @@ and the iteration is repeated until the residuals in (\ref{eq:u
 appropriately chosen termination criteria\revisedB{; we use a relative
   tolerance test requiring that the ratio of the norm of the residual
   to the residual coming from the initial guess is below a selected
-  tolerance}). \werner{Is there an actual value for this?} The assembly of these nonlinear and linear systems can
-be performed in the usual way by looping (in parallel) over cells and
-constructing the appropriate contributions upon substituting $w$ and
-$\phi$ for each basis function from standard sparse finite element
-bases for $V\times Q$. It remains to find a scalable way to solve
-(\ref{eq:u J}-\ref{eq:D J}).
+  tolerance, given later}). The assembly of these nonlinear and linear
+systems can be performed in the usual way by looping (in parallel)
+over cells and constructing the appropriate contributions upon
+substituting $w$ and $\phi$ for each basis function from standard
+sparse finite element bases for $V\times Q$. It remains to find a
+scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
 We observe that the stage components of the iterative corrections $k'$
 are coupled in (\ref{eq:u J}-\ref{eq:D J}) both between $u$ and $D$
@@ -416,7 +416,7 @@ the same function in the larger space on the finer mesh; restriction
 is taken as the $L_2$ dual of prolongation.
 
 For smoothers on each level, we used an additive Schwarz method
-\werner{(ASM)} that
+(ASM) that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
 {=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_l$,
 {where $W$ is
@@ -521,6 +521,8 @@ controls the \revisedus{relative tolerance for the Krylov method
   iteration, we also set an absolute tolerance for the Krylov method
   equal to $0.1\times \tau$ multiplied by the norm of the starting
   nonlinear residual, where $\tau$ is the chosen nonlinear tolerance.
+  If this number is too large, the nonlinear tolerance would not be
+  reached, triggering another nonlinear iteration (losing any gains).
   We also ``lagged'' the Jacobian, so that it is only updated every
   20 Krylov iterations (including between Newton solves). This reduces
   the cost of rebuilding factorisations in the patch smoothers, at
@@ -867,21 +869,19 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  $\Delta t$ robustness for smaller $\Delta t$, with more sustained $\Delta t$
  robustness for the higher order schemes.
 
- \revisedB{We also studied the effect of changing the nonlinear solver
+ \revisedA{We also studied the effect of changing the nonlinear solver
    tolerance from $10^{-6}$ to $10^{-5}$ and $10^{-7}$. There was
    insignificant changes to the relative solution error values
    (overall no bigger than $5\times 10^{-8}$), but there was a change in
    wallclock times, due to changes in the number of Newton
    iterations. These changes are presented in Table \ref{tab:GLntol}.}
- \werner{{Is this response to Reviewer 1, then it should be blue!}}
-
 
  \begin{figure}\centering
  \begin{tabular}{c}
   \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/gl_imex.pdf}
  \end{tabular}
    \revisedus{
-  \caption{Relative errors of Gauss-Legendre 1-3\werner{, Alexander DIRK, } and ARK2 IMEX methods
+  \caption{Relative errors of Gauss-Legendre 1-3, Alexander DIRK, and ARK2 IMEX methods
     vs total wallclock time. The numbers on the curves indicate the
     time step sizes $\Delta t$ used for the corresponding solution. Solid
     lines indicate values for the elevation field $\eta=D-H$ and dashed lines
@@ -900,7 +900,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  \hspace{-1.5cm}\includegraphics[scale=0.62]{Images/rd_imex.pdf}
 \end{tabular}
    \revisedus{
- \caption{Relative errors of Radau IIA 1-3\werner{, Alexander DIRK, } and ARK2 IMEX methods vs total
+ \caption{Relative errors of Radau IIA 1-3, Alexander DIRK, and ARK2 IMEX methods vs total
    wallclock time. The numbers on the curves indicate the
    time step sizes {$\Delta t$} used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
@@ -991,15 +991,16 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
       }}
   \end{table}
 
+\revisedB{
 Finally, to demonstrate robustness of the numerical schemes we ran two
 testcases for longer time periods, the mountain test case ``5'' in
 addition to the Rossby-Haurwitz wave test case ``6'', both of
 \citet{WILLIAMSON1992211}. We used the Gauss-Legendre scheme for this,
-with $\Delta t=3600$. Plots of the solution at longer times as well
-as time series of energy and divergence are shown Figures
-\ref{fig:w6_28}-\ref{fig:w5energy}.
-\werner{Shouldn't we say something about divergence and energy? What do the figures tell us about robustness?
-Do we have to define what Divergence RMS using in the plots below means?
+with $\Delta t=3600$. Plots of the solution at longer times as well as
+time series of energy and root mean square (RMS) of the divergence are shown in
+Figures \ref{fig:w6_28}-\ref{fig:w5energy}. We observe that they are
+both under control, indicating that the scheme is stable and not generating
+spurious inertia-gravity waves.
 }
 
 \begin{figure}
@@ -1015,7 +1016,7 @@ Do we have to define what Divergence RMS using in the plots below means?
     \includegraphics[scale=0.6]{Images/Williamson 6_energy.png}
     \includegraphics[scale=0.6]{Images/Williamson 6_divergence.png}
   \end{center}
-    \caption{\label{fig:w6energy}Plots of energy and the norm of the
+    \caption{\label{fig:w6energy}Plots of energy and the RMS of the
       divergence versus timestep over 28 days in the Rossby-Haurwitz
       test case using $\Delta t=3600$.}
 \end{figure}
@@ -1036,7 +1037,7 @@ Do we have to define what Divergence RMS using in the plots below means?
     \includegraphics[scale=0.6]{Images/Williamson 5_energy.png}
     \includegraphics[scale=0.6]{Images/Williamson 5_divergence.png}
   \end{center}
-      \caption{\label{fig:w5energy}Plots of energy and the norm of the
+      \caption{\label{fig:w5energy}Plots of energy and RMS the
       divergence versus timestep over 50 days in the mountain
       test case using $\Delta t=3600$.}
 \end{figure}
@@ -1070,7 +1071,7 @@ will investigate this in future work.
 
 
 \section*{Acknowledgements}
-CC acknowledges the support of the Met Office via the Strategic Priorities Fund ExCALIBUR grant "EX20-8 Exposing Parallelism: Parallel-in-Time.
+CC acknowledges the support of the Met Office via the Strategic Priorities Fund ExCALIBUR grant ``EX20-8 Exposing Parallelism: Parallel-in-Time''.
 
 \section*{Code availability}
 The version of the source code for this paper is archived at
