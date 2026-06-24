@@ -31,18 +31,11 @@
 
 %opening
 \title{Response to reviewers}
-\author{Werner Bauer, Colin J. Cotter}
+\author{Werner Bauer, Joshua Hope-Collins, and Colin J. Cotter}
 
 \begin{document}
 
 \maketitle
-
-\paragraph{TODO}
-
-\begin{enumerate}
-\item Do code release and Zenodo
-\item Redo plots in figure 3 without background
-\end{enumerate}
 
 We would like to thank the Reviewers for the constructive comments
 which helped us to improve the manuscript.
@@ -56,11 +49,18 @@ anyway intended to use it, so we have rerun all our results using
 vector invariant form, leading to slightly different errors. Second,
 we realised that the IMEX and IRK results were not converging to each
 other as $\Delta t\to 0$. This turned out to be a problem with a
-tolerance in the IMEX mass matrix solve being too loose, so it was
+tolerance in the IMEX mass matrix solve being too loose (it was not
+actually solving to the specified tolerance due to a misunderstanding
+about defaults in the solver interface that was used), so it was
 effectively solving a different ODE. We have changed this, and it now
 leads to slightly slower IMEX results (the solve is not dominated by
-the mass solve but it does add a little time). We apologise to the Editor
-and Reviewer for these inaccuracies in the first manuscript.
+the mass solve but it does add a little time). We apologise to the
+Editor and Reviewer for these inaccuracies in the first manuscript.
+
+Since he was significantly involved in the improvements to the iterative
+method, and discovering the issue with the IMEX results, we have added
+Joshua Hope-Collins to the manuscript. He has also contributed to the
+preparation of the revised document and this response.
 
 Additionally, we have improved the treatment of the Eisenstat-Walker
 scheme, by adding an automated absolute tolerance to the Krylov method
