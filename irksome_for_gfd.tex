@@ -48,12 +48,20 @@ Joshua Hope-Collins\footnote{Imperial College London, UK, ORCID:
 			\tt #1 \end{minipage}}\vspace{5 mm}\par}
 \newcommand{\werner}[1]{{\color{cyan}WB says: #1}}
 \newcommand{\colin}[1]{{\color{blue}CC says: #1}}
+\newcommand{\checkit}[1]{{\color{magenta}#1}}
+%\renewcommand{\checkit}[1]{{\color{red}#1}}
+
+
 \newcommand{\revisedA}[1]{{\color{blue}#1}}
 \newcommand{\revisedB}[1]{{\color{magenta}#1}}
 \newcommand{\revisedus}[1]{{\color{Green}#1}}
 
-\newcommand{\checkit}[1]{{\color{magenta}#1}}
-%\renewcommand{\checkit}[1]{{\color{red}#1}}
+% use after pdf with comments had been compiled
+\renewcommand{\revisedA}[1]{#1}
+\renewcommand{\revisedB}[1]{#1}
+\renewcommand{\revisedus}[1]{#1}
+
+
 
 
 \DeclareMathOperator{\sat}{sat}
