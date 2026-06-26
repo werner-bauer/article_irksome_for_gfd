@@ -57,9 +57,9 @@ Joshua Hope-Collins\footnote{Imperial College London, UK, ORCID:
 \newcommand{\revisedus}[1]{{\color{Green}#1}}
 
 % use after pdf with comments had been compiled
-\renewcommand{\revisedA}[1]{#1}
-\renewcommand{\revisedB}[1]{#1}
-\renewcommand{\revisedus}[1]{#1}
+%\renewcommand{\revisedA}[1]{#1}
+%\renewcommand{\revisedB}[1]{#1}
+%\renewcommand{\revisedus}[1]{#1}
 
 
 
@@ -272,7 +272,8 @@ derivation of the finite element spaces and this finite element
 approximation, see \cite{gibson2019compatible}. In this work we used
 $p=1$.
 
-\subsection{Implicit Runge-Kutta time discretisation}
+\subsection{Implicit Runge-Kutta time discretisation
+  \revisedA{and the resulting implicit systems}}
 
 Runge-Kutta methods advance the solution $U$ from one step $U^n$ to
 the next $U^{n+1}$ by computing $s$ stages $(k_1,\ldots,k_s)$ and then
@@ -281,7 +282,15 @@ updating the solution according to
   U^{n+1} = U^n + \Delta t\sum_{i=1}^s b_i k_i,
 \end{equation}
 where $b=(b_1,\ldots, b_s)$ are coefficients specific to the
-particular chosen Runge-Kutta method. Our spatially discrete rotating
+particular chosen Runge-Kutta method. \revisedB{Here, the stages are
+  values of the time derivatives evaluated at different points in time
+  relative to the current timestep; this is referred to as the ``stage
+  derivatives'' formulation. There is an alternative ``stage values''
+  formulation of Runge-Kutta methods where one solves for the value
+  of the solution at different points instead, but we do not consider
+  it here.}
+
+Our spatially discrete rotating
 shallow water system (\ref{eq:ut}-\ref{eq:Dt}) is a ``mixed'' coupled
 system for two variables, so we write $U=(u,D)\in V\times Q$ and $k_i
 = (k_{u,i},k_{D,i})\in V\times Q$ for $i=1,\ldots,s$. Further,
@@ -326,8 +335,9 @@ tableau (Chapter II.7), and stability and convergence analysis (Chapters IV.3-IV
 which would otherwise need to be incorporated into (\ref{eq:u
   stages}-\ref{eq:D stages}) in the usual way.
 
-We solve the sparse nonlinear system (\ref{eq:u stages}-\ref{eq:D
-  stages}) using Newton iteration. Given an initial guess $k\in W$ for
+\revisedA{In this article we will discuss Newton-type methods for solving
+ (\ref{eq:u stages}-\ref{eq:D
+  stages}).} Given an initial guess $k\in W$ for
 the stages, a Newton iteration requires solving the coupled linear
 Jacobian system for corrections
 \[
@@ -356,18 +366,19 @@ derivatives of $a$ and $c$ defined by
   - a(u,D;w)),  \, \forall u,v,w \in V, \, D,\phi \in Q, \\
   \gat c(u,D;(v,\phi),\psi) & = \lim_{\epsilon\to 0}
   \frac{1}{\epsilon}(c(u+\epsilon v,D+\epsilon \phi; \psi)
-  - c(u,D;\psi)), \, \forall u,v \in V,\, D,\phi,\psi \in Q,
+  - c(u,D;\psi)), \, \forall u,v \in V,\, D,\phi,\psi \in Q.
 \end{align}
-taking the convention that the upwind switches have derivative
-zero\footnote{This treatment means that we are in effect using a
-quasi-Newton method; using a semi-smooth Newton method might be
-more elegant, but we do not observe any issues with our approach.}
-when $u\cdot n=0$.
-
+In this work, we
+take the convention that the upwind switches have derivative
+zero\footnote{This treatment means that we {are already considering a
+quasi-Newton method here}; using a semi-smooth Newton method might be
+more elegant, but we do not observe any issues with our approach.
+when $u\cdot n=0$.}
 The solution is then updated according to
 \begin{equation}
   k_{u,i}\mapsto k_{u,i} + k'_{u,i}, \quad
   k_{D,i}\mapsto k_{D,i} + k'_{D,i},
+  \label{eq:newton update}
 \end{equation}
 and the iteration is repeated until the residuals in (\ref{eq:u
   stages}-\ref{eq:D stages}) are sufficiently small (according to an
@@ -381,6 +392,61 @@ substituting $w$ and $\phi$ for each basis function from standard
 sparse finite element bases for $V\times Q$. It remains to find a
 scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
+\subsection{\revisedA{Scalable iterative methods}}
+
+\revisedA{In this section, we describe our iterative approach to
+  solving (\ref{eq:u stages}-\ref{eq:D stages}). This involves
+  the composition of several stages, which we illustrate in Figure
+  \ref{fig:solver_diag}.
+
+\subsubsection{Nonlinear solver}
+  
+  At the outer level, (\ref{eq:u stages}-\ref{eq:D stages}) is solved
+  using a quasi-Newton method, each iteration consisting of the
+  approximate solution of (\ref{eq:u J}-\ref{eq:D J}) followed by the
+  update \eqref{eq:newton update}. These iterations are repeated until
+  a relative tolerance condition is achieved, requiring that the norm
+  of the residual in (\ref{eq:u stages}-\ref{eq:D stages}) is below
+  some chosen tolerance multiplied by the residual norm before the
+  first iteration. The choice of tolerance for our experiments is
+  discussed in Section \ref{sec:results}.
+
+  In the quasi-Newton method, an iterative method is used to solve
+  (\ref{eq:u J}-\ref{eq:D J}), which is completed when 
+  }
+  
+  Our quasi-Newton method uses the Eisenstat-Walker (version 2)
+  inexact Newton approach \citep{eisenstat1996choosing} which
+  adaptively controls the {relative tolerance for iterative
+    solution of Jacobian system (\ref{eq:u J}-\ref{eq:D J}) at each
+    Newton step, since it is not useful to solve the Jacobian
+  system accurately when the nonlinear solution is only going to be
+  updated again in the next Newton iteration anyway.
+  %This reduces the
+  %overall number of Krylov iterations per timestep, and hence reduces
+  %the overall number of multigrid cycles which dominate the cost of
+  %the method.
+  To avoid over solving the Jacobian system during the final Newton
+  iteration, we also set an absolute tolerance equal to $0.1\times
+  \tau$ multiplied by the norm of the starting nonlinear residual,
+  where $\tau$ is the chosen nonlinear tolerance. If the true
+  (\emph{ie} unpreconditioned) residual falls below this tolerance,
+  then the Krylov method iteration is terminated.  This works because
+  near convergence of the nonlinear solver, the true residual for the
+  Jacobian system is very close to the true residual for the nonlinear
+  system. Hence, if the true residual for the Jacobian system is 10
+  times less than the tolerance set for the nonlinear residual, then
+  we expect that the nonlinear tolerance termination criteria to be
+  satisfied on the start of the next iteration.
+
+  Finally, we also ``lagged'' the Jacobian, so that it is only updated
+  every 20 Newton iterations (including between Newton solves). This
+  reduces the cost of rebuilding factorisations in the patch
+  smoothers, at the expense of potentially increasing the number of
+  required Newton iterations.
+
+\subsubsection{Krylov method for Jacobian system}
+
 We observe that the stage components of the iterative corrections $k'$
 are coupled in (\ref{eq:u J}-\ref{eq:D J}) both between $u$ and $D$
 components for the same stage $i$ (where the coupling is global but
@@ -391,15 +457,15 @@ a preconditioned Krylov solver to the full set of basis coefficients
 for the iterative corrections $k'$, treated as a single vector. In our
 experiments we used FGMRES (the flexible generalised minimum residual
 method \citep{saad1993flexible}) for the chosen Krylov
-method\revisedA{. This is because we used GMRES in some inner
+method. This is because we used GMRES in some inner
   iterations in the preconditioner (see later), which necessitates a flexible
   Krylov method outside.}
 
 \begin{figure}
   \center
   \includegraphics[width=5cm]{Images/patch}
-  \caption{\label{fig:patch} A diagram showing the ``vertex
-    star'' patch associated with the vertex at the middle of the
+  \caption{\label{fig:patch} A diagram showing the ``vertex star''
+    patch associated with the vertex at the middle of the
     diagram. Dots indicate $D$ degrees of freedom and thin lines
     indicate $u$ degrees of freedom. Of the latter, lines crossing
     cell edges indicate normal components of $u$, which are continuous
@@ -408,11 +474,13 @@ method\revisedA{. This is because we used GMRES in some inner
     which are discontinuous across cell edges.  The shaded region
     indicates the patch.  All degrees of freedom outside the shaded
     region (including normal but not tangential components on the
-    patch boundary) are excluded from the patch.
-  }
+    patch boundary) are excluded from the patch. \revisedus{This
+      diagram shows the degrees of freedom for a single stage, so for
+      an $s$-stage scheme the number of degrees of freedom in the
+      implicit coupled system is $s$ times bigger.  }}
  \end{figure}
 
-
+\subsubsection{Preconditioner for the Krylov method}
 
 As a preconditioner, we used geometric multigrid with a sequence of
 nested meshes of the spherical domain,\footnote{In fact our meshes are
@@ -420,7 +488,9 @@ not strictly nested, because our cells are flat triangles (higher
 order polynomial representations are also possible). Starting from the
 coarsest icosahedral mesh, each triangle is refined by replacing it
 with four smaller triangles, created by adding vertices at the
-midpoint of each edge. The new vertices are then moved to the surface
+midpoint of each edge. \revisedus{Hence, the meshes can be described as
+  being topologically nested but not geometrically nested.}
+The new vertices are then moved to the surface
 of the sphere being approximated. Transfer operators are defined by
 moving the extra vertices of the finer mesh to the edges of the coarse
 mesh before prolongation/restriction.} with prolongation operators
@@ -477,7 +547,7 @@ W$).
     \node [block, right of=Levels, node distance=3.5cm] (LPC) {Patch ASM};
     % Draw edges
     \path [line] (NL) -- node[right]{Nonlinear solver}(Newton);
-    \path [line] (Newton) -- node[below]{linear Jacobi solver}(FGMRES);
+    \path [line] (Newton) -- node[below]{linear Jacobian solver}(FGMRES);
     \path [line] (MG) -- node [below]{Coarse grid smoother} (Coarse);
     \path [line] (Coarse) -- node [below]{PC} (CPC);
     \path [line] (Levels) -- node [below]{PC} (LPC);
@@ -486,7 +556,8 @@ W$).
 \end{tikzpicture}
 } \revisedus{\caption{\label{fig:solver_diag}Diagram showing the
     composition of solver components for our approach. The boxes
-    indicate solvers which have components indicated by the arrows.}}
+    indicate solvers which have components indicated by the
+    arrows. Here PC indicates a preconditioner.}}
 \end{figure}
 
 The reason for choosing vertex star patches is that they deal well
@@ -519,47 +590,7 @@ In our multigrid setup, we \revisedus{used 3 iterations of GMRES
 correction on the coarsest grid. This avoids having to use a parallel
 direct solve. We experimented with a direct solve on the coarse grid
 but found that it did not alter the overall convergence of the solver
-strategy.
-
-In final optimisations, we used the Eisenstat-Walker (version 2)
-inexact Newton approach \citep{eisenstat1996choosing} which adaptively
-controls the \revisedus{relative tolerance for the Krylov method
-  solving Jacobian system (\ref{eq:u J}-\ref{eq:D J}) during the
-  Newton algorithm, since it is not useful to solve the Jacobian
-  system accurately when the nonlinear solution is only going to be
-  updated again in the next Newton iteration anyway. This reduces the
-  overall number of Krylov iterations per timestep, and hence reduces
-  the overall number of multigrid cycles which dominate the cost of
-  the method. To avoid excessive Krylov iterations in the final Newton
-  iteration, we also set an absolute tolerance for the Krylov method
-  equal to $0.1\times \tau$ multiplied by the norm of the starting
-  nonlinear residual, where $\tau$ is the chosen nonlinear tolerance.
-  If this number is too large, the nonlinear tolerance would not be
-  reached, triggering another nonlinear iteration (losing any gains).
-  We also ``lagged'' the Jacobian, so that it is only updated every
-  20 Krylov iterations (including between Newton solves). This reduces
-  the cost of rebuilding factorisations in the patch smoothers, at
-  the expense of potentially increasing the number of required Newton
-  iterations.
-}
-
-\revisedus{A diagram showing the composition of these various solvers
-is given in Figure \ref{fig:solver_diag}.
-In this work we implemented this approach using Irksome
-\citep{farrell2021irksome,kirby2024extending}, a Python library that
-wraps time discretisations on top of finite element spatial
-discretisations implemented using Firedrake
-\citep{FiredrakeUserManual}, an automated system for the solution of
-partial differential equations using the finite element method.  This
-combination in turn makes significant use of PETSc
-\citep{dalcin2011parallel,balay2019petsc}. In particular, PETSc's and
-Firedrake's PCPatch implementation of additive Schwarz methods is used
-\citep{farrell2021pcpatch}.  Amongst the benefits of this approach to
-implementation, Firedrake uses automated differentiation provided by
-the Unified Form Language (UFL) \citep{alnaes2012ufl} to obtain the
-formulae for (\ref{eq:u J}-\ref{eq:D J}) from which code assembling
-the matrix-vector action and the patch linear systems is automatically
-generated.
+strategy\revisedus{, but it did increase wallclock time.}
 
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in
@@ -569,11 +600,32 @@ also typical to scale $\Delta t$ to keep the advective Courant number
 ($U\Delta t/\Delta x$ where $U$ is a typical velocity scale and
 $\Delta x$ is a typical cell diameter) constant as the mesh is
 refined, so we can hope for mesh independent Krylov iteration counts
-under this refinement scaling without multigrid.
+under this refinement scaling without multigrid (as obtained
+in \citet{cotter2023compatible}).
 However, we found
 that using the multigrid produced faster wallclock times than
 simply applying the patch smoother on the finest grid.
-}
+
+\subsubsection{Solver software implementation}
+
+\revisedA{ In this work we implemented this approach using Irksome
+  \citep{farrell2021irksome,kirby2024extending}, a Python library that
+  wraps time discretisations on top of finite element spatial
+  discretisations implemented using Firedrake
+  \citep{FiredrakeUserManual}, an automated system for the solution of
+  partial differential equations using the finite element method.
+  This combination in turn makes significant use of PETSc
+  \citep{dalcin2011parallel,balay2019petsc}. In particular, PETSc's
+  and Firedrake's PCPatch implementation of additive Schwarz methods
+  is used \citep{farrell2021pcpatch}, via the Python preconditioner
+  interface of \citet{kirby2018solver}.  Amongst the benefits of this
+  approach to implementation, Firedrake uses automated differentiation
+  provided by the Unified Form Language (UFL) \citep{alnaes2012ufl} to
+  obtain the formulae for (\ref{eq:u J}-\ref{eq:D J}) from which code
+  assembling the matrix-vector action and the patch linear systems is
+  automatically generated. In our implementation, we use $\ell_2$
+  Euclidean norms of vectors of finite element basis coefficients to
+  measure residual norms for termination criteria.  }
 
 \subsection{Implicit-explicit time discretisation}
 
@@ -610,7 +662,7 @@ defined by
   - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
   + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + gb \right\rangle, \\
   c_L(u,D;\phi) & = \langle \phi, H\nabla\cdot u\rangle, \\
-  c(u,D; \phi) &=
+  \revisedus{c_N}(u,D; \phi) &=
   - \langle \nabla_h \phi, uD \rangle
   - \langle \phi, H\nabla\cdot u\rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
@@ -656,9 +708,11 @@ where $b$ and $\tilde{b}$ are the corresponding IMEX Butcher
 reconstruction vectors. Due to the lower triangular structure
 expressed in the sum limits, (\ref{eq:u stages IMEX}-\ref{eq:D stages
   IMEX}) can be solved as single coupled mixed problems for
-$(Y_{u,i},Y_{D,i})$ at stage $i$. Further, these problems can be
-reduced to a sparse ``modified Helmholtz'' type problem for a single
-variable using the hybridisation technique for mixed finite elements
+$(Y_{u,i},Y_{D,i})$ at stage $i$. Further, \revisedus{because the
+  linear component of the splitting contains only the inertia-gravity
+  wave system,} these problems can be reduced to a sparse ``modified
+Helmholtz'' type problem for a single variable using the hybridisation
+technique for mixed finite elements
 \citep{boffi2013mixed,cockburn2004characterization}; similar sparse
 reduction techniques exist for finite volume and discontinuous
 Galerkin methods. The resulting sparse system can be solved using a
@@ -668,10 +722,11 @@ for the 2D problems under consideration. The implicit IMEX linear
 systems are state independent, and so can be assembled and factorised
 once, which makes their solution very fast. In contrast, the patch
 problems used for the IRK methods depend on the system state, and must
-be refactorised for each Jacobian solve. The principle disadvantage
-with the IMEX scheme is that it is stable conditional on the advective
-Courant number, which means that it is limited to smaller timesteps.
-It is this property that we shall contrast with the IRKs.
+be refactorised \revisedus{each time the nonlinear system Jacobian is
+  recomputed}. The principle disadvantage with the IMEX scheme is that
+it is stable conditional on the advective Courant number, which means
+that it is limited to smaller timesteps.  It is this property that we
+shall contrast with the IRKs.
 
 The ARK2 IMEX scheme is a 3 stage scheme involving two implicit solves
 per timestep. It was implemented using Firedrake again, using the
@@ -742,8 +797,9 @@ these timestepping errors.
   \caption{Top row: initial vorticity (left column) and depth (right
     column) fields for Williamson test case 6. Bottom row: both fields
     at day 1. The shown fields are for mesh level 5, which has 20480
-    cells, 61440 height degrees of freedom and 92160 velocity
-    degrees of freedom.}
+    cells, 61440 height degrees of freedom and 92160 velocity degrees
+    of freedom. \revisedus{The reduced system in the IMEX scheme has 92160
+    degrees of freedom.}}
  \label{tc6_fields}
 \end{figure}
 
@@ -758,8 +814,8 @@ L7 after a 1 day simulation using a very small time step size of $\Delta t
 temporal error is negligible compared to the spatial discretization
 error.  We found spatial discretization errors of $2.542863 \cdot
 10^{-05}$ for the depth field $D$ and $ 9.777218 \cdot 10^{-06}$
-for the velocity field $u$. These error values are indicted as vertical
-lines in Figures \ref{err_vs_runtime_gl_imex} and
+for the velocity field $u$. These error values are indicted as \revisedus{horizontal
+lines} in Figures \ref{err_vs_runtime_gl_imex} and
 \ref{err_vs_runtime_rd_imex}. The point is that reducing the timestepping
 error much below these values will not lead to an overall reduction in
 the combined spatial and temporal error, so there is no benefit in
@@ -829,14 +885,16 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  the mass matrix) \revisedus{to a tolerance of $1.0\times 10^{-10}$,
    and the mass matrix system (\ref{eq:mass D}) was solved using a
    direct solve since it is block diagonal. These systems have minor
-   affect} on the solve times compared to the two implicit solves per
+   effect} on the solve times compared to the two implicit solves per
  timestep.
 
  \revisedA{We also took measurements for the 3 stage diagonally
    implicit Runge-Kutta method (DIRK) of
    \citet{alexander1977diagonally}, a third order method.  The
    diagonal structure means that the stages can be solved one by one
-   instead of simultaneously. The system for each stage is solved using
+   instead of simultaneously, although a separate nonlinear system
+   is still required to be solved at each stage.
+   The system for each stage is solved using
    the same iterative solver framework as for the IRKs.}
  
  Figures \ref{err_vs_runtime_gl_imex} and \ref{err_vs_runtime_rd_imex}
@@ -872,7 +930,10 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    insignificant changes to the relative solution error values
    (overall no bigger than $5\times 10^{-8}$), but there was a change in
    wallclock times, due to changes in the number of Newton
-   iterations. These changes are presented in Table \ref{tab:GLntol}.}
+   iterations. When the tolerance was decreased, more Newton iterations
+   were required in general, increasing the wallclock time (and similarly
+   for increasing the tolerance.)
+   These changes are presented in Table \ref{tab:GLntol}.}
 
  \begin{figure}\centering
  \begin{tabular}{c}
@@ -884,7 +945,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
     time step sizes $\Delta t$ used for the corresponding solution. Solid
     lines indicate values for the elevation field $\eta=D-H$ and dashed lines
     for the velocity fields $ u$.
-   The solid and dashed vertical lines indicate the spatial discretisation
+   The solid and dashed vertical lines indicate \revisedus{an estimate of }the spatial discretisation
    error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
@@ -934,7 +995,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 600 & 3.00 & 432.00 & 3.01 & 433.00 & 3.01 & 433.00 \\
 300 & 2.00 & 577.00 & 2.00 & 576.00 & 2.05 & 589.00 \\
 \end{tabular}
-\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the Gauss-Legendre  1, 2, 3 methods.}
+\caption{Krylov iterations per step (its/steps) and total Krylov iteration count (its) vs $\Delta t$ for the Gauss-Legendre  1, 2, 3 methods.}
 \label{tab_niter_vs_dt G}}
 \end{table}
 
@@ -956,7 +1017,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 600 & 4.00 & 576.00 & 4.00 & 576.00 & 4.00 & 576.00 \\
 300 & 3.00 & 864.00 & 3.00 & 864.00 & 2.25 & 647.00 \\
 \end{tabular}
-\caption{Iteration per step (its/steps) and total iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.}
+\caption{Krylov iterations per step (its/steps) and total Krylov iteration count (its) vs $\Delta t$ for the RADAU IIA 1, 2, 3 methods.}
 \label{tab1_niter_vs_dt R}}
 \end{table}
 
@@ -993,7 +1054,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 Finally, to demonstrate robustness of the numerical schemes we ran two
 testcases for longer time periods, the mountain test case ``5'' in
 addition to the Rossby-Haurwitz wave test case ``6'', both of
-\citet{WILLIAMSON1992211}. We used the Gauss-Legendre scheme for this,
+\citet{WILLIAMSON1992211}. We used the 2 stage Gauss-Legendre scheme for this,
 with $\Delta t=3600$. Plots of the solution at longer times as well as
 time series of energy and root mean square (RMS) of the divergence are shown in
 Figures \ref{fig:w6_28}-\ref{fig:w5energy}. We observe that they are
@@ -1006,7 +1067,7 @@ spurious inertia-gravity waves.
     \includegraphics[scale=0.4]{Images/w6_elevation_28days}
   \end{center}
   \caption{\label{fig:w6_28}The elevation after 28 days in the Rossby-Haurwitz
-    test case using $\Delta t=3600$.}
+    test case using $\Delta t=3600$ and the 2-stage Gauss-Legendre scheme.}
 \end{figure}
 
 \begin{figure}
@@ -1014,9 +1075,9 @@ spurious inertia-gravity waves.
     \includegraphics[scale=0.6]{Images/Williamson 6_energy.png}
     \includegraphics[scale=0.6]{Images/Williamson 6_divergence.png}
   \end{center}
-    \caption{\label{fig:w6energy}Plots of energy and the RMS of the
-      divergence versus timestep over 28 days in the Rossby-Haurwitz
-      test case using $\Delta t=3600$.}
+    \caption{\revisedB{\label{fig:w6energy}Plots of energy and the RMS of the
+      divergence versus timestep over 50 days in the Rossby-Haurwitz
+      test case using $\Delta t=3600$ and the 2-stage Gauss-Legendre scheme.}}
 \end{figure}
 
 \begin{figure}
@@ -1024,9 +1085,10 @@ spurious inertia-gravity waves.
     \includegraphics[scale=0.4]{Images/w5_elevation_15days.png}
     \includegraphics[scale=0.4]{Images/w5_vorticity_50days.png}
   \end{center}
-  \caption{\label{fig:w5_long}Top: The elevation after 15 days
-    in the mountain test case using $\Delta t=3600$. Bottom:
-  The vorticity for the same test after 50 days.}
+  \caption{\revisedB{\label{fig:w5_long}Top: The elevation after 15 days in the
+    mountain test case using $\Delta t=3600$ and the 2-stage
+    Gauss-Legendre scheme. Bottom: The vorticity for the same test
+    after 50 days.}}
 
 \end{figure}
 
@@ -1035,9 +1097,9 @@ spurious inertia-gravity waves.
     \includegraphics[scale=0.6]{Images/Williamson 5_energy.png}
     \includegraphics[scale=0.6]{Images/Williamson 5_divergence.png}
   \end{center}
-      \caption{\label{fig:w5energy}Plots of energy and RMS the
+      \caption{\revisedB{\label{fig:w5energy}Plots of energy and RMS the
       divergence versus timestep over 50 days in the mountain
-      test case using $\Delta t=3600$.}
+      test case using $\Delta t=3600$ and the 2-stage Gauss-Legendre scheme.}}
 \end{figure}
 
 
@@ -1045,37 +1107,41 @@ spurious inertia-gravity waves.
  \section{Summary and outlook}
  \label{sec:summary}
 
-An iterative solver strategy was introduced for implicit Runge-Kutta
-methods applied to the rotating shallow water equations on the sphere,
-in conjunction with a compatible finite element discretisation. We
-compared wallclock times and timestepping error for Gauss-Legendre and
-Radau IIA implicit collocation schemes with 1, 2 and 3 stages with the
-ARK2 IMEX scheme. Our results demonstrate that these schemes are close
-to the IMEX scheme for comparable accuracy and can provide faster
-wallclock times if less accuracy is needed. Additionally, our solver
-approach could definitely benefit from further performance tuning, since
-the Firedrake multigrid and patch frameworks are probably not optimal,
-whilst the direct solver used for the implicit solve in the IMEX
-scheme probably is. Our results also demonstrate the capability of
-the combination of Irksome, Firedrake and PETSc to apply sophisticated
-solver strategies for IRKs.
+An iterative solver strategy \revisedus{using multigrid and additive
+  Schwarz smoothers applied to the monolithic coupled system for all
+  variables at all stages was introduced for implicit Runge-Kutta
+  methods applied to the rotating shallow water equations on the
+  sphere, in conjunction with a compatible finite element
+  discretisation. We compared wallclock times and timestepping error
+  for Gauss-Legendre and Radau IIA implicit collocation schemes with
+  1, 2 and 3 stages with the ARK2 IMEX scheme. Our results demonstrate
+  that these schemes \revisedus{achieve a comparable time to solution
+    to the IMEX scheme for comparable accuracy},and can provide faster
+  wallclock times if less accuracy is needed. Additionally, our solver
+  approach could definitely benefit from further performance tuning,
+  since the Firedrake multigrid \revisedus{implementation} and patch
+  frameworks are probably not optimal, whilst the direct solver used
+  for the implicit solve in the IMEX scheme probably is\revisedus{,
+    for problems of this size}. Our results also demonstrate the
+  capability of the combination of Irksome, Firedrake and PETSc to
+  apply sophisticated solver strategies for IRKs.
 
 These results give us confidence to go forward to examine IRK schemes
 for three dimensional models. In that setting, direct solvers will not
 be optimal for the IMEX schemes, and vertical line smoothers are
-already required. Hence, it is possible that it will be easier to
-close the gap between IRKs and IMEX in this larger scale setting. We
-will investigate this in future work.
-
+already required.
+\revisedus{Hence, it is possible that IRKs will continue to be
+  a competitive and viable option} this larger scale setting.
+We will investigate this in future work.
 
 \section*{Acknowledgements}
-CC acknowledges the support of the Met Office via the Strategic Priorities Fund ExCALIBUR grant ``EX20-8 Exposing Parallelism: Parallel-in-Time''.
+CC \revisedus{and JHC} acknowledge the support of the Met Office via the Strategic Priorities Fund ExCALIBUR grant ``EX20-8 Exposing Parallelism: Parallel-in-Time''.
 
 \section*{Code availability}
-The version of the source code for this paper is archived at
+\revisedB{The version of the source code for this paper is archived at
 \citet{colin_j_cotter_2026_20817145}. The version of Firedrake, PETSc
 and other components is archived at
-\citet{firedrake_zenodo_2026_20814010}.
+\citet{firedrake_zenodo_2026_20814010}.}
 
 \bibliography{refs}
 
