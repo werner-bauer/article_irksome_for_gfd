@@ -1109,10 +1109,17 @@ spurious inertia-gravity waves.
 
 An iterative solver strategy \revisedus{using multigrid and additive
   Schwarz smoothers applied to the monolithic coupled system for all
-  variables at all stages was introduced for implicit Runge-Kutta
+  variables at all stages} was introduced for implicit Runge-Kutta
   methods applied to the rotating shallow water equations on the
   sphere, in conjunction with a compatible finite element
-  discretisation. We compared wallclock times and timestepping error
+  discretisation. \revisedus{These patch systems are dense, and become reasonably
+  large as $s$ increases ($144\times 144$ for $s=3$), which might be
+  useful for modern computing architectures where floating point
+  operations can be less important than data movement, so these
+  methods are worth looking into now (although we do not explore this
+  aspect here).}
+
+  We compared wallclock times and timestepping error
   for Gauss-Legendre and Radau IIA implicit collocation schemes with
   1, 2 and 3 stages with the ARK2 IMEX scheme. Our results demonstrate
   that these schemes \revisedus{achieve a comparable time to solution
