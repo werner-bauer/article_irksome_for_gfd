@@ -539,9 +539,9 @@ W$).
   % Place nodes
   \node [block] (NL) {Nonlinear system};
     \node [block, below of=NL] (Newton) {Eisenstat Walker Quasi-Newton};
-    \node [block, right of=Newton, node distance=6cm] (FGMRES) {FGMRES};
+    \node [block, right of=Newton, node distance=6.5cm] (FGMRES) {FGMRES};
     \node [block, right of=FGMRES, node distance=3.5cm] (MG) {Multigrid};
-    \node [block, right of=MG, node distance=7cm] (Coarse) {GMRES 3 its};
+    \node [block, right of=MG, node distance=6.8cm] (Coarse) {GMRES 3 its};
     \node [block, right of=Coarse, node distance=3.5cm] (CPC) {Block ILU};
     \node [block, below of=Coarse] (Levels) {GMRES 3 its};
     \node [block, right of=Levels, node distance=3.5cm] (LPC) {Patch ASM};
@@ -1123,7 +1123,7 @@ An iterative solver strategy \revisedus{using multigrid and additive
   for Gauss-Legendre and Radau IIA implicit collocation schemes with
   1, 2 and 3 stages with the ARK2 IMEX scheme. Our results demonstrate
   that these schemes \revisedus{achieve a comparable time to solution
-    to the IMEX scheme for comparable accuracy},and can provide faster
+    to the IMEX scheme for comparable accuracy}, and can provide faster
   wallclock times if less accuracy is needed. Additionally, our solver
   approach could definitely benefit from further performance tuning,
   since the Firedrake multigrid \revisedus{implementation} and patch
