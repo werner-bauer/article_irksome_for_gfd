@@ -52,10 +52,15 @@ other as $\Delta t\to 0$. This turned out to be a problem with a
 tolerance in the IMEX mass matrix solve being too loose (it was not
 actually solving to the specified tolerance due to a misunderstanding
 about defaults in the solver interface that was used), so it was
-effectively solving a different ODE. We have changed this, and it now
-leads to slightly slower IMEX results (the solve is not dominated by
-the mass solve but it does add a little time). We apologise to the
-Editor and Reviewer for these inaccuracies in the first manuscript.
+effectively solving a different ODE. Third, we realised that we were
+using the value of $H$ for the solid rotation component of the
+Rossby-Haurwitz problem, not the global mean of the initial layer
+depth.  With this change, the maximum timestep allowed by stability
+increased, but the errors increased as well. We have changed all of
+this, and it now leads to slightly slower IMEX results (the solve is
+not dominated by the mass solve but it does add a little time). We
+apologise to the Editor and Reviewer for these inaccuracies in the
+first manuscript.
 
 Since he was significantly involved in the improvements to the iterative
 method, and discovering the issue with the IMEX results, we have added
@@ -114,13 +119,14 @@ changes. Our own additional changes are marked in green.
   convention (positive $b$ means raised topography) in the code and
   throughout the paper otherwise, so this has now been fixed.}
 \item Page 3: the notation $[[ \cdot ]]$ for the average is uncommon
-  and reminds more of jump rather than an average \emph{In fact, this
+  and reminds more of jump rather than an average\\
+  \emph{In fact, this
   does result in jumps when $n$ is present, because it changes sign on
   each side of the facet. There are various ways to do this in the literature,
   and we have chosen one that is not uncommon.
   We have added a footnote to clarify this.}
   
-\item Page 4, last sentence should be revisited, it is complicated to read.
+\item Page 4, last sentence should be revisited, it is complicated to read.\\
 \emph{We have done this.}
   
 \item Section 2.2 is somewhat chaotic, there are many different
@@ -130,7 +136,10 @@ changes. Our own additional changes are marked in green.
   linear solver that explains the order of the algorithms, and it
   should be more clear what has just been compared and what has been
   used in the end.\\
-  \emph{This is a very good suggestion, we have done this.}
+  \emph{This is a very good suggestion, we have added a diagram. We have
+  also reorganised the text a bit, separating the description of the
+  implicit systems with the algorithm for their solution, and rearranged
+  the order to match the progression of the diagram.}
 
 \item Page 6: the sentence "For this type of problem, it is also
   typical to scale $\Delta t$ to keep the advective Courant number
