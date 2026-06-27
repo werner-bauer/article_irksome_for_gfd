@@ -321,6 +321,7 @@ system for all of the stages in general.
 \revisedB{Here, we describe the stage derivatives formulation of IRKs, where
   time derivatives are solved for at each step. There is an alternative
   stage values formulation, which we do not consider here.}
+  \werner{It seems that this short paragraph is a repetition from above and can be removed!}
 
 In this work
 we consider collocation Runge-Kutta methods, in particular the
@@ -372,8 +373,8 @@ In this work, we
 take the convention that the upwind switches have derivative
 zero\footnote{This treatment means that we {are already considering a
 quasi-Newton method here}; using a semi-smooth Newton method might be
-more elegant, but we do not observe any issues with our approach.
-when $u\cdot n=0$.}
+more elegant, but we do not observe any issues with our approach
+when $u\cdot n=0$.}.
 The solution is then updated according to
 \begin{equation}
   k_{u,i}\mapsto k_{u,i} + k'_{u,i}, \quad
@@ -413,6 +414,7 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
   In the quasi-Newton method, an iterative method is used to solve
   (\ref{eq:u J}-\ref{eq:D J}), which is completed when 
+  \werner{sentence not complete!!!}
   }
   
   Our quasi-Newton method uses the Eisenstat-Walker (version 2)
