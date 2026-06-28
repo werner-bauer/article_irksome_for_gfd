@@ -123,13 +123,9 @@ shallow water equations, facilitated by the Irksome package which
 provides automated code generation for implicit Runge-Kutta
 methods. We compare various schemes in terms of accuracy and
 efficiency using an implicit/explicit splitting method, namely the
-ARK2 scheme of Giraldo et al (2013), as a benchmark. \st{This provides an
+ARK2 scheme of Giraldo et al (2013), as a benchmark. {This provides an
 initial look at whether implicit Runge-Kutta methods can be viable for
 atmosphere and ocean simulation.}
-\werner{Our results illustrate clearly that implicit Runge-Kutta
-methods are viable for atmosphere and ocean simulation.}
-
-
 
 \smallskip
 \noindent
@@ -216,9 +212,10 @@ the topography field, and $D$ is the depth of the layer.
 In this investigation we use a compatible finite element
 discretisation of these equations. We do not expect that the precise
 details are important for our conclusions, which are hopefully
-\todo{\werner{rather than 'hopefully', shouldn
-t we better write that we are 'confident that they translate' to other ....?}
-} translatable to other discretisation approaches. However, to
+%\todo{\werner{rather than 'hopefully', shouldn
+%t we better write that we are 'confident that they translate' to other ....?}
+%}
+  translatable to other discretisation approaches. However, to
 efficiently describe our iterative solver approach a precise
 description is useful. We select $V$ as the degree $p+1$ BDM
 \revisedA{(Brezzi-Douglas-Marini)} finite element space on triangles,
@@ -324,14 +321,6 @@ where $A_{ij}$ are the matrix coefficients from the Butcher
 tableau for the chosen Runge-Kutta scheme. This defines a coupled
 system for all of the stages in general.
 
-\revisedB{Here, we describe the stage derivatives formulation of IRKs, where
-  time derivatives are solved for at each step. There is an alternative
-  stage values formulation, which we do not consider here.}
-  \todo{\werner{It seems that this short paragraph is a repetition from above and can be removed!}
-
-  -  are eqn 10-11 correct? where is the n+1? I think it is correct, I just want to be sure!
-  }
-
 In this work
 we consider collocation Runge-Kutta methods, in particular the
 Gauss-Legendre methods that extend the implicit midpoint rule to
@@ -422,17 +411,18 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
   discussed in Section \ref{sec:results}.
 
   In the quasi-Newton method, an iterative method is used to solve
-  (\ref{eq:u J}-\ref{eq:D J}), which is completed when 
-  \todo{\werner{sentence not complete!!!}
-  }}
-  
+  (\ref{eq:u J}-\ref{eq:D J}), which is completed when a termination
+  criteria is satisfied.  
   Our quasi-Newton method uses the Eisenstat-Walker (version 2)
   inexact Newton approach \citep{eisenstat1996choosing} which
   adaptively controls the {relative tolerance for iterative
     solution of Jacobian system (\ref{eq:u J}-\ref{eq:D J}) at each
     Newton step, since it is not useful to solve the Jacobian
   system accurately when the nonlinear solution is only going to be
-  updated again in the next Newton iteration anyway.
+  updated again in the next Newton iteration anyway. Here, relative
+  tolerance means a maximum value of the ratio of the equation residual
+  divided by the value before the first iteration, below which the
+  Jacobian solution procedure is terminated.
   %This reduces the
   %overall number of Krylov iterations per timestep, and hence reduces
   %the overall number of multigrid cycles which dominate the cost of
@@ -440,11 +430,9 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
   To avoid over solving the Jacobian system during the final Newton
   iteration, we also set an absolute tolerance equal to $0.1\times
   \tau$ multiplied by the norm of the starting nonlinear residual,
-  \todo{\werner{shall we also write absolute here?}}
   where $\tau$ is the chosen nonlinear tolerance. If the true
   (\emph{i.e.} unpreconditioned) residual falls below this tolerance,
-  then the Krylov method iteration
-  \werner{'described below'???}
+  then the Jacobian system iteration
   is terminated.  This works because
   near convergence of the nonlinear solver, the true residual for the
   Jacobian system is very close to the true residual for the nonlinear
@@ -461,27 +449,18 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
 \subsubsection{Krylov method for Jacobian system}
 
-\werner{Can we start writing here: For the inner loop, we use
-a Krylov method to solve the above described Jacobian system ???}
-
-
 We observe that the stage components of the iterative corrections $k'$
 are coupled in (\ref{eq:u J}-\ref{eq:D J}) both between $u$ and $D$
 components for the same stage $i$ (where the coupling is global but
 sparse), as well as between all of the stages from $i=1$ to $s$. This
 presents challenges for the solver. In this work, we solve (\ref{eq:u
   J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
- \todo{ \werner{in the inner loop}}
 a preconditioned Krylov solver to the full set of basis coefficients
 for the iterative corrections $k'$, treated as a single vector. In our
 experiments we used FGMRES (the flexible generalised minimum residual
 method \citep{saad1993flexible}) for the chosen Krylov
-method. This is because we used GMRES in some inner
-  iterations in the preconditioner (see later), which necessitates a flexible
+method. This is because we used GMRES within the preconditioner (see later), which necessitates a flexible
   Krylov method outside.}
-
-\todo{\werner{Sorry, I don't fully understand where the outer and where
-the inner loop is!}}
 
 \begin{figure}
   \center
@@ -521,7 +500,6 @@ the same function in the larger space on the finer mesh; restriction
 is taken as the $L_2$ dual of prolongation.
 
 For smoothers on each level,
-\todo{\werner{how many levels do we use? 2 GM levels?}}
 we used an additive Schwarz method
 (ASM) that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
@@ -541,7 +519,7 @@ zeroing any degrees of freedom on the boundary of $S_l$ and beyond
 the smoother is to approximately solve a problem of the form
 (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$ replaced
 by appropriate linear residuals.
-\todo{\werner{are these related to the linearlized RSWE?}}
+
 For the additive
 Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with solutions
 $w_l$ and test functions restricted to $W_l$, using a direct
@@ -550,7 +528,7 @@ parallel using a dense direct solver.  Then, the additive Schwarz
 approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
-
+}
 % Define block styles
 \begin{figure}
 \tikzstyle{decision} = [rectangle, draw, fill=blue!20, 
@@ -616,8 +594,6 @@ correction on the coarsest grid. This avoids having to use a parallel
 direct solve. We experimented with a direct solve on the coarse grid
 but found that it did not alter the overall convergence of the solver
 strategy\revisedus{, but it did increase wallclock time.}
-
-\todo{\werner{why not ASM on coarsest to much stuff easier?}}
 
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in
@@ -785,7 +761,6 @@ $1$       & $\delta $   & $\delta$  & $\gamma$  \\ \hline
 
 \section{Numerical results}
 \label{sec:results}
-%\werner{Maybe here:::: Details of the implementation can be found in the supplementary material???}
 
 In this section, we present numerical experiments to investigate the
 monolithic solver setup applied to IRKs for the rotating shallow water
@@ -902,7 +877,9 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
 
 
  For the IRKs we used the solver strategy discussed above with a
- Newton relative residual tolerance of $1.0\times 10^{-6}$. For the
+ Newton relative residual tolerance of $1.0\times 10^{-6}$,
+ \revisedus{and a multigrid scheme with $p$ levels, where
+   $p$ is the mesh refinement used.} For the
  IMEX scheme we used the SUPERLU Dist parallel direct solver package
  \citep{li2023newly,li2003superlu_dist} for the reduced hybridised
  system in the implicit solve since this was the fastest of those
