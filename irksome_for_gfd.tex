@@ -595,6 +595,15 @@ direct solve. We experimented with a direct solve on the coarse grid
 but found that it did not alter the overall convergence of the solver
 strategy\revisedus{, but it did increase wallclock time.}
 
+\todo{\werner{should we mention above that ASM is for all
+levels expect coarsest one?
+
+not so clear here! - could we write: We experimented with a direct solver on
+the coarses grid or using ASM instead of block ILU, but we
+found
+}
+}
+
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in
 $\Delta t$: more iterations are required at larger $\Delta t$ due to
@@ -831,9 +840,13 @@ choices for the IRK and IMEX schemes. As expected, accuracy and
 runtime crucially depend on the selected time step sizes; we compute
 errors and runtime for IRKs and the ARK2 IMEX scheme over a range of
 $\Delta t$ values. For the IMEX scheme, the maximum timestep was
-$\Delta t=100s$ on mesh {refinement} 6 since the method was unstable
+\checkit{$\Delta t=100s$} on mesh {refinement} 6 since the method was unstable
 for larger timesteps.
-\todo{\werner{should we mention DIRKs, or do we assuem that they fall under IRKs?}
+\todo{\werner{
+- WE HAVE TO UPDATE THIS VALUE: WE HAVE NOW 180s time step maximum, right?
+
+
+should we mention DIRKs, or do we assuem that they fall under IRKs? I guess it's ok here since we only introduce dirks below!}
 }
 
 All computations were performed using an icosahedral mesh
@@ -951,8 +964,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
     time step sizes $\Delta t$ used for the corresponding solution. Solid
     lines indicate values for the elevation field $\eta=D-H$ and dashed lines
     for the velocity fields $ u$.
-   The solid and dashed vertical lines indicate \revisedus{an estimate of }the spatial discretisation
-   error between mesh levels L6 and L7
+   The solid and dashed horizontal lines indicate an estimate of the spatial discretisation error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
    \label{err_vs_runtime_gl_imex}
@@ -970,8 +982,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    time step sizes {$\Delta t$} used for the corresponding solution. Solid
    lines indicate values for the elevation field $\eta=D-H$ and dashed lines
    for the velocity fields $ u$.
-   The solid and dashed vertical lines indicate the spatial discretisation
-   error between mesh levels L6 and L7
+   The solid and dashed horizontal lines indicate an estimate of the spatial discretisation error between mesh levels L6 and L7
    of $\eta$ and $u$, respectively.
    }
   \label{err_vs_runtime_rd_imex}
@@ -1053,8 +1064,12 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
         Gauss-Legendre IRKs (stages 1,2,3) for various relative
         tolerances. Here, $T_{\tau}$ indicates the time to solution
         when nonlinear relative tolerance $\tau$ is used.
+        \todo{Order is different from above!!!
+        Should I reorder it to match others?}
       }}
   \end{table}
+
+
 
 \revisedB{
 Finally, to demonstrate robustness of the numerical schemes we ran two
