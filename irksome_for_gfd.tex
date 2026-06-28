@@ -216,7 +216,9 @@ the topography field, and $D$ is the depth of the layer.
 In this investigation we use a compatible finite element
 discretisation of these equations. We do not expect that the precise
 details are important for our conclusions, which are hopefully
-translatable to other discretisation approaches. However, to
+\todo{\werner{rather than 'hopefully', shouldn
+t we better write that we are 'confident that they translate' to other ....?}
+} translatable to other discretisation approaches. However, to
 efficiently describe our iterative solver approach a precise
 description is useful. We select $V$ as the degree $p+1$ BDM
 \revisedA{(Brezzi-Douglas-Marini)} finite element space on triangles,
@@ -325,7 +327,10 @@ system for all of the stages in general.
 \revisedB{Here, we describe the stage derivatives formulation of IRKs, where
   time derivatives are solved for at each step. There is an alternative
   stage values formulation, which we do not consider here.}
-  \werner{It seems that this short paragraph is a repetition from above and can be removed!}
+  \todo{\werner{It seems that this short paragraph is a repetition from above and can be removed!}
+
+  -  are eqn 10-11 correct? where is the n+1? I think it is correct, I just want to be sure!
+  }
 
 In this work
 we consider collocation Runge-Kutta methods, in particular the
@@ -418,8 +423,8 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
   In the quasi-Newton method, an iterative method is used to solve
   (\ref{eq:u J}-\ref{eq:D J}), which is completed when 
-  \werner{sentence not complete!!!}
-  }
+  \todo{\werner{sentence not complete!!!}
+  }}
   
   Our quasi-Newton method uses the Eisenstat-Walker (version 2)
   inexact Newton approach \citep{eisenstat1996choosing} which
@@ -435,9 +440,12 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
   To avoid over solving the Jacobian system during the final Newton
   iteration, we also set an absolute tolerance equal to $0.1\times
   \tau$ multiplied by the norm of the starting nonlinear residual,
+  \todo{\werner{shall we also write absolute here?}}
   where $\tau$ is the chosen nonlinear tolerance. If the true
-  (\emph{ie} unpreconditioned) residual falls below this tolerance,
-  then the Krylov method iteration is terminated.  This works because
+  (\emph{i.e.} unpreconditioned) residual falls below this tolerance,
+  then the Krylov method iteration
+  \werner{'described below'???}
+  is terminated.  This works because
   near convergence of the nonlinear solver, the true residual for the
   Jacobian system is very close to the true residual for the nonlinear
   system. Hence, if the true residual for the Jacobian system is 10
@@ -453,12 +461,17 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
 
 \subsubsection{Krylov method for Jacobian system}
 
+\werner{Can we start writing here: For the inner loop, we use
+a Krylov method to solve the above described Jacobian system ???}
+
+
 We observe that the stage components of the iterative corrections $k'$
 are coupled in (\ref{eq:u J}-\ref{eq:D J}) both between $u$ and $D$
 components for the same stage $i$ (where the coupling is global but
 sparse), as well as between all of the stages from $i=1$ to $s$. This
 presents challenges for the solver. In this work, we solve (\ref{eq:u
   J}-\ref{eq:D J}) using a monolithic approach, meaning that we apply
+ \todo{ \werner{in the inner loop}}
 a preconditioned Krylov solver to the full set of basis coefficients
 for the iterative corrections $k'$, treated as a single vector. In our
 experiments we used FGMRES (the flexible generalised minimum residual
@@ -466,6 +479,9 @@ method \citep{saad1993flexible}) for the chosen Krylov
 method. This is because we used GMRES in some inner
   iterations in the preconditioner (see later), which necessitates a flexible
   Krylov method outside.}
+
+\todo{\werner{Sorry, I don't fully understand where the outer and where
+the inner loop is!}}
 
 \begin{figure}
   \center
@@ -504,7 +520,9 @@ consisting of the inclusion operator, \emph{i.e.} reinterpretation of
 the same function in the larger space on the finer mesh; restriction
 is taken as the $L_2$ dual of prolongation.
 
-For smoothers on each level, we used an additive Schwarz method
+For smoothers on each level,
+\todo{\werner{how many levels do we use? 2 GM levels?}}
+we used an additive Schwarz method
 (ASM) that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
 {=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_l$,
@@ -523,6 +541,7 @@ zeroing any degrees of freedom on the boundary of $S_l$ and beyond
 the smoother is to approximately solve a problem of the form
 (\ref{eq:u J}-\ref{eq:D J}) but with $R_{u,i}$ and $R_{D,i}$ replaced
 by appropriate linear residuals.
+\todo{\werner{are these related to the linearlized RSWE?}}
 For the additive
 Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with solutions
 $w_l$ and test functions restricted to $W_l$, using a direct
@@ -597,6 +616,8 @@ correction on the coarsest grid. This avoids having to use a parallel
 direct solve. We experimented with a direct solve on the coarse grid
 but found that it did not alter the overall convergence of the solver
 strategy\revisedus{, but it did increase wallclock time.}
+
+\todo{\werner{why not ASM on coarsest to much stuff easier?}}
 
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in
