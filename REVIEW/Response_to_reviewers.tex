@@ -52,7 +52,7 @@ other as $\Delta t\to 0$. This turned out to be a problem with a
 tolerance in the IMEX mass matrix solve being too loose (it was not
 actually solving to the specified tolerance due to a misunderstanding
 about defaults in the solver interface that was used), so it was
-effectively solving a different ODE. Third, we realised that we were
+effectively solving a (slightly) different ODE. Third, we realised that we were
 using the value of $H$ for the solid rotation component of the
 Rossby-Haurwitz problem, not the global mean of the initial layer
 depth.  With this change, the maximum timestep allowed by stability
