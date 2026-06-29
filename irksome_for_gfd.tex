@@ -604,8 +604,8 @@ also typical to scale $\Delta t$ to keep the advective Courant number
 ($U\Delta t/\Delta x$ where $U$ is a typical velocity scale and
 $\Delta x$ is a typical cell diameter) constant as the mesh is
 refined, so we can hope for mesh independent Krylov iteration counts
-under this refinement scaling without multigrid (as obtained
-in \citet{cotter2023compatible}).
+under this refinement scaling without multigrid \revisedus{(as obtained
+in \citet{cottershipton2023compatible})}.
 However, we found
 that using the multigrid produced faster wallclock times than
 simply applying the patch smoother on the finest grid.
