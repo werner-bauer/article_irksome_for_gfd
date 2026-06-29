@@ -402,7 +402,7 @@ scalable way to solve (\ref{eq:u J}-\ref{eq:D J}).
   
   At the outer level, (\ref{eq:u stages}-\ref{eq:D stages}) is solved
   using a quasi-Newton method, each iteration consisting of the
-  approximate solution of (\ref{eq:u J}-\ref{eq:D J}) followed by the
+  approximate solution of the Jacobian system (\ref{eq:u J}-\ref{eq:D J}) followed by the
   update \eqref{eq:newton update}. These iterations are repeated until
   a relative tolerance condition is achieved, requiring that the norm
   of the residual in (\ref{eq:u stages}-\ref{eq:D stages}) is below
@@ -499,7 +499,7 @@ consisting of the inclusion operator, \emph{i.e.} reinterpretation of
 the same function in the larger space on the finer mesh; restriction
 is taken as the $L_2$ dual of prolongation.
 
-For smoothers on each level,
+For smoothers on each level above the coarstest,
 we used an additive Schwarz method
 (ASM) that
 is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
@@ -595,14 +595,6 @@ direct solve. We experimented with a direct solve on the coarse grid
 but found that it did not alter the overall convergence of the solver
 strategy\revisedus{, but it did increase wallclock time.}
 
-\todo{\werner{should we mention above that ASM is for all
-levels expect coarsest one?
-
-not so clear here! - could we write: We experimented with a direct solver on
-the coarses grid or using ASM instead of block ILU, but we
-found
-}
-}
 
 As will become apparent from the results, we do not observe perfect
 multigrid behaviour in that the number of iterations is not robust in
@@ -775,8 +767,12 @@ In this section, we present numerical experiments to investigate the
 monolithic solver setup applied to IRKs for the rotating shallow water
 equations as introduced above. Specifically, we will consider Gauss-Legendre and Radau IIA timestepping methods in their versions with 1,
 2 and 3 stages, combined with the finite element spaces discussed
-above in the case of $p=1$. We compare these methods with the
-frequently used, very efficient IMEX method ARK2. \revisedA{The goal
+above in the case of $p=1$.
+\revisedA{Additionally, we used the same solver approach with the 3 stage diagonally
+   implicit Runge-Kutta method (DIRK) of \citet{alexander1977diagonally}.}
+We compare these methods with the
+frequently used, very efficient IMEX method ARK2.
+\revisedA{The goal
   is not to compete with the IMEX scheme, but rather to provide a
   point of reference using an approach that is familiar to the community,
   to give an idea of the viability of IRK schemes.}
@@ -836,18 +832,13 @@ In our experiments, essential quantities of interest are the total runtime of a
 simulation and the time errors the integrators have, up to the point
 where they are of the same order of magnitude as the spatial
 errors. As such, we compare these quantities for various parameter
-choices for the IRK and IMEX schemes. As expected, accuracy and
+choices for the IRK, \revisedA{DIRK,} and IMEX schemes. As expected, accuracy and
 runtime crucially depend on the selected time step sizes; we compute
-errors and runtime for IRKs and the ARK2 IMEX scheme over a range of
+errors and runtime for IRKs, \revisedA{DIRKs,} and the ARK2 IMEX scheme over a range of
 $\Delta t$ values. For the IMEX scheme, the maximum timestep was
-\checkit{$\Delta t=100s$} on mesh {refinement} 6 since the method was unstable
+\revisedus{$\Delta t=180s$} on mesh {refinement} 6 since the method was unstable
 for larger timesteps.
-\todo{\werner{
-- WE HAVE TO UPDATE THIS VALUE: WE HAVE NOW 180s time step maximum, right?
 
-
-should we mention DIRKs, or do we assuem that they fall under IRKs? I guess it's ok here since we only introduce dirks below!}
-}
 
 All computations were performed using an icosahedral mesh
 approximating the surface of the sphere by recursive refinement of an
@@ -907,8 +898,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
    effect} on the solve times compared to the two implicit solves per
  timestep.
 
- \revisedA{We also took measurements for the 3 stage diagonally
-   implicit Runge-Kutta method (DIRK) of
+ \revisedA{We also took measurements for the 3 stage DIRK scheme of
    \citet{alexander1977diagonally}, a third order method.  The
    diagonal structure means that the stages can be solved one by one
    instead of simultaneously, although a separate nonlinear system
