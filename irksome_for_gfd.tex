@@ -52,17 +52,13 @@ Joshua Hope-Collins\footnote{Imperial College London, UK, ORCID:
 %\renewcommand{\checkit}[1]{{\color{red}#1}}
 
 
-\newcommand{\revisedA}[1]{{\color{blue}#1}}
-\newcommand{\revisedB}[1]{{\color{magenta}#1}}
-\newcommand{\revisedus}[1]{{\color{Green}#1}}
-
-% use after pdf with comments had been compiled
-% \renewcommand{\revisedA}[1]{#1}
-% \renewcommand{\revisedB}[1]{#1}
-% \renewcommand{\revisedus}[1]{#1}
 
 
 
+\newcommand{\revisedA}[1]{#1}
+\newcommand{\revisedB}[1]{#1}
+\newcommand{\revisedus}[1]{#1}
+\newcommand{\revisedC}[1]{{\color{blue}#1}}
 
 \DeclareMathOperator{\sat}{sat}
 \newcommand{\DD}[2]{\frac{D #1}{D #2}}
@@ -197,13 +193,14 @@ In this article we consider implicit time discretisations for the
 rotating shallow water equations on the sphere, which we write
 here in vector-invariant form as
 \begin{align}
-  u_t + \left(\nabla\cdot u^\perp + f\right)u^\perp
-  + \nabla\left(\frac{|u|^2}{2} + g(D\revisedA{-}b)\right) & = 0, \\
+  u_t + \left(\nabla^\perp\cdot u + f\right)u^\perp
+  + \nabla\left(\frac{|u|^2}{2} + g(D\revisedC{+}b)\right) & = 0, \\
   D_t + \nabla\cdot(uD) & = 0,
 \end{align}
 where $u$ is the velocity (tangential to the sphere), $\nabla$ is the
 gradient projected into the tangent plane on the sphere, $v^\perp =
-k\times v$ for vector fields $v$, $k$ is the unit outward pointing
+k\times v$ for vector fields $v$, \revisedC{$\nabla^\perp\cdot u = k \cdot \nabla\times u$,} 
+$k$ is the unit outward pointing
 normal to the sphere, $f=2\Omega \sin(\phi)$ is the Coriolis parameter
 with $\Omega$ the rotation rate of the Earth (2$\pi$/(sidereal day))
 and latitude $\phi$, $g$ is the acceleration due to gravity, $b$ is
@@ -240,7 +237,8 @@ where
 &=
   \langle w, fu^\perp \rangle 
   - \langle \nabla_h^\perp (w\cdot u^\perp), u \rangle
-  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D+b) \right\rangle, \\
+  + \llangle \jump{(w\cdot u^\perp) n^\perp}, \tilde{u} \rrangle  - \left\langle \nabla\cdot w, \frac{|u|^2}{2} + g(D
+  \revisedC{+}b) \right\rangle, \\
   c(u,D; \phi) &=
   - \langle \nabla_h \phi, uD \rangle
   + \llangle \jump{\phi n\cdot u}, \tilde{D} \rrangle,
@@ -249,9 +247,11 @@ and where $\langle \cdot , \cdot \rangle$ is the usual $L^2$ inner
 product defined for scalar or vector fields integrating over the
 domain $\mathcal{X}$, $\llangle\cdot,\cdot \rrangle$ is the $L^2$
 inner product integrating over the set $\Gamma$ of mesh facets,
-$\nabla_h$ is the ``broken'' cellwise gradient, $\tilde{u}$ and
+$\nabla_h$ is the ``broken'' cellwise gradient,
+\revisedC{$\nabla_h^\perp \chi = -\nabla_h \times (k\chi)$ for a scalar field $\chi$,}
+$\tilde{u}$ and
 $\tilde{D}$ are the values of $D$ and $u$ evaluated on the upwind side
-of a facet (the side with $u\cdot n<0$), $n$ is the unit normal (here,
+of a facet (the side with $u\cdot n\revisedC{<}0$), $n$ is the unit normal (here,
 bivalued so that on each side of the facet $n$ is oriented to point
 into the other side), and $\jump{\psi}$ indicates the sum of the
 values of $\psi$ over both sides of the facet.\footnote{\revisedA{To
@@ -260,7 +260,7 @@ values of $\psi$ over both sides of the facet.\footnote{\revisedA{To
   indicates the value of $\psi$ on the $-$ side, etc., thus
   $\jump{\psi}=\psi^++\psi^-$. Note that when $n$ is present,
   $n^+=-n^-$, and hence e.g. $\jump{\phi n \cdot u}=\phi^+n^+\cdot u^+
-  + \phi^+n^-\cdot u^- = n^+(\phi^+u^+ - \phi^-u^-)$, so this gives
+  + \phi^\revisedC{-}n^-\cdot u^- = n^+(\phi^+u^+ - \phi^-u^-)$, so this gives
   rise to a jump. This particular choice of notation is used because
   of the appearance of $n^\perp$, which does not match standard
   patterns in mixed formulations of elliptic problems or discontinuous
@@ -357,7 +357,7 @@ such that
   & \qquad \qquad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s.
     \label{eq:D J}
 \end{align}
-Here, $\gat a$ and $\gat b$ are the Gateaux
+Here, $\gat a$ and $\gat \revisedC{c}$ are the Gateaux
 derivatives of $a$ and $c$ defined by
 \begin{align}
   \gat a(u,D;(v,\phi),w) & = \lim_{\epsilon\to 0}
@@ -499,13 +499,14 @@ consisting of the inclusion operator, \emph{i.e.} reinterpretation of
 the same function in the larger space on the finer mesh; restriction
 is taken as the $L_2$ dual of prolongation.
 
-For smoothers on each level above the coarstest,
+For smoothers on each level above the coarsest,
 we used an additive Schwarz method
 (ASM) that
-is built using overlapping subspaces $W_l=V_l\times Q_l \subset W
-{=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_l$,
-{where $W$ is
-the mixed finite element space comprising all of the stages.}
+is built using overlapping subspaces $W_l\subset W
+{=\prod_{i=1}^s\left(V \times Q\right)}$, $l=1,\ldots,N_{\revisedC{L}}$,
+\revisedC{where $W$ is
+  the mixed finite element space comprising all \revisedC{s} stages on multigrid level $L$,
+  and where $N_L$ is the number of overlapping subspaces.}
 In this work we define the subspaces $W_l$ using ``vertex
 star patches''.
 Here, there is one subspace $W_l$ for each of the $M$
@@ -525,7 +526,7 @@ Schwarz method, we solve (\ref{eq:u J}-\ref{eq:D J}) with solutions
 $w_l$ and test functions restricted to $W_l$, using a direct
 solve. These ``patch problems'' can be solved independently and in
 parallel using a dense direct solver.  Then, the additive Schwarz
-approximate solutions are obtained as $\sum_{l=1}^{N_l}w_l$ (here
+approximate solutions are obtained as $\sum_{l=1}^{N_{\revisedC{L}}}w_l$ (here
 $w_l$ is interpreted as a function in $W$ by inclusion $W_l\subset
 W$).
 }
@@ -689,7 +690,7 @@ In our setting, IMEX schemes take the form,
   \nonumber
     \langle \phi, Y_{D,i}-D^n \rangle + \Delta t \sum_{j=1}^{i-1} A_{ij} c_N\left(
     Y_{u,j}, Y_{D,j}; \phi\right) & \\
-    + \Delta t \sum_{j=1}^i \tilde{A}_{ij} c_L(Y_{u,j}, Y_{D,j}; w)
+    + \Delta t \sum_{j=1}^i \tilde{A}_{ij} c_L(Y_{u,j}, Y_{D,j}; \revisedC{\phi})
     & = 0, \label{eq:D stages IMEX}
       \quad \forall \phi \in Q,\mbox{ for }i=1,\ldots,s,
 \end{align}
@@ -785,7 +786,7 @@ test case of \cite[Section 6]{WILLIAMSON1992211} which computes a
 nonlinear travelling Rossby wave solution that is supported over the
 whole globe. Plots of the solution are shown in Figure
 \ref{tc6_fields}. We compute timestepping errors at relatively short time of 1 day.
-The errors are computed relative to a numerical solution using the
+The errors are computed relative to \revisedC{IMEX} numerical solution using the
 same spatial discretisation scheme and mesh resolution with timestep
 $\Delta t = 1s$. This enables us to isolate timestepping errors. We
 also estimate the spatial discretisation error to give context to
@@ -844,7 +845,7 @@ All computations were performed using an icosahedral mesh
 approximating the surface of the sphere by recursive refinement of an
 icosahedron as discussed previously. {Mesh refinement level $p$}
  % p same symbol as for FE space order
- has $20\times 4^p$ cells, so there are $80\times 4^p$ layer depth degrees
+ has $20\times 4^p$ cells, so there are $\revisedC{60\times 4^p}$ layer depth degrees
  of freedom and $150\times 4^p$ velocity degrees of freedom. The
  machine used has 16 Intel Xeon 2.60GHz CPUs on two sockets, and we
  used one thread per core. All 16 cores were used unless stated
@@ -925,7 +926,10 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  comparing the 2 stage Radau IIA scheme with the DIRK (they are both
  third order methods). We also see that the Gauss-Legendre schemes
  provide quicker time-to-solution for the same error than the Radau
- IIA schemes.  This is because they have one less stage per order. The
+ IIA schemes.  This is because \revisedC{the classical order of
+   Gauss-Legendre schemes is one higher than that of Radau IIA schemes
+   for the same number of stages.}
+ The
  plots also show that the IRKs provide a viable option since they are
  certainly not slower than the IMEX scheme in general.}
  
