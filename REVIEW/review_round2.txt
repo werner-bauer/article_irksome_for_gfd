@@ -1,0 +1,53 @@
+We thank the reviewer 2 for the very careful reading of our manuscript. We added our corrections in blue to the manuscript.
+Please find below the responses to the issues raised by reviewer 2.
+
+
+
+Reviewer #2: Thanks for improving the manuscript. It can be published after minor revisions fixing the following issues.
+
+- Equations (1) and (5) do not use a consistent sign of $b$: $D-b$ in (1) and $D+b$ in (5).
+
+COMMENT: Fixed it, thanks!
+
+- Equations (1) and (5): Please define $\nabla^\perp_h$ and check the equations. The reference Gibson et al. (2019) states the equation using $\nabla^\perp \cdot u$ instead of $\nabla \cdot u^\perp$. In particular, please check whether the sign of the relevant term is correct. The reference should also be made more concrete by stating the section/equation number.
+
+COMMENT: Thanks, we define the corresponding term. CITATION????, shall we simply add chapter????
+
+- Page 3: Shouldn't the upwind side be the one with $u \cdot n > 0$, not $u \cdot n < 0$?
+
+COMMENT: Since $n$ is always pointing outward, the upwind side is indeed u n <0 as we have originally written.
+
+
+- Page 3, footnote 1: $\phi^+ n^+ \cdot u^+ + \phi^+ n^- \cdot u^-$ should be $\phi^+ n^+ \cdot u^+ + \phi^- n^- \cdot u^-$, I assume.
+
+COMMENT: you are right, we corrected this typo. Thanks.
+
+- Page 4: "$\mathrm{d}a$ and $\mathrm{d}b$ are the Gateaux derivatives of $a$ and $c$" should be "$\mathrm{d}a$ and $\mathrm{d}c$ are the Gateaux derivatives of $a$ and $c$", I assume.
+
+COMMENT: Thanks, we corrected this typo.
+
+
+- Page 6: $l = 1, \dots, N_l$ looks wrong since the upper index must not depend on the running index.
+
+COMMENT: we fixed this glitch.
+
+- Page 6: Should $W_l$ be defined using an additional product $\prod_{i=1}^s$ since it couples all stages?
+
+COMMENT: ????
+
+- Equation (24): Should the argument $w$ of $c_L$ be the test function $\phi$?
+
+COMMENT: we corrected this error, thanks.
+
+- Page 10: Which time integration method is used for the $\Delta t = 1s$ reference solution?
+
+COMMENT: we added this information to the new manuscript. CHECK WITH COLIN GRAMMAR!!!
+
+- Page 11: Since $D$ is discretized in $Q$ ($p = 1$ discontinuous space on triangles), I would expect three degrees of freedom per triangle, i.e., $60 \times 4^p$ layer depth DOFs on level $p$ instead of $80 \times 4^p$.
+
+COMMENT: we corrected this error, thanks.
+
+
+- Page 12, "they have one less stage per order": Shouldn't this be the other way round, i.e., the (classical) order is one less for the same number of stages?
+
+COMMENT: we corrected this statement, thanks.

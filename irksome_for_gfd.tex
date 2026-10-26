@@ -275,6 +275,8 @@ derivation of the finite element spaces and this finite element
 approximation, see \cite{gibson2019compatible}. In this work we used
 $p=1$.
 
+\checkit{Werner: should we add the corresponding chapter of the this book???}
+
 \subsection{Implicit Runge-Kutta time discretisation
   \revisedA{and the resulting implicit systems}}
 
@@ -786,7 +788,8 @@ test case of \cite[Section 6]{WILLIAMSON1992211} which computes a
 nonlinear travelling Rossby wave solution that is supported over the
 whole globe. Plots of the solution are shown in Figure
 \ref{tc6_fields}. We compute timestepping errors at relatively short time of 1 day.
-The errors are computed relative to \revisedC{IMEX} numerical solution using the
+The errors are computed relative to
+\checkit{Werner: I would add 'the'} \revisedC{IMEX} numerical solution using the
 same spatial discretisation scheme and mesh resolution with timestep
 $\Delta t = 1s$. This enables us to isolate timestepping errors. We
 also estimate the spatial discretisation error to give context to
@@ -929,6 +932,7 @@ icosahedron as discussed previously. {Mesh refinement level $p$}
  IIA schemes.  This is because \revisedC{the classical order of
    Gauss-Legendre schemes is one higher than that of Radau IIA schemes
    for the same number of stages.}
+ \checkit{Werner: 'CLASSICAL ORDER', what does this mean????}
  The
  plots also show that the IRKs provide a viable option since they are
  certainly not slower than the IMEX scheme in general.}
