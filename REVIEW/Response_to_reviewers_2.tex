@@ -1,0 +1,126 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+%\usepackage{geometry}[2cm,2cm,2cm,2cm]
+\usepackage[utf8]{inputenc}
+\usepackage[nosumlimits]{amsmath}
+\usepackage{amssymb,stmaryrd,amsthm,MnSymbol}
+\usepackage{amsfonts,amssymb,amsopn}
+\usepackage[colorlinks=true,
+            linkcolor=red,
+            filecolor=blue,
+            citecolor=blue,
+            urlcolor=blue,]{hyperref}
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{comment}
+\usepackage{graphicx}
+\usepackage{natbib}
+\bibliographystyle{elsarticle-harv}
+\usepackage{multirow}
+
+\usepackage{soul}
+\setstcolor{red}
+\newcommand{\werner}[1]{{\color{magenta}WB says: #1}}
+\newcommand{\colin}[1]{{\color{blue}CJC says: #1}}
+
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+	\framebox{\begin{minipage}[c]{0.95 \textwidth}
+			\tt #1 \end{minipage}}\vspace{5 mm}\par}
+
+\DeclareMathOperator{\diff}{d}
+%opening
+\title{Response to second review}
+\author{Werner Bauer, Joshua Hope-Collins, and Colin J. Cotter}
+
+\begin{document}
+
+\maketitle
+
+We thank the reviewer for their careful reading of our revised manuscript
+which is much appreciated, a number of important details were spotted. And
+apologies that we did not see these ourselves beforehand!
+
+The questions and comments by the Reviewer are written in Roman font,
+followed by our responses in italic fonts. In addition, we highlighted
+our changes to the revised manuscript in blue.
+
+\begin{enumerate}
+\item Equations (1) and (5) do not use a consistent sign of $b$: $D-b$ in (1) and $D+b$ in (5).\\
+  \emph{We have settled on ``+'' for both.}
+\item Equations (1) and (5): Please define $\nabla^\perp_h$ and check
+  the equations. The reference Gibson et al. (2019) states the
+  equation using $\nabla^\perp \cdot u$ instead of $\nabla \cdot
+  u^\perp$. In particular, please check whether the sign of the
+  relevant term is correct. The reference should also be made more
+  concrete by stating the section/equation number.\\ \emph{There was
+  an error in (1) which we have corrected, and we have defined
+  $\nabla^\perp_h$. The reference has also been updated to indicate the
+  chapter sections.}
+
+  \colin{Just checking signs! When we write $\nabla^\perp \cdot u$ on
+    the sphere, we really mean $k\cdot \nabla\times u$ ie the component
+    of the curl in the $k$ direction. Then integration by parts
+    gives
+    \[
+    \int_e (k\cdot \nabla\times u) w\cdot k\times u \diff x
+    = \int_e (\nabla\times [k(w\cdot k\times u)])\cdot u)  \diff x
+    - \int_{\partial e}(k\cdot n\times u) w\cdot k\times u \diff S.
+    \]
+    Which we compare with
+    \[
+    \int_e (\nabla^\perp\cdot u) w\cdot u^\perp \diff x
+    = -\int_e (\nabla^\perp\cdot (w\cdot u^\perp))\cdot u)  \diff x
+    + \int_{\partial e}(n^\perp\cdot u w\cdot u^\perp \diff S,
+    \]
+    which is what we put in the paper. Hence, we need
+    \[
+    \nabla\times [k(w\cdot k\times u)] = -\nabla^\perp (w\cdot u^\perp),
+    \]
+    which works if we have
+    \[
+    \nabla^\perp \chi = -\nabla\times (k \chi), 
+    \]
+    which is what I have now added to the text.
+
+    As an aside to Werner, in our implementation, we had $\nabla^\perp\chi
+    = k\times \nabla\chi$, which is worrying at first till we notice that
+    $\nabla\times k$ is zero in the tangent plane. I will try to remember
+    to fix this in future codes or check mathematically whether this holds
+    when we aren't on the sphere.
+  }
+\item Page 3: Shouldn't the upwind side be the one with $u \cdot n > 0$, not $u \cdot n < 0$?\\
+  \emph{It should. We have corrected it.}
+\item Page 3, footnote 1: $\phi^+ n^+ \cdot u^+ + \phi^+ n^- \cdot u^-$ should be $\phi^+ n^+ \cdot u^+ + \phi^- n^- \cdot u^-$, I assume.\\
+  \emph{It should. We have corrected it.}
+\item Page 4: "$\mathrm{d}a$ and $\mathrm{d}b$ are the Gateaux derivatives of $a$ and $c$" should be "$\mathrm{d}a$ and $\mathrm{d}c$ are the Gateaux derivatives of $a$ and $c$", I assume.\\
+  \emph{Correct, we have corrected it.}
+\item Page 6: $l = 1, \dots, N_l$ looks wrong since the upper index
+  must not depend on the running index.\\ \emph{It was a confusing
+  notation since $N_l$ was the range for $l$. We have clarified this
+  now in the text.}
+\item product $\prod_{i=1}^s$ since it couples all stages?\\
+  \emph{Yes, we have clarified  this.}
+\item Equation (24): Should the argument $w$ of $c_L$ be the test function $\phi$?\\
+  \emph{Correct, we have corrected this.}
+\item Page 10: Which time integration method is used for the $\Delta t = 1s$ reference solution?\\
+\emph{It was an IMEX scheme. We have added this.}
+\item Page 11: Since $D$ is discretized in $Q$ ($p = 1$ discontinuous
+  space on triangles), I would expect three degrees of freedom per
+  triangle, i.e., $60 \times 4^p$ layer depth DOFs on level $p$
+  instead of $80 \times 4^p$.\\
+  \emph{Correct, we have corrected this.}
+  \colin{Checking the maths. Reviewer is correct on layer depth, it should be
+    $3\times 20$ not $4\times 20$. For velocity, BDM2 has 9 edge DOFs per cell
+    but these are shared between two cells, so we divide by 2. Then there are 3
+    interior values, leading to 4.5+3=7.5 which we multiply by 20 to get 150.}
+\item Page 12, ``they have one less stage per order'': Shouldn't this be the other way round, i.e., the (classical) order is one less for the same number of stages?~\\
+  \emph{These seem to us to be equivalent, but we have rephrased it in case
+  it wasn't clear what ``they'' was.}
+\end{enumerate}
+
+
+
+
+
+\end{document}
