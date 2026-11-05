@@ -58,39 +58,49 @@ our changes to the revised manuscript in blue.
   $\nabla^\perp_h$. The reference has also been updated to indicate the
   chapter sections.}
 
-  \colin{Just checking signs! When we write $\nabla^\perp \cdot u$ on
-    the sphere, we really mean $k\cdot \nabla\times u$ ie the component
-    of the curl in the $k$ direction. Then integration by parts
-    gives
-    \[
-    \int_e (k\cdot \nabla\times u) w\cdot k\times u \diff x
-    = \int_e (\nabla\times [k(w\cdot k\times u)])\cdot u)  \diff x
-    - \int_{\partial e}(k\cdot n\times u) w\cdot k\times u \diff S.
-    \]
-    Which we compare with
-    \[
-    \int_e (\nabla^\perp\cdot u) w\cdot u^\perp \diff x
-    = -\int_e (\nabla^\perp\cdot (w\cdot u^\perp))\cdot u)  \diff x
-    + \int_{\partial e}(n^\perp\cdot u w\cdot u^\perp \diff S,
-    \]
-    which is what we put in the paper. Hence, we need
-    \[
-    \nabla\times [k(w\cdot k\times u)] = -\nabla^\perp (w\cdot u^\perp),
-    \]
-    which works if we have
-    \[
-    \nabla^\perp \chi = -\nabla\times (k \chi), 
-    \]
-    which is what I have now added to the text.
-
-    As an aside to Werner, in our implementation, we had $\nabla^\perp\chi
-    = k\times \nabla\chi$, which is worrying at first till we notice that
-    $\nabla\times k$ is zero in the tangent plane. I will try to remember
-    to fix this in future codes or check mathematically whether this holds
-    when we aren't on the sphere.
-  }
+%   \colin{Just checking signs! When we write $\nabla^\perp \cdot u$ on
+%     the sphere, we really mean $k\cdot \nabla\times u$ ie the component
+%     of the curl in the $k$ direction. Then integration by parts
+%     gives
+%     \[
+%     \int_e (k\cdot \nabla\times u) w\cdot k\times u \diff x
+%     = \int_e (\nabla\times [k(w\cdot k\times u)])\cdot u)  \diff x
+%     - \int_{\partial e}(k\cdot n\times u) w\cdot k\times u \diff S.
+%     \]
+%     Which we compare with
+%     \[
+%     \int_e (\nabla^\perp\cdot u) w\cdot u^\perp \diff x
+%     = -\int_e (\nabla^\perp\cdot (w\cdot u^\perp))\cdot u)  \diff x
+%     + \int_{\partial e}(n^\perp\cdot u w\cdot u^\perp \diff S,
+%     \]
+%     which is what we put in the paper. Hence, we need
+%     \[
+%     \nabla\times [k(w\cdot k\times u)] = -\nabla^\perp (w\cdot u^\perp),
+%     \]
+%     which works if we have
+%     \[
+%     \nabla^\perp \chi = -\nabla\times (k \chi),
+%     \]
+%     which is what I have now added to the text.
+%
+%     As an aside to Werner, in our implementation, we had $\nabla^\perp\chi
+%     = k\times \nabla\chi$, which is worrying at first till we notice that
+%     $\nabla\times k$ is zero in the tangent plane. I will try to remember
+%     to fix this in future codes or check mathematically whether this holds
+%     when we aren't on the sphere.
+%   }
 \item Page 3: Shouldn't the upwind side be the one with $u \cdot n > 0$, not $u \cdot n < 0$?\\
-  \emph{It should. We have corrected it.}
+  %\emph{It should. We have corrected it.}
+  \emph{We checked the definition carefully and our original version $u \cdot n < 0$ is correct.
+  Reasoning: we consider outward pointing normals per cell and note that
+  two sides of each mesh facet are arbitrarily denoted by + and -, and therefore
+  $n^+ = - n^-$. So in the cell, $u \cdot n^+ > 0$ means that there is flow out of that cell.
+  On the other side of the facet, the normal points the other way $n^-$. The upwind
+  side of the flow is hence given when $u \cdot n^- > 0 $ but related to the
+  original cell and in terms of $n^+$, the upwind side is where $u \cdot n^+ < 0$ holds.
+}
+
+
 \item Page 3, footnote 1: $\phi^+ n^+ \cdot u^+ + \phi^+ n^- \cdot u^-$ should be $\phi^+ n^+ \cdot u^+ + \phi^- n^- \cdot u^-$, I assume.\\
   \emph{It should. We have corrected it.}
 \item Page 4: "$\mathrm{d}a$ and $\mathrm{d}b$ are the Gateaux derivatives of $a$ and $c$" should be "$\mathrm{d}a$ and $\mathrm{d}c$ are the Gateaux derivatives of $a$ and $c$", I assume.\\
@@ -99,7 +109,7 @@ our changes to the revised manuscript in blue.
   must not depend on the running index.\\ \emph{It was a confusing
   notation since $N_l$ was the range for $l$. We have clarified this
   now in the text.}
-\item product $\prod_{i=1}^s$ since it couples all stages?\\
+\item Should $W_l$ be defined using an additional product $\prod_{i=1}^s$ since it couples all stages?\\
   \emph{Yes, we have clarified  this.}
 \item Equation (24): Should the argument $w$ of $c_L$ be the test function $\phi$?\\
   \emph{Correct, we have corrected this.}
@@ -110,10 +120,10 @@ our changes to the revised manuscript in blue.
   triangle, i.e., $60 \times 4^p$ layer depth DOFs on level $p$
   instead of $80 \times 4^p$.\\
   \emph{Correct, we have corrected this.}
-  \colin{Checking the maths. Reviewer is correct on layer depth, it should be
-    $3\times 20$ not $4\times 20$. For velocity, BDM2 has 9 edge DOFs per cell
-    but these are shared between two cells, so we divide by 2. Then there are 3
-    interior values, leading to 4.5+3=7.5 which we multiply by 20 to get 150.}
+%   \colin{Checking the maths. Reviewer is correct on layer depth, it should be
+%     $3\times 20$ not $4\times 20$. For velocity, BDM2 has 9 edge DOFs per cell
+%     but these are shared between two cells, so we divide by 2. Then there are 3
+%     interior values, leading to 4.5+3=7.5 which we multiply by 20 to get 150.}
 \item Page 12, ``they have one less stage per order'': Shouldn't this be the other way round, i.e., the (classical) order is one less for the same number of stages?~\\
   \emph{These seem to us to be equivalent, but we have rephrased it in case
   it wasn't clear what ``they'' was.}
